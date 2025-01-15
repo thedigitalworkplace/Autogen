@@ -2,6 +2,7 @@
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+import uvicorn
 
 # import logging
 from fastapi import FastAPI
@@ -186,3 +187,6 @@ def create_app() -> FastAPI:
     Useful for testing and different deployment scenarios.
     """
     return app
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="host=0.0.0.0", port=8000)
