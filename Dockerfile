@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 COPY python/packages/autogen-studio/requirements.txt /app/requirements.txt
 
 # Install Python dependencies from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt && \
+RUN pip install --no-cache-dir -r python/packages/autogen-studio/requirements.txt && \
     apt-get remove -y build-essential && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
