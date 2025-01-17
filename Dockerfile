@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
     pip install --no-cache-dir --upgrade pip
 
 # Copy requirements.txt to the container
-COPY . /app/
+COPY python/packages/autogen-studio/requirements.txt /app/requirements.txt
 
 # Install Python dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt && \
