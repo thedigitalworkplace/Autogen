@@ -2,7 +2,7 @@
 FROM python:3.11-slim as builder
 
 WORKDIR /app
-COPY requirements.txt /app/
+COPY autogen-studio/requirements.txt /app/
 
 RUN apt-get update && apt-get install -y build-essential
 RUN pip install --no-cache-dir -r requirements.txt
