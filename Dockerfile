@@ -14,6 +14,7 @@ COPY python/packages/autogen-studio/requirements.txt /app/requirements.txt
 RUN if [ -f /app/requirements.txt ]; then \
         pip install --no-cache-dir -r /app/requirements.txt; \
     else \
+        echo "requirements.txt not found; installing default dependencies."; \
         pip install --no-cache-dir fastapi uvicorn[standard] pydantic openai azure-openai; \
     fi && \
     apt-get remove -y build-essential && \
