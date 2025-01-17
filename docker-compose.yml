@@ -1,11 +1,11 @@
-version: '3.8'
-
 services:
   app:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
-      - ENV_VAR=value
+      OPENAI_API_KEY: " "
+      ENV_VAR: "value"
+    restart: unless-stopped

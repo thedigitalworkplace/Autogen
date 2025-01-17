@@ -1,11 +1,8 @@
-# api/app.py
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 import uvicorn
-
-# import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
@@ -16,15 +13,15 @@ from .deps import cleanup_managers, init_managers
 from .initialization import AppInitializer
 from .routes import agents, models, runs, sessions, teams, tools, ws
 
+from .auth_helpers import get_user_session
+
 # Configure logging
 # logger = logging.getLogger(__name__)
 # logging.basicConfig(level=logging.INFO)
 
-
 # Initialize application
 app_file_path = os.path.dirname(os.path.abspath(__file__))
 initializer = AppInitializer(settings, app_file_path)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -55,7 +52,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("Application shutdown complete")
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
-
 
 # Create FastAPI application
 app = FastAPI(lifespan=lifespan, debug=True)
@@ -133,10 +129,7 @@ api.include_router(
     responses={404: {"description": "Not found"}},
 )
 
-
 # Version endpoint
-
-
 @api.get("/version")
 async def get_version():
     """Get API version"""
@@ -146,10 +139,7 @@ async def get_version():
         "data": {"version": VERSION},
     }
 
-
 # Health check endpoint
-
-
 @api.get("/health")
 async def health_check():
     """API health check endpoint"""
@@ -158,6 +148,19 @@ async def health_check():
         "message": "Service is healthy",
     }
 
+# User-specific endpoints
+@api.get("/dashboard")
+async def dashboard(request: Request):
+    """Dashboard endpoint showing user-specific data."""
+    user = get_user_session(request)
+    return {"message": f"Welcome, {user['name']} from {user['company']}!"}
+
+@api.post("/tasks")
+async def manage_tasks(request: Request, task_data: dict):
+    """Example of a user-specific task endpoint."""
+    user = get_user_session(request)
+    # Process tasks based on user
+    return {"task": "Processed", "user": user}
 
 # Mount static file directories
 app.mount("/api", api)
@@ -169,8 +172,6 @@ app.mount(
 app.mount("/", StaticFiles(directory=initializer.ui_root, html=True), name="ui")
 
 # Error handlers
-
-
 @app.exception_handler(500)
 async def internal_error_handler(request, exc):
     logger.error(f"Internal error: {str(exc)}")
@@ -180,7 +181,6 @@ async def internal_error_handler(request, exc):
         "detail": str(exc) if settings.API_DOCS else "Internal server error",
     }
 
-
 def create_app() -> FastAPI:
     """
     Factory function to create and configure the FastAPI application.
@@ -189,4 +189,4 @@ def create_app() -> FastAPI:
     return app
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="host=0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
