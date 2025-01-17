@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir \
     uvicorn[standard] \
     pydantic \
     openai \
-    azure-openai
+    azure
 
 # Clean up unnecessary files
 RUN apt-get remove -y build-essential && \
