@@ -10,14 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 # Copy requirements.txt to the container
 COPY python/packages/autogen-studio/requirements.txt /app/requirements.txt
 
-# Install Python dependencies from requirements.txt
-RUN pip install --no-cache-dir -r python/autogen\python\packages\autogen-studio\requirements.txt && \
+# Install dependencies from requirements.txt or fallback to individual dependencies
+RUN if [ -f /app/requirements.txt ]; then \
+        pip install --no-cache-dir -r /app/requirements.txt; \
+    else \
+        pip install --no-cache-dir fastapi uvicorn[standard] pydantic openai azure-openai; \
+    fi && \
     apt-get remove -y build-essential && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
-
-# Install additional dependencies
-RUN pip install --no-cache-dir openai azure-openai fastapi uvicorn[standard] pydantic
 
 # Stage 2: Final image
 FROM python:3.11-slim
