@@ -7,8 +7,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
     pip install --no-cache-dir --upgrade pip
 
-# Copy only requirements to leverage Docker layer caching
-COPY autogen-studio/requirements.txt /app/
+# Copy requirements.txt to the container
+COPY . /app/
 
 # Install Python dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt && \
