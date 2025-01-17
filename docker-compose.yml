@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: autogen-app
     ports:
       - "8000:8000"
     environment:
