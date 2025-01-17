@@ -1,8 +1,26 @@
-.git
+# Ignore version control directories
+.git/
+.gitignore
+
+# Python-specific files
 *.pyc
 __pycache__/
+
+# Logs
 *.log
+
+# IDE/editor configurations
 .vscode/
 .idea/
+
+# Database files
 *.sqlite
+
+# Environment files
 .env
+
+# Temporary files and directories
+*.tmp
+*.bak
+*.swp
+.DS_Store
