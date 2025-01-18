@@ -1,6 +1,7 @@
 # Stage 1: Build dependencies
 FROM python:3.11-slim as builder
 
+# Set working directory
 WORKDIR /app
 
 # Upgrade pip to the latest version and install build tools
@@ -12,7 +13,8 @@ RUN pip install --no-cache-dir \
     fastapi \
     uvicorn[standard] \
     pydantic \
-    openai
+    openai \
+    loguru
 
 # Clean up unnecessary files
 RUN apt-get remove -y build-essential && \
@@ -22,7 +24,11 @@ RUN apt-get remove -y build-essential && \
 # Stage 2: Final image
 FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
+
+# Add PYTHONPATH to ensure the application package is discoverable
+ENV PYTHONPATH="/app:${PYTHONPATH}"
 
 # Copy Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
@@ -31,8 +37,11 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code to the container
 COPY . /app/
 
+# Ensure all directories are recognized as Python packages
+RUN find /app -type d -exec touch {}/__init__.py \;
+
 # Expose the application port
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application with the correct module path
+CMD ["uvicorn", "autogenstudio.web.app:app", "--host", "0.0.0.0", "--port", "8000"]
