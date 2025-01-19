@@ -2,7 +2,7 @@
 FROM python:3.11-slim as builder
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/python/packages/autogen-studio
 
 # Upgrade pip to the latest version and install build tools
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
@@ -25,10 +25,10 @@ RUN apt-get remove -y build-essential && \
 FROM python:3.11-slim
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/python/packages/autogen-studio
 
 # Add PYTHONPATH to ensure the application package is discoverable
-ENV PYTHONPATH="/app:${PYTHONPATH}"
+ENV PYTHONPATH="/app/python/packages/autogen-studio:${PYTHONPATH}"
 
 # Copy Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
@@ -36,9 +36,6 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code to the container
 COPY . /app/
-
-# Ensure all directories are recognized as Python packages
-RUN find /app -type d -exec touch {}/__init__.py \;
 
 # Expose the application port
 EXPOSE 8000
