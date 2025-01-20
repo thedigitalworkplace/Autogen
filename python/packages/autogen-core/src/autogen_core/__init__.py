@@ -28,7 +28,11 @@ from ._constants import (
 from ._constants import (
     TRACE_LOGGER_NAME as TRACE_LOGGER_NAME_ALIAS,
 )
-from ._default_subscription import DefaultSubscription, default_subscription, type_subscription
+from ._default_subscription import (
+    DefaultSubscription,
+    default_subscription,
+    type_subscription,
+)
 from ._default_topic import DefaultTopicId
 from ._image import Image
 from ._intervention import (

@@ -65,5 +65,6 @@ class TypePrefixSubscription(Subscription):
             return False
 
         return self.id == other.id or (
-            self.agent_type == other.agent_type and self.topic_type_prefix == other.topic_type_prefix
+            self.agent_type == other.agent_type
+            and self.topic_type_prefix == other.topic_type_prefix
         )

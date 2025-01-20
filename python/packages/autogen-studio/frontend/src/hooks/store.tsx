@@ -130,6 +130,6 @@ export const useConfigStore = create<IConfigState>()(
         sidebar: state.sidebar,
         agentFlow: state.agentFlow,
       }),
-    }
-  )
+    },
+  ),
 );

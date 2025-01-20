@@ -14,11 +14,11 @@ Create a file called ENV.json with the following (required) contents (If you're 
 
 ```json
 {
-    "BING_API_KEY": "REPLACE_WITH_YOUR_BING_API_KEY",
-    "HOMEPAGE": "https://www.bing.com/",
-    "WEB_SURFER_DEBUG_DIR": "/autogen/debug",
-    "CHAT_COMPLETION_KWARGS_JSON": "{\"api_version\": \"2024-02-15-preview\", \"azure_endpoint\": \"YOUR_ENDPOINT/\", \"model_capabilities\": {\"function_calling\": true, \"json_output\": true, \"vision\": true}, \"azure_ad_token_provider\": \"DEFAULT\", \"model\": \"gpt-4o-2024-05-13\"}",
-    "CHAT_COMPLETION_PROVIDER": "azure"
+  "BING_API_KEY": "REPLACE_WITH_YOUR_BING_API_KEY",
+  "HOMEPAGE": "https://www.bing.com/",
+  "WEB_SURFER_DEBUG_DIR": "/autogen/debug",
+  "CHAT_COMPLETION_KWARGS_JSON": "{\"api_version\": \"2024-02-15-preview\", \"azure_endpoint\": \"YOUR_ENDPOINT/\", \"model_capabilities\": {\"function_calling\": true, \"json_output\": true, \"vision\": true}, \"azure_ad_token_provider\": \"DEFAULT\", \"model\": \"gpt-4o-2024-05-13\"}",
+  "CHAT_COMPLETION_PROVIDER": "azure"
 }
 ```
 

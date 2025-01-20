@@ -17,7 +17,7 @@ export class SessionAPI {
       `${this.getBaseUrl()}/sessions/?user_id=${userId}`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -30,7 +30,7 @@ export class SessionAPI {
       `${this.getBaseUrl()}/sessions/${sessionId}?user_id=${userId}`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -40,7 +40,7 @@ export class SessionAPI {
 
   async createSession(
     sessionData: Partial<Session>,
-    userId: string
+    userId: string,
   ): Promise<Session> {
     const session = {
       ...sessionData,
@@ -61,7 +61,7 @@ export class SessionAPI {
   async updateSession(
     sessionId: number,
     sessionData: Partial<Session>,
-    userId: string
+    userId: string,
   ): Promise<Session> {
     const session = {
       ...sessionData,
@@ -75,7 +75,7 @@ export class SessionAPI {
         method: "PUT",
         headers: this.getHeaders(),
         body: JSON.stringify(session),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -86,13 +86,13 @@ export class SessionAPI {
   // session runs with messages
   async getSessionRuns(
     sessionId: number,
-    userId: string
+    userId: string,
   ): Promise<SessionRuns> {
     const response = await fetch(
       `${this.getBaseUrl()}/sessions/${sessionId}/runs?user_id=${userId}`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -106,7 +106,7 @@ export class SessionAPI {
       {
         method: "DELETE",
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -120,7 +120,7 @@ export class SessionAPI {
       `${this.getBaseUrl()}/sessions/${sessionId}/messages?user_id=${userId}`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)

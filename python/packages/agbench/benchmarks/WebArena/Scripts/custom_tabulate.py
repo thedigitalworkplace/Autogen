@@ -15,7 +15,7 @@ def scorer(instance_dir):
     with open(console_log_file, "rt") as fh:
         console_log = fh.read()
 
-        final_score = None 
+        final_score = None
         m = re.search(r"FINAL SCORE:(.*?)\n", console_log, re.DOTALL)
         if m:
             final_score = m.group(1).strip()

@@ -4,9 +4,7 @@
   "tools": {
     "Microsoft.dotnet-interactive": {
       "version": "1.0.522904",
-      "commands": [
-        "dotnet-interactive"
-      ]
+      "commands": ["dotnet-interactive"]
     }
   }
 }

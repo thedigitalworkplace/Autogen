@@ -42,7 +42,9 @@ class ChatAgent(TaskRunner, Protocol):
         :attr:`Response.chat_message` field. They must be :class:`ChatMessage` types."""
         ...
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         """Handles incoming messages and returns a response."""
         ...
 

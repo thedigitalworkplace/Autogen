@@ -26,7 +26,6 @@ dotnet add package AutoGen.Gemini
 
 [!code-csharp[](../../../samples/AutoGen.Gemini.Sample/Chat_With_Vertex_Gemini.cs?name=Create_Gemini_Agent)]
 
-
 ### Step 4: Chat with Gemini
 
 [!code-csharp[](../../../samples/AutoGen.Gemini.Sample/Chat_With_Vertex_Gemini.cs?name=Chat_With_Vertex_Gemini)]

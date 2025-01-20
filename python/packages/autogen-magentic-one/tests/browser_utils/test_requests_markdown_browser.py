@@ -8,13 +8,20 @@ import re
 
 import pytest
 import requests
-from autogen_magentic_one.markdown_browser import BingMarkdownSearch, RequestsMarkdownBrowser
+from autogen_magentic_one.markdown_browser import (
+    BingMarkdownSearch,
+    RequestsMarkdownBrowser,
+)
 
-BLOG_POST_URL = "https://microsoft.github.io/autogen/0.2/blog/2023/04/21/LLM-tuning-math"
+BLOG_POST_URL = (
+    "https://microsoft.github.io/autogen/0.2/blog/2023/04/21/LLM-tuning-math"
+)
 BLOG_POST_TITLE = "Does Model and Inference Parameter Matter in LLM Applications? - A Case Study for MATH | AutoGen 0.2"
 BLOG_POST_STRING = "Large language models (LLMs) are powerful tools that can generate natural language texts for various applications, such as chatbots, summarization, translation, and more. GPT-4 is currently the state of the art LLM in the world. Is model selection irrelevant? What about inference parameters?"
 BLOG_POST_FIND_ON_PAGE_QUERY = "an example where high * complex"
-BLOG_POST_FIND_ON_PAGE_MATCH = "an example where high cost can easily prevent a generic complex"
+BLOG_POST_FIND_ON_PAGE_MATCH = (
+    "an example where high cost can easily prevent a generic complex"
+)
 
 WIKIPEDIA_URL = "https://en.wikipedia.org/wiki/Microsoft"
 WIKIPEDIA_TITLE = "Microsoft"
@@ -84,9 +91,13 @@ def test_requests_markdown_browser() -> None:
     assert BLOG_POST_STRING in page_content
 
     # Check if page splitting works
-    approx_pages = math.ceil(len(browser.page_content) / viewport_size)  # May be fewer, since it aligns to word breaks
+    approx_pages = math.ceil(
+        len(browser.page_content) / viewport_size
+    )  # May be fewer, since it aligns to word breaks
     assert len(browser.viewport_pages) <= approx_pages
-    assert abs(len(browser.viewport_pages) - approx_pages) <= 1  # allow only a small deviation
+    assert (
+        abs(len(browser.viewport_pages) - approx_pages) <= 1
+    )  # allow only a small deviation
     assert browser.viewport_pages[0][0] == 0
     assert browser.viewport_pages[-1][1] == len(browser.page_content)
 
@@ -121,12 +132,17 @@ def test_requests_markdown_browser() -> None:
     # Visit a plain-text file
     response = requests.get(PLAIN_TEXT_URL)
     response.raise_for_status()
-    expected_results = re.sub(r"\s+", " ", string=response.text, flags=re.DOTALL).strip()
+    expected_results = re.sub(
+        r"\s+", " ", string=response.text, flags=re.DOTALL
+    ).strip()
     # Run the normalize code that the markdown request module uses
     expected_results = normalize_text(expected_results)
 
     browser.visit_page(PLAIN_TEXT_URL)
-    assert re.sub(r"\s+", " ", string=browser.page_content, flags=re.DOTALL).strip() == expected_results
+    assert (
+        re.sub(r"\s+", " ", string=browser.page_content, flags=re.DOTALL).strip()
+        == expected_results
+    )
 
     # Disrectly download a ZIP file and compute its sha256
     response = requests.get(DOWNLOAD_URL, stream=True)

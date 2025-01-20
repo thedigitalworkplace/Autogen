@@ -75,4 +75,7 @@ async def test_playwright_controller_fill_id() -> None:
                 break
         controller = PlaywrightController()
         await controller.fill_id(page, input_box_id, "test input")
-        assert await page.evaluate("document.getElementById('input-box').value") == "test input"
+        assert (
+            await page.evaluate("document.getElementById('input-box').value")
+            == "test input"
+        )

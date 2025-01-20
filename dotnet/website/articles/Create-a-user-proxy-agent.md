@@ -1,6 +1,7 @@
 ## UserProxyAgent
 
 [`UserProxyAgent`](../api/AutoGen.UserProxyAgent.yml) is a special type of agent that can be used to proxy user input to another agent or group of agents. It supports the following human input modes:
+
 - `ALWAYS`: Always ask user for input.
 - `NEVER`: Never ask user for input. In this mode, the agent will use the default response (if any) to respond to the message. Or using underlying LLM model to generate response if provided.
 - `AUTO`: Only ask user for input when conversation is terminated by the other agent(s). Otherwise, use the default response (if any) to respond to the message. Or using underlying LLM model to generate response if provided.

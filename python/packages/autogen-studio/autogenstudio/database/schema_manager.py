@@ -112,13 +112,17 @@ class SchemaManager:
         try:
             self._validate_alembic_setup()
             if force:
-                logger.info("Force initialization requested. Cleaning up existing configuration...")
+                logger.info(
+                    "Force initialization requested. Cleaning up existing configuration..."
+                )
                 self._cleanup_existing_alembic()
                 self._initialize_alembic()
         except FileNotFoundError:
             logger.info("Alembic configuration not found. Initializing...")
             if self.alembic_dir.exists():
-                logger.warning("Found existing alembic directory but missing configuration")
+                logger.warning(
+                    "Found existing alembic directory but missing configuration"
+                )
                 self._cleanup_existing_alembic()
             self._initialize_alembic()
             logger.info("Alembic initialization complete")
@@ -258,7 +262,9 @@ datefmt = %H:%M:%S
 
             # Add sqlmodel import to imports section
             import_section = "from alembic import op\nimport sqlalchemy as sa"
-            new_imports = "from alembic import op\nimport sqlalchemy as sa\nimport sqlmodel"
+            new_imports = (
+                "from alembic import op\nimport sqlalchemy as sa\nimport sqlmodel"
+            )
 
             content = content.replace(import_section, new_imports)
 
@@ -288,7 +294,9 @@ datefmt = %H:%M:%S
                 content = "from sqlmodel import SQLModel\n" + content
 
             # Replace target_metadata
-            content = content.replace("target_metadata = None", "target_metadata = SQLModel.metadata")
+            content = content.replace(
+                "target_metadata = None", "target_metadata = SQLModel.metadata"
+            )
 
             # Update both configure blocks properly
             content = content.replace(
@@ -338,24 +346,34 @@ datefmt = %H:%M:%S
         try:
             self._validate_alembic_setup()
             if force:
-                logger.info("Force initialization requested. Cleaning up existing configuration...")
+                logger.info(
+                    "Force initialization requested. Cleaning up existing configuration..."
+                )
                 self._cleanup_existing_alembic()
                 self._initialize_alembic()
         except FileNotFoundError:
             logger.info("Alembic configuration not found. Initializing...")
             if self.alembic_dir.exists():
-                logger.warning("Found existing alembic directory but missing configuration")
+                logger.warning(
+                    "Found existing alembic directory but missing configuration"
+                )
                 self._cleanup_existing_alembic()
             self._initialize_alembic()
             logger.info("Alembic initialization complete")
 
     def _validate_alembic_setup(self) -> None:
         """Validates that Alembic is properly configured."""
-        required_files = [self.alembic_ini_path, self.alembic_dir / "env.py", self.alembic_dir / "versions"]
+        required_files = [
+            self.alembic_ini_path,
+            self.alembic_dir / "env.py",
+            self.alembic_dir / "versions",
+        ]
 
         missing = [f for f in required_files if not f.exists()]
         if missing:
-            raise FileNotFoundError(f"Alembic configuration incomplete. Missing: {', '.join(str(f) for f in missing)}")
+            raise FileNotFoundError(
+                f"Alembic configuration incomplete. Missing: {', '.join(str(f) for f in missing)}"
+            )
 
     def get_alembic_config(self) -> Config:
         """

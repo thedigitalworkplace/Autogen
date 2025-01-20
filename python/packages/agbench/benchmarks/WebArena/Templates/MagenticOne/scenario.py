@@ -18,10 +18,22 @@ from autogen_core.models import (
     SystemMessage,
     LLMMessage,
 )
-from autogen_magentic_one.markdown_browser import MarkdownConverter, UnsupportedFormatException
+from autogen_magentic_one.markdown_browser import (
+    MarkdownConverter,
+    UnsupportedFormatException,
+)
 from autogen_magentic_one.agents.coder import Coder, Executor
-from autogen_magentic_one.agents.orchestrator import RoundRobinOrchestrator, LedgerOrchestrator
-from autogen_magentic_one.messages import BroadcastMessage, OrchestrationEvent, RequestReplyMessage, ResetMessage, DeactivateMessage
+from autogen_magentic_one.agents.orchestrator import (
+    RoundRobinOrchestrator,
+    LedgerOrchestrator,
+)
+from autogen_magentic_one.messages import (
+    BroadcastMessage,
+    OrchestrationEvent,
+    RequestReplyMessage,
+    ResetMessage,
+    DeactivateMessage,
+)
 from autogen_magentic_one.agents.multimodal_web_surfer import MultimodalWebSurfer
 from autogen_magentic_one.agents.file_surfer import FileSurfer
 from autogen_magentic_one.utils import LogHandler, message_content_to_str
@@ -56,7 +68,9 @@ REPLACEMENTS = {
 nltk.download("punkt")
 
 
-async def response_preparer(task: str, source: str, client: ChatCompletionClient, transcript: List[LLMMessage]) -> str:
+async def response_preparer(
+    task: str, source: str, client: ChatCompletionClient, transcript: List[LLMMessage]
+) -> str:
     messages: List[LLMMessage] = [
         UserMessage(
             content=f"Earlier you were asked the following:\n\n{task}\n\nYour team then worked diligently to address that request. Here is a transcript of that conversation:",
@@ -68,16 +82,16 @@ async def response_preparer(task: str, source: str, client: ChatCompletionClient
     for message in transcript:
         messages.append(
             UserMessage(
-                content = message_content_to_str(message.content),
+                content=message_content_to_str(message.content),
                 # TODO fix this -> remove type ignore
-                source=message.source, # type: ignore
+                source=message.source,  # type: ignore
             )
         )
 
     # ask for the final answer
     messages.append(
         UserMessage(
-            content= f"""
+            content=f"""
 Read the above conversation and output a FINAL ANSWER to the original request. The original request is repeated here for convenience:
 
 {task}
@@ -120,7 +134,9 @@ async def main() -> None:
     runtime = SingleThreadedAgentRuntime()
 
     # Create the AzureOpenAI client, with AAD auth
-    client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
+    client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
 
     # Login assistant
     await runtime.register(
@@ -128,7 +144,8 @@ async def main() -> None:
         lambda: Coder(
             model_client=client,
             system_messages=[
-                SystemMessage(content="""You are a general-purpose AI assistant and can handle many questions -- but you don't have access to a web browser. However, the user you are talking to does have a browser, and you can see the screen. Provide short direct instructions to them to take you where you need to go to answer the initial question posed to you.
+                SystemMessage(
+                    content="""You are a general-purpose AI assistant and can handle many questions -- but you don't have access to a web browser. However, the user you are talking to does have a browser, and you can see the screen. Provide short direct instructions to them to take you where you need to go to answer the initial question posed to you.
 
 Once the user has taken the final necessary action to complete the task, and you have fully addressed the initial request, reply with the word TERMINATE.""",
                 )
@@ -141,18 +158,24 @@ Once the user has taken the final necessary action to complete the task, and you
     # Web surfer
     await runtime.register(
         "WebSurfer",
-        lambda: MultimodalWebSurfer(), # Configuration is set later by init()
+        lambda: MultimodalWebSurfer(),  # Configuration is set later by init()
         subscriptions=lambda: [DefaultSubscription()],
     )
     web_surfer = AgentProxy(AgentId("WebSurfer", "default"), runtime)
 
-    actual_surfer = await runtime.try_get_underlying_agent_instance(web_surfer.id, type=MultimodalWebSurfer)
-    await actual_surfer.init(model_client=client, downloads_folder=os.getcwd(), browser_channel="chromium")
+    actual_surfer = await runtime.try_get_underlying_agent_instance(
+        web_surfer.id, type=MultimodalWebSurfer
+    )
+    await actual_surfer.init(
+        model_client=client, downloads_folder=os.getcwd(), browser_channel="chromium"
+    )
 
     # Round-robin orchestrator
     await runtime.register(
         "round_robin_orc",
-        lambda: RoundRobinOrchestrator(agents=[web_surfer, login_assistant],),
+        lambda: RoundRobinOrchestrator(
+            agents=[web_surfer, login_assistant],
+        ),
         subscriptions=lambda: [DefaultSubscription()],
     )
     round_robin_orc = AgentProxy(AgentId("round_robin_orc", "default"), runtime)
@@ -168,7 +191,9 @@ Once the user has taken the final necessary action to complete the task, and you
                 topic_id=DefaultTopicId(),
             )
             await runtime.publish_message(
-                BroadcastMessage(content=UserMessage(content=LOGIN_PROMPTS[site], source="human")),
+                BroadcastMessage(
+                    content=UserMessage(content=LOGIN_PROMPTS[site], source="human")
+                ),
                 topic_id=DefaultTopicId(),
             )
             await runtime.stop_when_idle()
@@ -189,7 +214,9 @@ Once the user has taken the final necessary action to complete the task, and you
 
     await runtime.register(
         "ComputerTerminal",
-        lambda: Executor(executor=LocalCommandLineCodeExecutor(), confirm_execution="ACCEPT_ALL"),
+        lambda: Executor(
+            executor=LocalCommandLineCodeExecutor(), confirm_execution="ACCEPT_ALL"
+        ),
         subscriptions=lambda: [DefaultSubscription()],
     )
     executor = AgentProxy(AgentId("ComputerTerminal", "default"), runtime)
@@ -207,7 +234,7 @@ Once the user has taken the final necessary action to complete the task, and you
             agents=[coder, executor, file_surfer, web_surfer],
             model_client=client,
             max_rounds=30,
-            max_time=25*60,
+            max_time=25 * 60,
         ),
         subscriptions=lambda: [DefaultSubscription()],
     )
@@ -233,12 +260,16 @@ Once the user has taken the final necessary action to complete the task, and you
     await runtime.stop_when_idle()
 
     # Output the final answer
-    actual_orchestrator = await runtime.try_get_underlying_agent_instance(orchestrator.id, type=LedgerOrchestrator)
-    transcript: List[LLMMessage] = actual_orchestrator._chat_history # type: ignore
+    actual_orchestrator = await runtime.try_get_underlying_agent_instance(
+        orchestrator.id, type=LedgerOrchestrator
+    )
+    transcript: List[LLMMessage] = actual_orchestrator._chat_history  # type: ignore
 
     orc_metadata = await orchestrator.metadata
     source = orc_metadata["type"]
-    final_answer = await response_preparer(task=TASK["intent"], source=source, client=client, transcript=transcript)
+    final_answer = await response_preparer(
+        task=TASK["intent"], source=source, client=client, transcript=transcript
+    )
 
     m = re.search("FINAL ANSWER:(.*)$", final_answer, re.DOTALL)
     if m:
@@ -259,7 +290,7 @@ Once the user has taken the final necessary action to complete the task, and you
         config_file=config_file,
         page=page,
         client=cdp_session,
-    #    azure_config=llm_config,
+        #    azure_config=llm_config,
     )
 
     print("FINAL SCORE: " + str(score))

@@ -6,7 +6,17 @@ import asyncio
 import os
 from pathlib import Path
 from string import Template
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, List, Optional, Protocol, Sequence, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    List,
+    Optional,
+    Protocol,
+    Sequence,
+    Union,
+)
 from uuid import uuid4
 
 import aiohttp
@@ -37,7 +47,11 @@ A = ParamSpec("A")
 
 class TokenProvider(Protocol):
     def get_token(
-        self, *scopes: str, claims: Optional[str] = None, tenant_id: Optional[str] = None, **kwargs: Any
+        self,
+        *scopes: str,
+        claims: Optional[str] = None,
+        tenant_id: Optional[str] = None,
+        **kwargs: Any,
     ) -> AccessToken: ...
 
 
@@ -75,7 +89,9 @@ class ACADynamicSessionsCodeExecutor(CodeExecutor):
     SUPPORTED_LANGUAGES: ClassVar[List[str]] = [
         "python",
     ]
-    FUNCTION_PROMPT_TEMPLATE: ClassVar[str] = """You have access to the following user defined functions.
+    FUNCTION_PROMPT_TEMPLATE: ClassVar[
+        str
+    ] = """You have access to the following user defined functions.
 
 $functions"""
 
@@ -134,7 +150,9 @@ $functions"""
             scope = "https://dynamicsessions.io"
             self._access_token = self._credential.get_token(scope).token
 
-    def format_functions_for_prompt(self, prompt_template: str = FUNCTION_PROMPT_TEMPLATE) -> str:
+    def format_functions_for_prompt(
+        self, prompt_template: str = FUNCTION_PROMPT_TEMPLATE
+    ) -> str:
         """(Experimental) Format the functions for a prompt.
 
         The template includes one variable:
@@ -175,10 +193,15 @@ $functions"""
         endpoint = self._pool_management_endpoint
         if not endpoint.endswith("/"):
             endpoint += "/"
-        url = endpoint + f"{path}?api-version={self._AZURE_API_VER}&identifier={self._session_id}"
+        url = (
+            endpoint
+            + f"{path}?api-version={self._AZURE_API_VER}&identifier={self._session_id}"
+        )
         return url
 
-    async def get_available_packages(self, cancellation_token: CancellationToken) -> set[str]:
+    async def get_available_packages(
+        self, cancellation_token: CancellationToken
+    ) -> set[str]:
         if self._available_packages is not None:
             return self._available_packages
         avail_pkgs = """
@@ -188,12 +211,16 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
             [CodeBlock(code=avail_pkgs, language="python")], cancellation_token
         )
         if ret.exit_code != 0:
-            raise ValueError(f"Failed to get list of available packages: {ret.output.strip()}")
+            raise ValueError(
+                f"Failed to get list of available packages: {ret.output.strip()}"
+            )
         pkgs = ret.output.strip("[]")
         pkglist = pkgs.split(",\n")
         return {pkg.strip(" '") for pkg in pkglist}
 
-    async def _populate_available_packages(self, cancellation_token: CancellationToken) -> None:
+    async def _populate_available_packages(
+        self, cancellation_token: CancellationToken
+    ) -> None:
         self._available_packages = await self.get_available_packages(cancellation_token)
 
     async def _setup_functions(self, cancellation_token: CancellationToken) -> None:
@@ -201,15 +228,23 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
             self._func_code = build_python_functions_file(self._functions)
 
             # Check required function imports and packages
-            lists_of_packages = [x.python_packages for x in self._functions if isinstance(x, FunctionWithRequirements)]
+            lists_of_packages = [
+                x.python_packages
+                for x in self._functions
+                if isinstance(x, FunctionWithRequirements)
+            ]
             # Should we also be checking the imports?
 
-            flattened_packages = [item for sublist in lists_of_packages for item in sublist]
+            flattened_packages = [
+                item for sublist in lists_of_packages for item in sublist
+            ]
             required_packages = set(flattened_packages)
             if self._available_packages is not None:
                 missing_pkgs = set(required_packages - self._available_packages)
                 if len(missing_pkgs) > 0:
-                    raise ValueError(f"Packages unavailable in environment: {missing_pkgs}")
+                    raise ValueError(
+                        f"Packages unavailable in environment: {missing_pkgs}"
+                    )
 
         # Attempt to load the function file to check for syntax errors, imports etc.
         exec_result = await self._execute_code_dont_check_setup(
@@ -224,7 +259,8 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
     async def _setup_cwd(self, cancellation_token: CancellationToken) -> None:
         # Change the cwd to /mnt/data to properly have access to uploaded files
         exec_result = await self._execute_code_dont_check_setup(
-            [CodeBlock(code="import os; os.chdir('/mnt/data')", language="python")], cancellation_token
+            [CodeBlock(code="import os; os.chdir('/mnt/data')", language="python")],
+            cancellation_token,
         )
 
         if exec_result.exit_code != 0:
@@ -266,7 +302,9 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
             file_info_list.append(file["filename"])
         return file_info_list
 
-    async def upload_files(self, files: List[Union[Path, str]], cancellation_token: CancellationToken) -> None:
+    async def upload_files(
+        self, files: List[Union[Path, str]], cancellation_token: CancellationToken
+    ) -> None:
         self._ensure_access_token()
         # TODO: Better to use the client auth system rather than headers
         headers = {"Authorization": f"Bearer {self._access_token}"}
@@ -310,7 +348,9 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
                     except aiohttp.ClientResponseError as e:
                         raise ConnectionError("Error while uploading files") from e
 
-    async def download_files(self, files: List[Union[Path, str]], cancellation_token: CancellationToken) -> List[str]:
+    async def download_files(
+        self, files: List[Union[Path, str]], cancellation_token: CancellationToken
+    ) -> List[str]:
         self._ensure_access_token()
         available_files = await self.get_file_list(cancellation_token)
         # TODO: Better to use the client auth system rather than headers
@@ -370,7 +410,9 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
         if not self._setup_cwd_complete:
             await self._setup_cwd(cancellation_token)
 
-        return await self._execute_code_dont_check_setup(code_blocks, cancellation_token)
+        return await self._execute_code_dont_check_setup(
+            code_blocks, cancellation_token
+        )
 
     # The http call here should be replaced by an actual Azure client call once its available
     async def _execute_code_dont_check_setup(
@@ -412,7 +454,10 @@ import pkg_resources\n[d.project_name for d in pkg_resources.working_set]
                     if len(missing_pkgs) > 0:
                         # In case the code requires packages that are not available in the environment
                         exitcode = 1
-                        logs_all += "\n" + f"Python packages unavailable in environment: {missing_pkgs}"
+                        logs_all += (
+                            "\n"
+                            + f"Python packages unavailable in environment: {missing_pkgs}"
+                        )
                         break
 
                 properties["code"] = code_block.code

@@ -8,6 +8,7 @@ from typing import Any, Dict
 from pathlib import Path
 import sys
 import os
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -92,7 +93,6 @@ html_logo = "_static/images/logo/logo.svg"
 html_favicon = "_static/images/logo/favicon-512x512.png"
 
 html_theme_options = {
-
     "header_links_before_dropdown": 6,
     "navbar_align": "left",
     "check_switcher": False,
@@ -116,9 +116,8 @@ html_theme_options = {
             "name": "Twitter",
             "url": "https://twitter.com/pyautogen",
             "icon": "fa-brands fa-twitter",
-        }
+        },
     ],
-
     "footer_start": ["copyright"],
     "footer_center": ["footer-middle-links"],
     "footer_end": ["theme-version", "version-banner-override"],
@@ -131,8 +130,8 @@ html_theme_options = {
     },
     "show_version_warning_banner": True,
     "external_links": [
-      {"name": "0.2 Docs", "url": "https://microsoft.github.io/autogen/0.2/"},
-    ]
+        {"name": "0.2 Docs", "url": "https://microsoft.github.io/autogen/0.2/"},
+    ],
 }
 
 html_js_files = ["custom-icon.js", "banner-override.js"]
@@ -145,7 +144,7 @@ html_sidebars = {
 }
 
 html_context = {
-    'display_github': True,
+    "display_github": True,
     "github_user": "microsoft",
     "github_repo": "autogen",
     "github_version": "main",
@@ -166,9 +165,9 @@ intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 code_lint_path_prefix = "reference/python"
 
 nb_mime_priority_overrides = [
-  ('code_lint', 'image/jpeg', 100),
-  ('code_lint', 'image/png', 100),
-  ('code_lint', 'text/plain', 100)
+    ("code_lint", "image/jpeg", 100),
+    ("code_lint", "image/png", 100),
+    ("code_lint", "text/plain", 100),
 ]
 
 rediraffe_redirects = {
@@ -193,7 +192,7 @@ def setup_to_main(
         """
         links = link.split("/")
         idx = links.index("edit")
-        return "/".join(links[: idx + 1]) + "/main/" + "/".join(links[idx + 2:])
+        return "/".join(links[: idx + 1]) + "/main/" + "/".join(links[idx + 2 :])
 
     context["to_main"] = to_main
 

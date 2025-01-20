@@ -31,14 +31,13 @@ Find community samples and examples of how to use AutoGen
 
 ::::
 
-
 ## List of community projects
 
-| Name | Package | Description |
-|---|---|---|
-| [autogen-watsonx-client](https://github.com/tsinggggg/autogen-watsonx-client)  | [PyPi](https://pypi.org/project/autogen-watsonx-client/) | Model client for [IBM watsonx.ai](https://www.ibm.com/products/watsonx-ai) |
-| [autogen-openaiext-client](https://github.com/vballoli/autogen-openaiext-client)  | [PyPi](https://pypi.org/project/autogen-openaiext-client/) | Model client for other LLMs like Gemini, etc. through the OpenAI API |
-| [autogen-ext-mcp](https://github.com/richard-gyiko/autogen-ext-mcp) | [PyPi](https://pypi.org/project/autogen-ext-mcp/) | Tool adapter for Model Context Protocol server tools |
+| Name                                                                             | Package                                                    | Description                                                                |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [autogen-watsonx-client](https://github.com/tsinggggg/autogen-watsonx-client)    | [PyPi](https://pypi.org/project/autogen-watsonx-client/)   | Model client for [IBM watsonx.ai](https://www.ibm.com/products/watsonx-ai) |
+| [autogen-openaiext-client](https://github.com/vballoli/autogen-openaiext-client) | [PyPi](https://pypi.org/project/autogen-openaiext-client/) | Model client for other LLMs like Gemini, etc. through the OpenAI API       |
+| [autogen-ext-mcp](https://github.com/richard-gyiko/autogen-ext-mcp)              | [PyPi](https://pypi.org/project/autogen-ext-mcp/)          | Tool adapter for Model Context Protocol server tools                       |
 
 <!-- Example -->
 <!-- | [My Model Client](https://github.com/example)  | [PyPi](https://pypi.org/project/example) | Model client for my custom model service | -->

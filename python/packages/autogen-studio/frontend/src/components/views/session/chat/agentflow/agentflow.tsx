@@ -58,7 +58,7 @@ const NODE_DIMENSIONS = {
 const getLayoutedElements = (
   nodes: Node[],
   edges: CustomEdge[],
-  direction: "TB" | "LR"
+  direction: "TB" | "LR",
 ) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
@@ -129,7 +129,7 @@ const getLayoutedElements = (
         x: node.position.x + NODE_DIMENSIONS.default.width / 2,
         y: node.position.y + NODE_DIMENSIONS.default.height / 2,
       },
-    ])
+    ]),
   );
 
   const positionedEdges = edges.map((edge) => {
@@ -153,7 +153,7 @@ const createNode = (
   type: "user" | "agent" | "end",
   agentConfig?: AgentConfig,
   isActive: boolean = false,
-  run?: Run
+  run?: Run,
 ): Node => {
   const isProcessing =
     run?.status === "active" || run?.status === "awaiting_input";
@@ -282,7 +282,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
       // Add first message node if it exists
       if (messages.length > 0) {
         const firstAgentConfig = teamConfig.participants.find(
-          (p) => p.name === messages[0].source
+          (p) => p.name === messages[0].source,
         );
         nodeMap.set(
           messages[0].source,
@@ -291,8 +291,8 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
             messages[0].source === "user" ? "user" : "agent",
             firstAgentConfig,
             false,
-            run
-          )
+            run,
+          ),
         );
       }
 
@@ -323,7 +323,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
 
         if (!nodeMap.has(nextMsg.source)) {
           const agentConfig = teamConfig.participants.find(
-            (p) => p.name === nextMsg.source
+            (p) => p.name === nextMsg.source,
           );
           nodeMap.set(
             nextMsg.source,
@@ -332,8 +332,8 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
               nextMsg.source === "user" ? "user" : "agent",
               agentConfig,
               false,
-              run
-            )
+              run,
+            ),
           );
         }
       }
@@ -385,7 +385,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
             transition: MessageSequence,
             isSecondary: boolean,
             edgeId: string,
-            pairedEdgeId: string
+            pairedEdgeId: string,
           ): CustomEdge => ({
             id: edgeId,
             source: transition.source,
@@ -408,14 +408,14 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
               transitionCounts.get(forwardKey)!,
               false,
               forwardEdgeId,
-              reverseEdgeId
+              reverseEdgeId,
             ),
             createBidirectionalEdge(
               transitionCounts.get(reverseKey)!,
               true,
               reverseEdgeId,
-              forwardEdgeId
-            )
+              forwardEdgeId,
+            ),
           );
 
           processedKeys.add(forwardKey);
@@ -479,7 +479,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
 
       return { nodes: Array.from(nodeMap.values()), edges: newEdges };
     },
-    [teamConfig.participants, run, settings]
+    [teamConfig.participants, run, settings],
   );
 
   const handleToggleFullscreen = useCallback(() => {
@@ -502,12 +502,12 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
 
   useEffect(() => {
     const { nodes: newNodes, edges: newEdges } = processMessages(
-      run.messages.map((m) => m.config)
+      run.messages.map((m) => m.config),
     );
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       newNodes,
       newEdges,
-      settings.direction
+      settings.direction,
     );
 
     setNodes(layoutedNodes);
@@ -544,7 +544,7 @@ const AgentFlow: React.FC<AgentFlowProps> = ({ teamConfig, run }) => {
       onToggleFullscreen: handleToggleFullscreen,
       onResetView: () => fitView({ padding: 0.2, duration: 200 }),
     }),
-    [isFullscreen, handleToggleFullscreen, fitView]
+    [isFullscreen, handleToggleFullscreen, fitView],
   );
 
   return (

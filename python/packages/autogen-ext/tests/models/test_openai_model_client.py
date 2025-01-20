@@ -16,9 +16,15 @@ from autogen_core.models import (
 )
 from autogen_core.models._model_client import ModelFamily
 from autogen_core.tools import BaseTool, FunctionTool
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
+from autogen_ext.models.openai import (
+    AzureOpenAIChatCompletionClient,
+    OpenAIChatCompletionClient,
+)
 from autogen_ext.models.openai._model_info import resolve_model
-from autogen_ext.models.openai._openai_client import calculate_vision_tokens, convert_tools
+from autogen_ext.models.openai._openai_client import (
+    calculate_vision_tokens,
+    convert_tools,
+)
 from openai.resources.chat.completions import AsyncCompletions
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDelta
@@ -42,7 +48,9 @@ class MockChunkDefinition(BaseModel):
     usage: CompletionUsage | None
 
 
-async def _mock_create_stream(*args: Any, **kwargs: Any) -> AsyncGenerator[ChatCompletionChunk, None]:
+async def _mock_create_stream(
+    *args: Any, **kwargs: Any
+) -> AsyncGenerator[ChatCompletionChunk, None]:
     model = resolve_model(kwargs.get("model", "gpt-4o"))
     mock_chunks_content = ["Hello", " Another Hello", " Yet Another Hello"]
 
@@ -93,7 +101,9 @@ async def _mock_create_stream(*args: Any, **kwargs: Any) -> AsyncGenerator[ChatC
                         role="assistant",
                     ),
                 ),
-                usage=CompletionUsage(prompt_tokens=3, completion_tokens=3, total_tokens=6),
+                usage=CompletionUsage(
+                    prompt_tokens=3, completion_tokens=3, total_tokens=6
+                ),
             )
         ]
     elif kwargs.get("stream_options", {}).get("include_usage") is False:
@@ -113,7 +123,9 @@ async def _mock_create_stream(*args: Any, **kwargs: Any) -> AsyncGenerator[ChatC
         )
 
 
-async def _mock_create(*args: Any, **kwargs: Any) -> ChatCompletion | AsyncGenerator[ChatCompletionChunk, None]:
+async def _mock_create(
+    *args: Any, **kwargs: Any
+) -> ChatCompletion | AsyncGenerator[ChatCompletionChunk, None]:
     stream = kwargs.get("stream", False)
     model = resolve_model(kwargs.get("model", "gpt-4o"))
     if not stream:
@@ -121,7 +133,11 @@ async def _mock_create(*args: Any, **kwargs: Any) -> ChatCompletion | AsyncGener
         return ChatCompletion(
             id="id",
             choices=[
-                Choice(finish_reason="stop", index=0, message=ChatCompletionMessage(content="Hello", role="assistant"))
+                Choice(
+                    finish_reason="stop",
+                    index=0,
+                    message=ChatCompletionMessage(content="Hello", role="assistant"),
+                )
             ],
             created=0,
             model=model,
@@ -141,13 +157,20 @@ async def test_openai_chat_completion_client() -> None:
 @pytest.mark.asyncio
 async def test_custom_model_with_capabilities() -> None:
     with pytest.raises(ValueError, match="model_info is required"):
-        client = OpenAIChatCompletionClient(model="dummy_model", base_url="https://api.dummy.com/v0", api_key="api_key")
+        client = OpenAIChatCompletionClient(
+            model="dummy_model", base_url="https://api.dummy.com/v0", api_key="api_key"
+        )
 
     client = OpenAIChatCompletionClient(
         model="dummy_model",
         base_url="https://api.dummy.com/v0",
         api_key="api_key",
-        model_info={"vision": False, "function_calling": False, "json_output": False, "family": ModelFamily.UNKNOWN},
+        model_info={
+            "vision": False,
+            "function_calling": False,
+            "json_output": False,
+            "family": ModelFamily.UNKNOWN,
+        },
     )
     assert client
 
@@ -160,13 +183,20 @@ async def test_azure_openai_chat_completion_client() -> None:
         api_key="api_key",
         api_version="2020-08-04",
         azure_endpoint="https://dummy.com",
-        model_info={"vision": True, "function_calling": True, "json_output": True, "family": ModelFamily.GPT_4O},
+        model_info={
+            "vision": True,
+            "function_calling": True,
+            "json_output": True,
+            "family": ModelFamily.GPT_4O,
+        },
     )
     assert client
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_create(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_create(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(AsyncCompletions, "create", _mock_create)
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     result = await client.create(messages=[UserMessage(content="Hello", source="user")])
@@ -174,7 +204,9 @@ async def test_openai_chat_completion_client_create(monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_create_stream_with_usage(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_create_stream_with_usage(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(AsyncCompletions, "create", _mock_create)
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     chunks: List[str | CreateResult] = []
@@ -193,7 +225,9 @@ async def test_openai_chat_completion_client_create_stream_with_usage(monkeypatc
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_create_stream_no_usage_default(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_create_stream_no_usage_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(AsyncCompletions, "create", _mock_create)
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     chunks: List[str | CreateResult] = []
@@ -214,7 +248,9 @@ async def test_openai_chat_completion_client_create_stream_no_usage_default(monk
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_create_stream_no_usage_explicit(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_create_stream_no_usage_explicit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(AsyncCompletions, "create", _mock_create)
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     chunks: List[str | CreateResult] = []
@@ -235,12 +271,17 @@ async def test_openai_chat_completion_client_create_stream_no_usage_explicit(mon
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_create_cancel(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_create_cancel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(AsyncCompletions, "create", _mock_create)
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     cancellation_token = CancellationToken()
     task = asyncio.create_task(
-        client.create(messages=[UserMessage(content="Hello", source="user")], cancellation_token=cancellation_token)
+        client.create(
+            messages=[UserMessage(content="Hello", source="user")],
+            cancellation_token=cancellation_token,
+        )
     )
     cancellation_token.cancel()
     with pytest.raises(asyncio.CancelledError):
@@ -248,12 +289,15 @@ async def test_openai_chat_completion_client_create_cancel(monkeypatch: pytest.M
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_create_stream_cancel(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_create_stream_cancel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(AsyncCompletions, "create", _mock_create)
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     cancellation_token = CancellationToken()
     stream = client.create_stream(
-        messages=[UserMessage(content="Hello", source="user")], cancellation_token=cancellation_token
+        messages=[UserMessage(content="Hello", source="user")],
+        cancellation_token=cancellation_token,
     )
     assert await anext(stream)
     cancellation_token.cancel()
@@ -263,7 +307,9 @@ async def test_openai_chat_completion_client_create_stream_cancel(monkeypatch: p
 
 
 @pytest.mark.asyncio
-async def test_openai_chat_completion_client_count_tokens(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_openai_chat_completion_client_count_tokens(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     client = OpenAIChatCompletionClient(model="gpt-4o", api_key="api_key")
     messages: List[LLMMessage] = [
         SystemMessage(content="Hello"),
@@ -278,7 +324,9 @@ async def test_openai_chat_completion_client_count_tokens(monkeypatch: pytest.Mo
             ],
             source="user",
         ),
-        FunctionExecutionResultMessage(content=[FunctionExecutionResult(content="Hello", call_id="1")]),
+        FunctionExecutionResultMessage(
+            content=[FunctionExecutionResult(content="Hello", call_id="1")]
+        ),
     ]
 
     def tool1(test: str, test2: str) -> str:
@@ -287,10 +335,16 @@ async def test_openai_chat_completion_client_count_tokens(monkeypatch: pytest.Mo
     def tool2(test1: int, test2: List[int]) -> str:
         return str(test1) + str(test2)
 
-    tools = [FunctionTool(tool1, description="example tool 1"), FunctionTool(tool2, description="example tool 2")]
+    tools = [
+        FunctionTool(tool1, description="example tool 1"),
+        FunctionTool(tool2, description="example tool 2"),
+    ]
 
     mockcalculate_vision_tokens = MagicMock()
-    monkeypatch.setattr("autogen_ext.models.openai._openai_client.calculate_vision_tokens", mockcalculate_vision_tokens)
+    monkeypatch.setattr(
+        "autogen_ext.models.openai._openai_client.calculate_vision_tokens",
+        mockcalculate_vision_tokens,
+    )
 
     num_tokens = client.count_tokens(messages, tools=tools)
     assert num_tokens
@@ -312,7 +366,9 @@ async def test_openai_chat_completion_client_count_tokens(monkeypatch: pytest.Mo
         ((512, 1024), 425),
     ],
 )
-def test_openai_count_image_tokens(mock_size: Tuple[int, int], expected_num_tokens: int) -> None:
+def test_openai_count_image_tokens(
+    mock_size: Tuple[int, int], expected_num_tokens: int
+) -> None:
     # Step 1: Mock the Image class with only the 'image' attribute
     mock_image_attr = MagicMock()
     mock_image_attr.size = mock_size
@@ -326,7 +382,9 @@ def test_openai_count_image_tokens(mock_size: Tuple[int, int], expected_num_toke
 
 
 def test_convert_tools_accepts_both_func_tool_and_schema() -> None:
-    def my_function(arg: str, other: Annotated[int, "int arg"], nonrequired: int = 5) -> MyResult:
+    def my_function(
+        arg: str, other: Annotated[int, "int arg"], nonrequired: int = 5
+    ) -> MyResult:
         return MyResult(result="test")
 
     tool = FunctionTool(my_function, description="Function tool.")
@@ -348,7 +406,9 @@ def test_convert_tools_accepts_both_tool_and_schema() -> None:
                 description="Description of test tool.",
             )
 
-        async def run(self, args: MyArgs, cancellation_token: CancellationToken) -> MyResult:
+        async def run(
+            self, args: MyArgs, cancellation_token: CancellationToken
+        ) -> MyResult:
             return MyResult(result="value")
 
     tool = MyTool()

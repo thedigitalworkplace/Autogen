@@ -58,7 +58,9 @@ def function_missing_reqs() -> "polars.DataFrame":
 async def test_can_load_function_with_reqs() -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         cancellation_token = CancellationToken()
-        executor = LocalCommandLineCodeExecutor(work_dir=temp_dir, functions=[load_data])
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=temp_dir, functions=[load_data]
+        )
         code = f"""from {executor.functions_module} import load_data
 import polars
 
@@ -81,7 +83,9 @@ def test_local_formatted_prompt() -> None:
     """Add two numbers together."""
 '''
     with tempfile.TemporaryDirectory() as temp_dir:
-        executor = LocalCommandLineCodeExecutor(work_dir=temp_dir, functions=[add_two_numbers])
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=temp_dir, functions=[add_two_numbers]
+        )
 
         result = executor.format_functions_for_prompt()
         assert assert_str in result
@@ -111,7 +115,9 @@ def add_two_numbers(a: int, b: int) -> int:
 async def test_can_load_function() -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         cancellation_token = CancellationToken()
-        executor = LocalCommandLineCodeExecutor(work_dir=temp_dir, functions=[add_two_numbers])
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=temp_dir, functions=[add_two_numbers]
+        )
         code = f"""from {executor.functions_module} import add_two_numbers
 print(add_two_numbers(1, 2))"""
 
@@ -129,7 +135,9 @@ print(add_two_numbers(1, 2))"""
 async def test_fails_for_function_incorrect_import() -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         cancellation_token = CancellationToken()
-        executor = LocalCommandLineCodeExecutor(work_dir=temp_dir, functions=[function_incorrect_import])
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=temp_dir, functions=[function_incorrect_import]
+        )
         code = f"""from {executor.functions_module} import function_incorrect_import
 function_incorrect_import()"""
 
@@ -146,7 +154,9 @@ function_incorrect_import()"""
 async def test_fails_for_function_incorrect_dep() -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         cancellation_token = CancellationToken()
-        executor = LocalCommandLineCodeExecutor(work_dir=temp_dir, functions=[function_incorrect_dep])
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=temp_dir, functions=[function_incorrect_dep]
+        )
         code = f"""from {executor.functions_module} import function_incorrect_dep
 function_incorrect_dep()"""
 

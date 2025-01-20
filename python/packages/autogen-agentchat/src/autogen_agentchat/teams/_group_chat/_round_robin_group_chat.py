@@ -56,7 +56,9 @@ class RoundRobinGroupChatManager(BaseGroupChatManager):
     async def select_speaker(self, thread: List[AgentEvent | ChatMessage]) -> str:
         """Select a speaker from the participants in a round-robin fashion."""
         current_speaker_index = self._next_speaker_index
-        self._next_speaker_index = (current_speaker_index + 1) % len(self._participant_topic_types)
+        self._next_speaker_index = (current_speaker_index + 1) % len(
+            self._participant_topic_types
+        )
         current_speaker = self._participant_topic_types[current_speaker_index]
         return current_speaker
 

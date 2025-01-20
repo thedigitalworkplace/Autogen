@@ -44,7 +44,9 @@ class DisplayQuizTool(BaseTool[DisplayQuizArgs, QuizResponses]):
             ),
         )
 
-    async def run(self, args: DisplayQuizArgs, cancellation_token: CancellationToken) -> QuizResponses:
+    async def run(
+        self, args: DisplayQuizArgs, cancellation_token: CancellationToken
+    ) -> QuizResponses:
         responses: List[str] = []
         for q in args.questions:
             if q.question_type == QuestionType.MULTIPLE_CHOICE:
@@ -73,13 +75,17 @@ def client() -> AsyncAzureOpenAI:
                 DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
             )
             return AsyncAzureOpenAI(
-                azure_endpoint=azure_endpoint, api_version=api_version, azure_ad_token_provider=token_provider
+                azure_endpoint=azure_endpoint,
+                api_version=api_version,
+                azure_ad_token_provider=token_provider,
             )
         except Exception:
             pytest.skip("Failed to get Azure CLI credentials and no API key provided")
 
     # Fall back to API key auth if provided
-    return AsyncAzureOpenAI(azure_endpoint=azure_endpoint, api_version=api_version, api_key=api_key)
+    return AsyncAzureOpenAI(
+        azure_endpoint=azure_endpoint, api_version=api_version, api_key=api_key
+    )
 
 
 @pytest.fixture
@@ -106,11 +112,17 @@ def cancellation_token() -> CancellationToken:
 
 
 @pytest.mark.asyncio
-async def test_file_retrieval(agent: OpenAIAssistantAgent, cancellation_token: CancellationToken) -> None:
-    file_path = r"C:\Users\lpinheiro\Github\autogen-test\data\SampleBooks\jungle_book.txt"
+async def test_file_retrieval(
+    agent: OpenAIAssistantAgent, cancellation_token: CancellationToken
+) -> None:
+    file_path = (
+        r"C:\Users\lpinheiro\Github\autogen-test\data\SampleBooks\jungle_book.txt"
+    )
     await agent.on_upload_for_file_search(file_path, cancellation_token)
 
-    message = TextMessage(source="user", content="What is the first sentence of the jungle scout book?")
+    message = TextMessage(
+        source="user", content="What is the first sentence of the jungle scout book?"
+    )
     response = await agent.on_messages([message], cancellation_token)
 
     assert response.chat_message.content is not None
@@ -123,8 +135,13 @@ async def test_file_retrieval(agent: OpenAIAssistantAgent, cancellation_token: C
 
 
 @pytest.mark.asyncio
-async def test_code_interpreter(agent: OpenAIAssistantAgent, cancellation_token: CancellationToken) -> None:
-    message = TextMessage(source="user", content="I need to solve the equation `3x + 11 = 14`. Can you help me?")
+async def test_code_interpreter(
+    agent: OpenAIAssistantAgent, cancellation_token: CancellationToken
+) -> None:
+    message = TextMessage(
+        source="user",
+        content="I need to solve the equation `3x + 11 = 14`. Can you help me?",
+    )
     response = await agent.on_messages([message], cancellation_token)
 
     assert response.chat_message.content is not None
@@ -136,7 +153,9 @@ async def test_code_interpreter(agent: OpenAIAssistantAgent, cancellation_token:
 
 
 @pytest.mark.asyncio
-async def test_quiz_creation(agent: OpenAIAssistantAgent, cancellation_token: CancellationToken) -> None:
+async def test_quiz_creation(
+    agent: OpenAIAssistantAgent, cancellation_token: CancellationToken
+) -> None:
     message = TextMessage(
         source="user",
         content="Create a short quiz about basic math with one multiple choice question and one free response question.",
@@ -147,13 +166,19 @@ async def test_quiz_creation(agent: OpenAIAssistantAgent, cancellation_token: Ca
     assert isinstance(response.chat_message.content, str)
     assert len(response.chat_message.content) > 0
     assert isinstance(response.inner_messages, list)
-    assert any(tool_msg.content for tool_msg in response.inner_messages if hasattr(tool_msg, "content"))
+    assert any(
+        tool_msg.content
+        for tool_msg in response.inner_messages
+        if hasattr(tool_msg, "content")
+    )
 
     await agent.delete_assistant(cancellation_token)
 
 
 @pytest.mark.asyncio
-async def test_on_reset_behavior(client: AsyncAzureOpenAI, cancellation_token: CancellationToken) -> None:
+async def test_on_reset_behavior(
+    client: AsyncAzureOpenAI, cancellation_token: CancellationToken
+) -> None:
     # Create thread with initial message
     thread = await client.beta.threads.create()
     await client.beta.threads.messages.create(

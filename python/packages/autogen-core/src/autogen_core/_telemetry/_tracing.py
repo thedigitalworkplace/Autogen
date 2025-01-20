@@ -20,11 +20,13 @@ class TraceHelper(Generic[Operation, Destination, ExtraAttributes]):
     def __init__(
         self,
         tracer_provider: TracerProvider | None,
-        instrumentation_builder_config: TracingConfig[Operation, Destination, ExtraAttributes],
+        instrumentation_builder_config: TracingConfig[
+            Operation, Destination, ExtraAttributes
+        ],
     ) -> None:
-        self.tracer = (tracer_provider if tracer_provider else NoOpTracerProvider()).get_tracer(
-            f"autogen {instrumentation_builder_config.name}"
-        )
+        self.tracer = (
+            tracer_provider if tracer_provider else NoOpTracerProvider()
+        ).get_tracer(f"autogen {instrumentation_builder_config.name}")
         self.instrumentation_builder_config = instrumentation_builder_config
 
     @contextlib.contextmanager
@@ -65,14 +67,18 @@ class TraceHelper(Generic[Operation, Destination, ExtraAttributes]):
             Iterator[Span]: The span object.
 
         """
-        span_name = self.instrumentation_builder_config.get_span_name(operation, destination)
+        span_name = self.instrumentation_builder_config.get_span_name(
+            operation, destination
+        )
         span_kind = kind or self.instrumentation_builder_config.get_span_kind(operation)
         context = get_telemetry_context(parent) if parent else None
         attributes_with_defaults: Dict[str, types.AttributeValue] = {}
         for key, value in (attributes or {}).items():
             attributes_with_defaults[key] = value
-        instrumentation_attributes = self.instrumentation_builder_config.build_attributes(
-            operation, destination, extraAttributes
+        instrumentation_attributes = (
+            self.instrumentation_builder_config.build_attributes(
+                operation, destination, extraAttributes
+            )
         )
         for key, value in instrumentation_attributes.items():
             attributes_with_defaults[key] = value

@@ -121,17 +121,17 @@ export const ComponentLibrary: React.FC<LibraryProps> = () => {
           (termination) => ({
             label: `${termination.termination_type}`,
             config: termination,
-          })
+          }),
         ),
         icon: <Timer className="w-4 h-4" />,
       },
     ],
-    [defaultGallery]
+    [defaultGallery],
   );
 
   const items: CollapseProps["items"] = sections.map((section) => {
     const filteredItems = section.items.filter((item) =>
-      item.label.toLowerCase().includes(searchTerm.toLowerCase())
+      item.label.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
     return {

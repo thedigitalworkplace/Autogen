@@ -231,7 +231,9 @@ class AssistantAgent(BaseChatAgent):
         name: str,
         model_client: ChatCompletionClient,
         *,
-        tools: List[Tool | Callable[..., Any] | Callable[..., Awaitable[Any]]] | None = None,
+        tools: (
+            List[Tool | Callable[..., Any] | Callable[..., Awaitable[Any]]] | None
+        ) = None,
         handoffs: List[HandoffBase | str] | None = None,
         model_context: ChatCompletionContext | None = None,
         description: str = "An agent that provides assistance with ability to use tools.",
@@ -271,7 +273,9 @@ class AssistantAgent(BaseChatAgent):
         self._handoffs: Dict[str, HandoffBase] = {}
         if handoffs is not None:
             if model_client.model_info["function_calling"] is False:
-                raise ValueError("The model does not support function calling, which is needed for handoffs.")
+                raise ValueError(
+                    "The model does not support function calling, which is needed for handoffs."
+                )
             for handoff in handoffs:
                 if isinstance(handoff, str):
                     handoff = HandoffBase(target=handoff)
@@ -307,7 +311,9 @@ class AssistantAgent(BaseChatAgent):
             message_types.append(ToolCallSummaryMessage)
         return tuple(message_types)
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         async for message in self.on_messages_stream(messages, cancellation_token):
             if isinstance(message, Response):
                 return message
@@ -318,9 +324,14 @@ class AssistantAgent(BaseChatAgent):
     ) -> AsyncGenerator[AgentEvent | ChatMessage | Response, None]:
         # Add messages to the model context.
         for msg in messages:
-            if isinstance(msg, MultiModalMessage) and self._model_client.model_info["vision"] is False:
+            if (
+                isinstance(msg, MultiModalMessage)
+                and self._model_client.model_info["vision"] is False
+            ):
                 raise ValueError("The model does not support vision.")
-            await self._model_context.add_message(UserMessage(content=msg.content, source=msg.source))
+            await self._model_context.add_message(
+                UserMessage(content=msg.content, source=msg.source)
+            )
 
         # Inner messages.
         inner_messages: List[AgentEvent | ChatMessage] = []
@@ -328,33 +339,50 @@ class AssistantAgent(BaseChatAgent):
         # Generate an inference result based on the current model context.
         llm_messages = self._system_messages + await self._model_context.get_messages()
         result = await self._model_client.create(
-            llm_messages, tools=self._tools + self._handoff_tools, cancellation_token=cancellation_token
+            llm_messages,
+            tools=self._tools + self._handoff_tools,
+            cancellation_token=cancellation_token,
         )
 
         # Add the response to the model context.
-        await self._model_context.add_message(AssistantMessage(content=result.content, source=self.name))
+        await self._model_context.add_message(
+            AssistantMessage(content=result.content, source=self.name)
+        )
 
         # Check if the response is a string and return it.
         if isinstance(result.content, str):
             yield Response(
-                chat_message=TextMessage(content=result.content, source=self.name, models_usage=result.usage),
+                chat_message=TextMessage(
+                    content=result.content, source=self.name, models_usage=result.usage
+                ),
                 inner_messages=inner_messages,
             )
             return
 
         # Process tool calls.
-        assert isinstance(result.content, list) and all(isinstance(item, FunctionCall) for item in result.content)
-        tool_call_msg = ToolCallRequestEvent(content=result.content, source=self.name, models_usage=result.usage)
+        assert isinstance(result.content, list) and all(
+            isinstance(item, FunctionCall) for item in result.content
+        )
+        tool_call_msg = ToolCallRequestEvent(
+            content=result.content, source=self.name, models_usage=result.usage
+        )
         event_logger.debug(tool_call_msg)
         # Add the tool call message to the output.
         inner_messages.append(tool_call_msg)
         yield tool_call_msg
 
         # Execute the tool calls.
-        results = await asyncio.gather(*[self._execute_tool_call(call, cancellation_token) for call in result.content])
+        results = await asyncio.gather(
+            *[
+                self._execute_tool_call(call, cancellation_token)
+                for call in result.content
+            ]
+        )
         tool_call_result_msg = ToolCallExecutionEvent(content=results, source=self.name)
         event_logger.debug(tool_call_result_msg)
-        await self._model_context.add_message(FunctionExecutionResultMessage(content=results))
+        await self._model_context.add_message(
+            FunctionExecutionResultMessage(content=results)
+        )
         inner_messages.append(tool_call_result_msg)
         yield tool_call_result_msg
 
@@ -372,21 +400,33 @@ class AssistantAgent(BaseChatAgent):
                 )
             # Return the output messages to signal the handoff.
             yield Response(
-                chat_message=HandoffMessage(content=handoffs[0].message, target=handoffs[0].target, source=self.name),
+                chat_message=HandoffMessage(
+                    content=handoffs[0].message,
+                    target=handoffs[0].target,
+                    source=self.name,
+                ),
                 inner_messages=inner_messages,
             )
             return
 
         if self._reflect_on_tool_use:
             # Generate another inference result based on the tool call and result.
-            llm_messages = self._system_messages + await self._model_context.get_messages()
-            result = await self._model_client.create(llm_messages, cancellation_token=cancellation_token)
+            llm_messages = (
+                self._system_messages + await self._model_context.get_messages()
+            )
+            result = await self._model_client.create(
+                llm_messages, cancellation_token=cancellation_token
+            )
             assert isinstance(result.content, str)
             # Add the response to the model context.
-            await self._model_context.add_message(AssistantMessage(content=result.content, source=self.name))
+            await self._model_context.add_message(
+                AssistantMessage(content=result.content, source=self.name)
+            )
             # Yield the response.
             yield Response(
-                chat_message=TextMessage(content=result.content, source=self.name, models_usage=result.usage),
+                chat_message=TextMessage(
+                    content=result.content, source=self.name, models_usage=result.usage
+                ),
                 inner_messages=inner_messages,
             )
         else:
@@ -402,7 +442,9 @@ class AssistantAgent(BaseChatAgent):
                 )
             tool_call_summary = "\n".join(tool_call_summaries)
             yield Response(
-                chat_message=ToolCallSummaryMessage(content=tool_call_summary, source=self.name),
+                chat_message=ToolCallSummaryMessage(
+                    content=tool_call_summary, source=self.name
+                ),
                 inner_messages=inner_messages,
             )
 
@@ -413,7 +455,14 @@ class AssistantAgent(BaseChatAgent):
         try:
             if not self._tools + self._handoff_tools:
                 raise ValueError("No tools are available.")
-            tool = next((t for t in self._tools + self._handoff_tools if t.name == tool_call.name), None)
+            tool = next(
+                (
+                    t
+                    for t in self._tools + self._handoff_tools
+                    if t.name == tool_call.name
+                ),
+                None,
+            )
             if tool is None:
                 raise ValueError(f"The tool '{tool_call.name}' is not available.")
             arguments = json.loads(tool_call.arguments)

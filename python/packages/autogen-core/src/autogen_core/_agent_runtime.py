@@ -1,7 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Awaitable, Callable, Mapping, Protocol, Type, TypeVar, overload, runtime_checkable
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Mapping,
+    Protocol,
+    Type,
+    TypeVar,
+    overload,
+    runtime_checkable,
+)
 
 from ._agent import Agent
 from ._agent_id import AgentId
@@ -154,10 +164,17 @@ class AgentRuntime(Protocol):
     async def get(self, id: AgentId, /, *, lazy: bool = ...) -> AgentId: ...
 
     @overload
-    async def get(self, type: AgentType | str, /, key: str = ..., *, lazy: bool = ...) -> AgentId: ...
+    async def get(
+        self, type: AgentType | str, /, key: str = ..., *, lazy: bool = ...
+    ) -> AgentId: ...
 
     async def get(
-        self, id_or_type: AgentId | AgentType | str, /, key: str = "default", *, lazy: bool = True
+        self,
+        id_or_type: AgentId | AgentType | str,
+        /,
+        key: str = "default",
+        *,
+        lazy: bool = True,
     ) -> AgentId: ...
 
     async def save_state(self) -> Mapping[str, Any]:
@@ -230,7 +247,9 @@ class AgentRuntime(Protocol):
         """
         ...
 
-    def add_message_serializer(self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]) -> None:
+    def add_message_serializer(
+        self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]
+    ) -> None:
         """Add a new message serialization serializer to the runtime
 
         Note: This will deduplicate serializers based on the type_name and data_content_type properties

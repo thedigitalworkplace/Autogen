@@ -72,7 +72,7 @@ Use GitHub [Discussions](https://github.com/microsoft/autogen/discussions) for g
 
 ### Do you use Discord for communications?
 
-We are unable to use the old Discord for project discussions, many of the maintainers no longer have viewing or posting rights there. Therefore, we request that all discussions take place on <https://github.com/microsoft/autogen/discussions/>  or the [new discord server](https://aka.ms/autogen-discord).
+We are unable to use the old Discord for project discussions, many of the maintainers no longer have viewing or posting rights there. Therefore, we request that all discussions take place on <https://github.com/microsoft/autogen/discussions/> or the [new discord server](https://aka.ms/autogen-discord).
 
 ### What about forks?
 

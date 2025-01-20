@@ -14,7 +14,9 @@ class EnvelopeMetadata:
     tracestate: Optional[str] = None
 
 
-def _get_carrier_for_envelope_metadata(envelope_metadata: EnvelopeMetadata) -> Dict[str, str]:
+def _get_carrier_for_envelope_metadata(
+    envelope_metadata: EnvelopeMetadata,
+) -> Dict[str, str]:
     carrier: Dict[str, str] = {}
     if envelope_metadata.traceparent is not None:
         carrier["traceparent"] = envelope_metadata.traceparent
@@ -38,7 +40,9 @@ def get_telemetry_envelope_metadata() -> EnvelopeMetadata:
     )
 
 
-def _get_carrier_for_remote_call_metadata(remote_call_metadata: Mapping[str, str]) -> Dict[str, str]:
+def _get_carrier_for_remote_call_metadata(
+    remote_call_metadata: Mapping[str, str]
+) -> Dict[str, str]:
     carrier: Dict[str, str] = {}
     traceparent = remote_call_metadata.get("traceparent")
     tracestate = remote_call_metadata.get("tracestate")
@@ -49,7 +53,9 @@ def _get_carrier_for_remote_call_metadata(remote_call_metadata: Mapping[str, str
     return carrier
 
 
-def get_telemetry_grpc_metadata(existingMetadata: Optional[Mapping[str, str]] = None) -> Dict[str, str]:
+def get_telemetry_grpc_metadata(
+    existingMetadata: Optional[Mapping[str, str]] = None
+) -> Dict[str, str]:
     """
     Retrieves the telemetry gRPC metadata.
 

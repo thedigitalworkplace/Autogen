@@ -17,7 +17,9 @@ class DefaultSubscription(TypeSubscription):
         agent_type (str, optional): The agent type to use for the subscription. Defaults to None, in which case it will attempt to detect the agent type based on the instantiation context.
     """
 
-    def __init__(self, topic_type: str = "default", agent_type: str | AgentType | None = None):
+    def __init__(
+        self, topic_type: str = "default", agent_type: str | AgentType | None = None
+    ):
         if agent_type is None:
             try:
                 agent_type = SubscriptionInstantiationContext.agent_type().type
@@ -49,5 +51,7 @@ def default_subscription(
         return subscription_factory(lambda: [DefaultSubscription()])(cls)
 
 
-def type_subscription(topic_type: str) -> Callable[[Type[BaseAgentType]], Type[BaseAgentType]]:
+def type_subscription(
+    topic_type: str,
+) -> Callable[[Type[BaseAgentType]], Type[BaseAgentType]]:
     return subscription_factory(lambda: [DefaultSubscription(topic_type=topic_type)])

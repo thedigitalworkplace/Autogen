@@ -84,7 +84,9 @@ class CodeExecutorAgent(BaseChatAgent):
         """The types of messages that the code executor agent produces."""
         return (TextMessage,)
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         # Extract code blocks from the messages.
         code_blocks: List[CodeBlock] = []
         for msg in messages:
@@ -92,7 +94,9 @@ class CodeExecutorAgent(BaseChatAgent):
                 code_blocks.extend(_extract_markdown_code_blocks(msg.content))
         if code_blocks:
             # Execute the code blocks.
-            result = await self._code_executor.execute_code_blocks(code_blocks, cancellation_token=cancellation_token)
+            result = await self._code_executor.execute_code_blocks(
+                code_blocks, cancellation_token=cancellation_token
+            )
 
             code_output = result.output
             if code_output.strip() == "":
@@ -102,7 +106,9 @@ class CodeExecutorAgent(BaseChatAgent):
                 # Error
                 code_output = f"The script ran, then exited with an error (POSIX exit code: {result.exit_code})\nIts output was:\n{result.output}"
 
-            return Response(chat_message=TextMessage(content=code_output, source=self.name))
+            return Response(
+                chat_message=TextMessage(content=code_output, source=self.name)
+            )
         else:
             return Response(
                 chat_message=TextMessage(

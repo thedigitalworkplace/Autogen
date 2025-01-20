@@ -3,18 +3,20 @@
 As part of the broader AutoGen project, AutoGenBench welcomes community contributions. Contributions are subject to AutoGen's [contribution guidelines](https://microsoft.github.io/autogen/docs/Contribute), as well as a few additional AutoGenBench-specific requirements outlined here. You may also wish to develop your own private benchmark scenarios and the guidance in this document will help with such efforts as well. Below you will find the general requirements, followed by a detailed technical description.
 
 ## General Contribution Requirements
+
 We ask that all contributions to AutoGenBench adhere to the following:
 
 - Follow AutoGen's broader [contribution guidelines](https://microsoft.github.io/autogen/docs/Contribute)
 - All AutoGenBench benchmarks should live in a subfolder of `/benchmarks` alongside `HumanEval`, `GAIA`, etc.
 - Benchmark scenarios should include a detailed README.md, in the root of their folder, describing the benchmark and providing citations where warranted.
-- Benchmark data (tasks, ground truth, etc.) should be downloaded from their original sources rather than hosted in the AutoGen repository (unless the benchmark is original, and the repository *is* the original source)
-    - You can use the `Scripts/init_tasks.py` file to automate this download.
+- Benchmark data (tasks, ground truth, etc.) should be downloaded from their original sources rather than hosted in the AutoGen repository (unless the benchmark is original, and the repository _is_ the original source)
+  - You can use the `Scripts/init_tasks.py` file to automate this download.
 - Basic scoring should be compatible with the `agbench tabulate` command (e.g., by outputting logs compatible with the default tabulation mechanism, or by providing a `Scripts/custom_tabulate.py` file)
 
 These requirements are further detailed below, but if you simply copy the `HumanEval` folder, you will already be off to a great start.
 
 ## Implementing and Running Benchmark Tasks
+
 At the core of any benchmark is a set of tasks. To implement tasks that are runnable by AutoGenBench, you must adhere to AutoGenBench's templating and scenario expansion algorithms, as outlined below.
 
 ### Task Definitions
@@ -62,7 +64,6 @@ For example:
 In this example, the string `__MODEL__` will be replaced in the file `scenarios.py`, while the string `__PROMPT__` will be replaced in the `prompt.txt` file.
 
 The `template` field can also take on a list value, but this usage is considered advanced and is not described here. See the `agbench/run_cmd.py` code, or the `GAIA` benchmark tasks files for additional information about this option.
-
 
 ## Task Instance Expansion Algorithm
 
@@ -135,11 +136,11 @@ fi
 echo RUN.SH COMPLETE !#!#
 ```
 
-Be warned that this listing is provided here for illustration purposes, and may vary over time. The source of truth are the `run.sh` files found in the ``./results/[taskset]/[task_id]/[instance_id]`` folders.
+Be warned that this listing is provided here for illustration purposes, and may vary over time. The source of truth are the `run.sh` files found in the `./results/[taskset]/[task_id]/[instance_id]` folders.
 
+## Integrating with the `tabulate`
 
-## Integrating with the `tabulate` 
-The above details are sufficient for defining and running tasks, but if you wish to support the `agbench tabulate`  commands, a few additional steps are required.
+The above details are sufficient for defining and running tasks, but if you wish to support the `agbench tabulate` commands, a few additional steps are required.
 
 ### Tabulations
 
@@ -151,11 +152,11 @@ Should you provide a custom tabulation script, please implement `--help` and `-h
 
 The `scenarios/GAIA/Scripts/custom_tabulate.py` is a great example of custom tabulation. It also shows how you can reuse some components of the default tabulator to speed up development.
 
-
-
 ## Scripts/init_tasks.py
-Finally, you should provide an `Scripts/init_tasks.py` file, in your benchmark folder, and include a `main()` method therein. 
+
+Finally, you should provide an `Scripts/init_tasks.py` file, in your benchmark folder, and include a `main()` method therein.
 
 This `init_tasks.py` script is a great place to download benchmarks from their original sources and convert them to the JSONL format required by AutoGenBench:
+
 - See `HumanEval/Scripts/init_tasks.py` for an example of how to expand a benchmark from an original GitHub repository.
 - See `GAIA/Scripts/init_tasks.py` for an example of how to expand a benchmark from `Hugging Face Hub`.

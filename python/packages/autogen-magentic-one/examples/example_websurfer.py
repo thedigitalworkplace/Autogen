@@ -8,7 +8,12 @@ import json
 import logging
 import os
 
-from autogen_core import EVENT_LOGGER_NAME, AgentId, AgentProxy, SingleThreadedAgentRuntime
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    AgentId,
+    AgentProxy,
+    SingleThreadedAgentRuntime,
+)
 from autogen_core.models import ChatCompletionClient
 from autogen_magentic_one.agents.multimodal_web_surfer import MultimodalWebSurfer
 from autogen_magentic_one.agents.orchestrator import RoundRobinOrchestrator
@@ -24,8 +29,12 @@ async def main() -> None:
     runtime = SingleThreadedAgentRuntime()
 
     # Create an appropriate client
-    client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
-    assert client.model_info["family"] == "gpt-4o", "This example requires the gpt-4o model"
+    client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
+    assert (
+        client.model_info["family"] == "gpt-4o"
+    ), "This example requires the gpt-4o model"
 
     # Register agents.
     await MultimodalWebSurfer.register(runtime, "WebSurfer", MultimodalWebSurfer)
@@ -35,12 +44,16 @@ async def main() -> None:
     user_proxy = AgentProxy(AgentId("UserProxy", "default"), runtime)
 
     await RoundRobinOrchestrator.register(
-        runtime, "orchestrator", lambda: RoundRobinOrchestrator([web_surfer, user_proxy])
+        runtime,
+        "orchestrator",
+        lambda: RoundRobinOrchestrator([web_surfer, user_proxy]),
     )
 
     runtime.start()
 
-    actual_surfer = await runtime.try_get_underlying_agent_instance(web_surfer.id, type=MultimodalWebSurfer)
+    actual_surfer = await runtime.try_get_underlying_agent_instance(
+        web_surfer.id, type=MultimodalWebSurfer
+    )
     await actual_surfer.init(
         model_client=client,
         downloads_folder=os.getcwd(),

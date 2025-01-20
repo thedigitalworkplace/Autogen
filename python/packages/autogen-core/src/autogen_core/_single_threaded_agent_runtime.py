@@ -9,7 +9,19 @@ import warnings
 from asyncio import CancelledError, Future, Queue, Task
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, List, Mapping, ParamSpec, Set, Type, TypeVar, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    ParamSpec,
+    Set,
+    Type,
+    TypeVar,
+    cast,
+)
 
 from opentelemetry.trace import TracerProvider
 
@@ -40,9 +52,18 @@ from ._intervention import DropMessage, InterventionHandler
 from ._message_context import MessageContext
 from ._message_handler_context import MessageHandlerContext
 from ._runtime_impl_helpers import SubscriptionManager, get_impl
-from ._serialization import JSON_DATA_CONTENT_TYPE, MessageSerializer, SerializationRegistry
+from ._serialization import (
+    JSON_DATA_CONTENT_TYPE,
+    MessageSerializer,
+    SerializationRegistry,
+)
 from ._subscription import Subscription
-from ._telemetry import EnvelopeMetadata, MessageRuntimeTracingConfig, TraceHelper, get_telemetry_envelope_metadata
+from ._telemetry import (
+    EnvelopeMetadata,
+    MessageRuntimeTracingConfig,
+    TraceHelper,
+    get_telemetry_envelope_metadata,
+)
 from ._topic import TopicId
 from .exceptions import MessageDroppedException
 
@@ -120,7 +141,9 @@ class RunContext:
         self._runtime._message_queue.shutdown(immediate=True)  # type: ignore
         await self._run_task
 
-    async def stop_when(self, condition: Callable[[], bool], check_period: float = 1.0) -> None:
+    async def stop_when(
+        self, condition: Callable[[], bool], check_period: float = 1.0
+    ) -> None:
         async def check_condition() -> None:
             while not condition():
                 await asyncio.sleep(check_period)
@@ -153,11 +176,17 @@ class SingleThreadedAgentRuntime(AgentRuntime):
         intervention_handlers: List[InterventionHandler] | None = None,
         tracer_provider: TracerProvider | None = None,
     ) -> None:
-        self._tracer_helper = TraceHelper(tracer_provider, MessageRuntimeTracingConfig("SingleThreadedAgentRuntime"))
-        self._message_queue: Queue[PublishMessageEnvelope | SendMessageEnvelope | ResponseMessageEnvelope] = Queue()
+        self._tracer_helper = TraceHelper(
+            tracer_provider, MessageRuntimeTracingConfig("SingleThreadedAgentRuntime")
+        )
+        self._message_queue: Queue[
+            PublishMessageEnvelope | SendMessageEnvelope | ResponseMessageEnvelope
+        ] = Queue()
         # (namespace, type) -> List[AgentId]
         self._agent_factories: Dict[
-            str, Callable[[], Agent | Awaitable[Agent]] | Callable[[AgentRuntime, AgentId], Agent | Awaitable[Agent]]
+            str,
+            Callable[[], Agent | Awaitable[Agent]]
+            | Callable[[AgentRuntime, AgentId], Agent | Awaitable[Agent]],
         ] = {}
         self._instantiated_agents: Dict[AgentId, Agent] = {}
         self._intervention_handlers = intervention_handlers
@@ -213,7 +242,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                 future.set_exception(Exception("Recipient not found"))
 
             content = message.__dict__ if hasattr(message, "__dict__") else message
-            logger.info(f"Sending message of type {type(message).__name__} to {recipient.type}: {content}")
+            logger.info(
+                f"Sending message of type {type(message).__name__} to {recipient.type}: {content}"
+            )
 
             await self._message_queue.put(
                 SendMessageEnvelope(
@@ -249,7 +280,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
             if cancellation_token is None:
                 cancellation_token = CancellationToken()
             content = message.__dict__ if hasattr(message, "__dict__") else message
-            logger.info(f"Publishing message of type {type(message).__name__} to all subscribers: {content}")
+            logger.info(
+                f"Publishing message of type {type(message).__name__} to all subscribers: {content}"
+            )
 
             if message_id is None:
                 message_id = str(uuid.uuid4())
@@ -278,7 +311,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
     async def save_state(self) -> Mapping[str, Any]:
         state: Dict[str, Dict[str, Any]] = {}
         for agent_id in self._instantiated_agents:
-            state[str(agent_id)] = dict(await (await self._get_agent(agent_id)).save_state())
+            state[str(agent_id)] = dict(
+                await (await self._get_agent(agent_id)).save_state()
+            )
         return state
 
     async def load_state(self, state: Mapping[str, Any]) -> None:
@@ -288,14 +323,20 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                 await (await self._get_agent(agent_id)).load_state(state[str(agent_id)])
 
     async def _process_send(self, message_envelope: SendMessageEnvelope) -> None:
-        with self._tracer_helper.trace_block("send", message_envelope.recipient, parent=message_envelope.metadata):
+        with self._tracer_helper.trace_block(
+            "send", message_envelope.recipient, parent=message_envelope.metadata
+        ):
             recipient = message_envelope.recipient
 
             if recipient.type not in self._known_agent_names:
                 raise LookupError(f"Agent type '{recipient.type}' does not exist.")
 
             try:
-                sender_id = str(message_envelope.sender) if message_envelope.sender is not None else "Unknown"
+                sender_id = (
+                    str(message_envelope.sender)
+                    if message_envelope.sender is not None
+                    else "Unknown"
+                )
                 logger.info(
                     f"Calling message handler for {recipient} with message type {type(message_envelope.message).__name__} sent by {sender_id}"
                 )
@@ -368,19 +409,30 @@ class SingleThreadedAgentRuntime(AgentRuntime):
             self._message_queue.task_done()
 
     async def _process_publish(self, message_envelope: PublishMessageEnvelope) -> None:
-        with self._tracer_helper.trace_block("publish", message_envelope.topic_id, parent=message_envelope.metadata):
+        with self._tracer_helper.trace_block(
+            "publish", message_envelope.topic_id, parent=message_envelope.metadata
+        ):
             try:
                 responses: List[Awaitable[Any]] = []
-                recipients = await self._subscription_manager.get_subscribed_recipients(message_envelope.topic_id)
+                recipients = await self._subscription_manager.get_subscribed_recipients(
+                    message_envelope.topic_id
+                )
                 for agent_id in recipients:
                     # Avoid sending the message back to the sender
-                    if message_envelope.sender is not None and agent_id == message_envelope.sender:
+                    if (
+                        message_envelope.sender is not None
+                        and agent_id == message_envelope.sender
+                    ):
                         continue
 
                     sender_agent = (
-                        await self._get_agent(message_envelope.sender) if message_envelope.sender is not None else None
+                        await self._get_agent(message_envelope.sender)
+                        if message_envelope.sender is not None
+                        else None
                     )
-                    sender_name = str(sender_agent.id) if sender_agent is not None else "Unknown"
+                    sender_name = (
+                        str(sender_agent.id) if sender_agent is not None else "Unknown"
+                    )
                     logger.info(
                         f"Calling message handler for {agent_id.type} with message type {type(message_envelope.message).__name__} published by {sender_name}"
                     )
@@ -402,8 +454,12 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                     )
                     agent = await self._get_agent(agent_id)
 
-                    async def _on_message(agent: Agent, message_context: MessageContext) -> Any:
-                        with self._tracer_helper.trace_block("process", agent.id, parent=None):
+                    async def _on_message(
+                        agent: Agent, message_context: MessageContext
+                    ) -> Any:
+                        with self._tracer_helper.trace_block(
+                            "process", agent.id, parent=None
+                        ):
                             with MessageHandlerContext.populate_context(agent.id):
                                 try:
                                     return await agent.on_message(
@@ -411,10 +467,15 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                                         ctx=message_context,
                                     )
                                 except BaseException as e:
-                                    logger.error(f"Error processing publish message for {agent.id}", exc_info=True)
+                                    logger.error(
+                                        f"Error processing publish message for {agent.id}",
+                                        exc_info=True,
+                                    )
                                     event_logger.info(
                                         MessageHandlerExceptionEvent(
-                                            payload=self._try_serialize(message_envelope.message),
+                                            payload=self._try_serialize(
+                                                message_envelope.message
+                                            ),
                                             handling_agent=agent.id,
                                             exception=e,
                                         )
@@ -432,8 +493,12 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                 self._message_queue.task_done()
             # TODO if responses are given for a publish
 
-    async def _process_response(self, message_envelope: ResponseMessageEnvelope) -> None:
-        with self._tracer_helper.trace_block("ack", message_envelope.recipient, parent=message_envelope.metadata):
+    async def _process_response(
+        self, message_envelope: ResponseMessageEnvelope
+    ) -> None:
+        with self._tracer_helper.trace_block(
+            "ack", message_envelope.recipient, parent=message_envelope.metadata
+        ):
             content = (
                 message_envelope.message.__dict__
                 if hasattr(message_envelope.message, "__dict__")
@@ -455,7 +520,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                 message_envelope.future.set_result(message_envelope.message)
             self._message_queue.task_done()
 
-    @deprecated("Manually stepping the runtime processing is deprecated. Use start() instead.")
+    @deprecated(
+        "Manually stepping the runtime processing is deprecated. Use start() instead."
+    )
     async def process_next(self) -> None:
         await self._process_next()
 
@@ -468,11 +535,15 @@ class SingleThreadedAgentRuntime(AgentRuntime):
             return
 
         match message_envelope:
-            case SendMessageEnvelope(message=message, sender=sender, recipient=recipient, future=future):
+            case SendMessageEnvelope(
+                message=message, sender=sender, recipient=recipient, future=future
+            ):
                 if self._intervention_handlers is not None:
                     for handler in self._intervention_handlers:
                         with self._tracer_helper.trace_block(
-                            "intercept", handler.__class__.__name__, parent=message_envelope.metadata
+                            "intercept",
+                            handler.__class__.__name__,
+                            parent=message_envelope.metadata,
                         ):
                             try:
                                 message_context = MessageContext(
@@ -483,13 +554,17 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                                     message_id=message_envelope.message_id,
                                 )
                                 temp_message = await handler.on_send(
-                                    message, message_context=message_context, recipient=recipient
+                                    message,
+                                    message_context=message_context,
+                                    recipient=recipient,
                                 )
                                 _warn_if_none(temp_message, "on_send")
                             except BaseException as e:
                                 future.set_exception(e)
                                 return
-                            if temp_message is DropMessage or isinstance(temp_message, DropMessage):
+                            if temp_message is DropMessage or isinstance(
+                                temp_message, DropMessage
+                            ):
                                 event_logger.info(
                                     MessageDroppedEvent(
                                         payload=self._try_serialize(message),
@@ -513,7 +588,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                 if self._intervention_handlers is not None:
                     for handler in self._intervention_handlers:
                         with self._tracer_helper.trace_block(
-                            "intercept", handler.__class__.__name__, parent=message_envelope.metadata
+                            "intercept",
+                            handler.__class__.__name__,
+                            parent=message_envelope.metadata,
                         ):
                             try:
                                 message_context = MessageContext(
@@ -523,13 +600,20 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                                     cancellation_token=message_envelope.cancellation_token,
                                     message_id=message_envelope.message_id,
                                 )
-                                temp_message = await handler.on_publish(message, message_context=message_context)
+                                temp_message = await handler.on_publish(
+                                    message, message_context=message_context
+                                )
                                 _warn_if_none(temp_message, "on_publish")
                             except BaseException as e:
                                 # TODO: we should raise the intervention exception to the publisher.
-                                logger.error(f"Exception raised in in intervention handler: {e}", exc_info=True)
+                                logger.error(
+                                    f"Exception raised in in intervention handler: {e}",
+                                    exc_info=True,
+                                )
                                 return
-                            if temp_message is DropMessage or isinstance(temp_message, DropMessage):
+                            if temp_message is DropMessage or isinstance(
+                                temp_message, DropMessage
+                            ):
                                 event_logger.info(
                                     MessageDroppedEvent(
                                         payload=self._try_serialize(message),
@@ -544,17 +628,23 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                 task = asyncio.create_task(self._process_publish(message_envelope))
                 self._background_tasks.add(task)
                 task.add_done_callback(self._background_tasks.discard)
-            case ResponseMessageEnvelope(message=message, sender=sender, recipient=recipient, future=future):
+            case ResponseMessageEnvelope(
+                message=message, sender=sender, recipient=recipient, future=future
+            ):
                 if self._intervention_handlers is not None:
                     for handler in self._intervention_handlers:
                         try:
-                            temp_message = await handler.on_response(message, sender=sender, recipient=recipient)
+                            temp_message = await handler.on_response(
+                                message, sender=sender, recipient=recipient
+                            )
                             _warn_if_none(temp_message, "on_response")
                         except BaseException as e:
                             # TODO: should we raise the exception to sender of the response instead?
                             future.set_exception(e)
                             return
-                        if temp_message is DropMessage or isinstance(temp_message, DropMessage):
+                        if temp_message is DropMessage or isinstance(
+                            temp_message, DropMessage
+                        ):
                             event_logger.info(
                                 MessageDroppedEvent(
                                     payload=self._try_serialize(message),
@@ -611,7 +701,8 @@ class SingleThreadedAgentRuntime(AgentRuntime):
 
     async def stop_when_idle(self) -> None:
         """Stop the runtime message processing loop when there is
-        no outstanding message being processed or queued. This is the most common way to stop the runtime."""
+        no outstanding message being processed or queued. This is the most common way to stop the runtime.
+        """
         if self._run_context is None:
             raise RuntimeError("Runtime is not started")
         await self._run_context.stop_when_idle()
@@ -680,7 +771,10 @@ class SingleThreadedAgentRuntime(AgentRuntime):
 
     async def _invoke_agent_factory(
         self,
-        agent_factory: Callable[[], T | Awaitable[T]] | Callable[[AgentRuntime, AgentId], T | Awaitable[T]],
+        agent_factory: (
+            Callable[[], T | Awaitable[T]]
+            | Callable[[AgentRuntime, AgentId], T | Awaitable[T]]
+        ),
         agent_id: AgentId,
     ) -> T:
         with AgentInstantiationContext.populate_context((self, agent_id)):
@@ -693,7 +787,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
                         "Agent factories that take two arguments are deprecated. Use AgentInstantiationContext instead. Two arg factories will be removed in a future version.",
                         stacklevel=2,
                     )
-                    factory_two = cast(Callable[[AgentRuntime, AgentId], T], agent_factory)
+                    factory_two = cast(
+                        Callable[[AgentRuntime, AgentId], T], agent_factory
+                    )
                     agent = factory_two(self, agent_id)
                 else:
                     raise ValueError("Agent factory must take 0 or 2 arguments.")
@@ -747,7 +843,12 @@ class SingleThreadedAgentRuntime(AgentRuntime):
         await self._subscription_manager.remove_subscription(id)
 
     async def get(
-        self, id_or_type: AgentId | AgentType | str, /, key: str = "default", *, lazy: bool = True
+        self,
+        id_or_type: AgentId | AgentType | str,
+        /,
+        key: str = "default",
+        *,
+        lazy: bool = True,
     ) -> AgentId:
         return await get_impl(
             id_or_type=id_or_type,
@@ -756,7 +857,9 @@ class SingleThreadedAgentRuntime(AgentRuntime):
             instance_getter=self._get_agent,
         )
 
-    def add_message_serializer(self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]) -> None:
+    def add_message_serializer(
+        self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]
+    ) -> None:
         self._serialization_registry.add_serializer(serializer)
 
     def _try_serialize(self, message: Any) -> str:

@@ -67,7 +67,9 @@ def shopping_get_sku_latest_review_author(sku: str) -> str:
         "Authorization": f"Bearer {shopping_get_auth_token()}",
         "Content-Type": "application/json",
     }
-    response = requests.get(f"{SHOPPING}/rest/V1/products/{sku}/reviews", headers=header)
+    response = requests.get(
+        f"{SHOPPING}/rest/V1/products/{sku}/reviews", headers=header
+    )
     assert response.status_code == 200
     response_obj = response.json()
     if len(response_obj) == 0:
@@ -82,7 +84,9 @@ def shopping_get_sku_latest_review_rating(sku: str) -> str:
         "Authorization": f"Bearer {shopping_get_auth_token()}",
         "Content-Type": "application/json",
     }
-    response = requests.get(f"{SHOPPING}/rest/V1/products/{sku}/reviews", headers=header)
+    response = requests.get(
+        f"{SHOPPING}/rest/V1/products/{sku}/reviews", headers=header
+    )
     assert response.status_code == 200
     response_obj = response.json()
     if len(response_obj) == 0:
@@ -141,7 +145,9 @@ async def gitlab_get_project_memeber_role(page: Page, account_name: str) -> str:
     return role
 
 
-def llm_fuzzy_match(pred: str, reference: str, question: str, azure_config: dict[str, Any] | None) -> float:
+def llm_fuzzy_match(
+    pred: str, reference: str, question: str, azure_config: dict[str, Any] | None
+) -> float:
     """Check whether the prediction matches the reference with GPT4-turbo"""
     messages: list[dict[str, Any]] = []
     # construct the question to ask
@@ -178,7 +184,9 @@ def llm_fuzzy_match(pred: str, reference: str, question: str, azure_config: dict
         return 1.0
 
 
-def llm_ua_match(pred: str, reference: str, question: str, azure_config: dict[str, Any] | None) -> float:
+def llm_ua_match(
+    pred: str, reference: str, question: str, azure_config: dict[str, Any] | None
+) -> float:
     """Check whether the prediction matches the reference with GPT-turbo"""
     messages: list[dict[str, Any]] = []
     # construct the question to ask

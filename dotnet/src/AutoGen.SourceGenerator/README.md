@@ -12,6 +12,7 @@ First, add the following to your project file and set `GenerateDocumentationFile
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 </PropertyGroup>
 ```
+
 ```xml
 <ItemGroup>
     <PackageReference Include="AutoGen.SourceGenerator" />
@@ -61,7 +62,7 @@ public partial class MyFunctions
     public Task<string> AddAsyncWrapper(string arguments)
     {
         var schema = JsonSerializer.Deserialize<AddAsyncSchema>(
-            arguments, 
+            arguments,
             new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -109,5 +110,6 @@ Add two numbers.
 ```
 
 For more examples, please check out the following project
+
 - [AutoGen.BasicSamples](../samples/AutoGen.BasicSamples/)
 - [AutoGen.SourceGenerator.Tests](../../test/AutoGen.SourceGenerator.Tests/)

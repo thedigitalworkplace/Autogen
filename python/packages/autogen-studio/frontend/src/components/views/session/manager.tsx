@@ -85,7 +85,7 @@ export const SessionManager: React.FC = () => {
         const updated = await sessionAPI.updateSession(
           sessionData.id,
           sessionData,
-          user.email
+          user.email,
         );
         setSessions(sessions.map((s) => (s.id === updated.id ? updated : s)));
         if (session?.id === updated.id) {

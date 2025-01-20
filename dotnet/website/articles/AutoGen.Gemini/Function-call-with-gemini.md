@@ -2,7 +2,6 @@ This example shows how to use @AutoGen.Gemini.GeminiChatAgent to make function c
 
 To run this example, you need to have a project on Google Cloud with access to Vertex AI API. For more information please refer to [Google Vertex AI](https://cloud.google.com/vertex-ai/docs).
 
-
 > [!NOTE]
 > You can find the complete sample code [here](https://github.com/microsoft/autogen/blob/main/dotnet/samples/AutoGen.Gemini.Sample/Function_Call_With_Gemini.cs)
 
@@ -18,6 +17,7 @@ dotnet add package AutoGen.SourceGenerator
 The AutoGen.SourceGenerator package is required to generate the @AutoGen.Core.FunctionContract. For more information, please refer to [Create-type-safe-function-call](../Create-type-safe-function-call.md)
 
 ### Step 2: Add using statement
+
 [!code-csharp[](../../../samples/AutoGen.Gemini.Sample/Function_call_with_gemini.cs?name=Using)]
 
 ### Step 3: Create `MovieFunction`
@@ -35,4 +35,3 @@ The AutoGen.SourceGenerator package is required to generate the @AutoGen.Core.Fu
 ### Step 6: Multi-turn function call
 
 [!code-csharp[](../../../samples/AutoGen.Gemini.Sample/Function_call_with_gemini.cs?name=Multi_turn)]
-

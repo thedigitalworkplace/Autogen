@@ -32,12 +32,16 @@ class CounterAgent(RoutedAgent):
         self.num_calls_broadcast = 0
 
     @message_handler(match=lambda _, ctx: ctx.is_rpc)
-    async def on_rpc_message(self, message: MessageType, ctx: MessageContext) -> MessageType:
+    async def on_rpc_message(
+        self, message: MessageType, ctx: MessageContext
+    ) -> MessageType:
         self.num_calls_rpc += 1
         return message
 
     @message_handler(match=lambda _, ctx: not ctx.is_rpc)
-    async def on_broadcast_message(self, message: MessageType, ctx: MessageContext) -> None:
+    async def on_broadcast_message(
+        self, message: MessageType, ctx: MessageContext
+    ) -> None:
         self.num_calls_broadcast += 1
 
 
@@ -48,7 +52,9 @@ async def test_routed_agent(caplog: pytest.LogCaptureFixture) -> None:
         await LoopbackAgent.register(runtime, "loopback", LoopbackAgent)
         await runtime.add_subscription(TypeSubscription("default", "loopback"))
         runtime.start()
-        await runtime.publish_message(UnhandledMessageType(), topic_id=TopicId("default", "default"))
+        await runtime.publish_message(
+            UnhandledMessageType(), topic_id=TopicId("default", "default")
+        )
         await runtime.stop_when_idle()
     assert any("Unhandled message: " in e.message for e in caplog.records)
 
@@ -104,10 +110,14 @@ class RoutedAgentMessageCustomMatch(RoutedAgent):
 @pytest.mark.asyncio
 async def test_routed_agent_message_matching() -> None:
     runtime = SingleThreadedAgentRuntime()
-    await RoutedAgentMessageCustomMatch.register(runtime, "message_match", RoutedAgentMessageCustomMatch)
+    await RoutedAgentMessageCustomMatch.register(
+        runtime, "message_match", RoutedAgentMessageCustomMatch
+    )
     agent_id = AgentId(type="message_match", key="default")
 
-    agent = await runtime.try_get_underlying_agent_instance(agent_id, type=RoutedAgentMessageCustomMatch)
+    agent = await runtime.try_get_underlying_agent_instance(
+        agent_id, type=RoutedAgentMessageCustomMatch
+    )
     assert agent is not None
     assert agent.handler_one_called is False
     assert agent.handler_two_called is False
@@ -115,14 +125,18 @@ async def test_routed_agent_message_matching() -> None:
     runtime.start()
     await runtime.send_message(MyMessage("one"), recipient=agent_id)
     await runtime.stop_when_idle()
-    agent = await runtime.try_get_underlying_agent_instance(agent_id, type=RoutedAgentMessageCustomMatch)
+    agent = await runtime.try_get_underlying_agent_instance(
+        agent_id, type=RoutedAgentMessageCustomMatch
+    )
     assert agent.handler_one_called is True
     assert agent.handler_two_called is False
 
     runtime.start()
     await runtime.send_message(MyMessage("two"), recipient=agent_id)
     await runtime.stop_when_idle()
-    agent = await runtime.try_get_underlying_agent_instance(agent_id, type=RoutedAgentMessageCustomMatch)
+    agent = await runtime.try_get_underlying_agent_instance(
+        agent_id, type=RoutedAgentMessageCustomMatch
+    )
     assert agent.handler_one_called is True
     assert agent.handler_two_called is True
 
@@ -150,7 +164,9 @@ async def test_event() -> None:
 
     # Send a broadcast message.
     runtime.start()
-    await runtime.publish_message(MyMessage("one"), topic_id=TopicId("default", "default"))
+    await runtime.publish_message(
+        MyMessage("one"), topic_id=TopicId("default", "default")
+    )
     await runtime.stop_when_idle()
     agent = await runtime.try_get_underlying_agent_instance(agent_id, type=EventAgent)
     assert agent.num_calls[0] == 1
@@ -158,7 +174,9 @@ async def test_event() -> None:
 
     # Send another broadcast message.
     runtime.start()
-    await runtime.publish_message(MyMessage("two"), topic_id=TopicId("default", "default"))
+    await runtime.publish_message(
+        MyMessage("two"), topic_id=TopicId("default", "default")
+    )
     await runtime.stop_when_idle()
     agent = await runtime.try_get_underlying_agent_instance(agent_id, type=EventAgent)
     assert agent.num_calls[0] == 1
@@ -214,7 +232,9 @@ async def test_rpc() -> None:
 
     # Send a broadcast message, expect no change.
     runtime.start()
-    await runtime.publish_message(MyMessage("one"), topic_id=TopicId("default", "default"))
+    await runtime.publish_message(
+        MyMessage("one"), topic_id=TopicId("default", "default")
+    )
     await runtime.stop_when_idle()
     agent = await runtime.try_get_underlying_agent_instance(agent_id, type=RPCAgent)
     assert agent.num_calls[0] == 1

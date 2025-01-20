@@ -17,7 +17,9 @@ InputFuncType = Union[SyncInputFunc, AsyncInputFunc]
 
 # TODO: ainput doesn't seem to play nicely with jupyter.
 #       No input window appears in this case.
-async def cancellable_input(prompt: str, cancellation_token: Optional[CancellationToken]) -> str:
+async def cancellable_input(
+    prompt: str, cancellation_token: Optional[CancellationToken]
+) -> str:
     task: asyncio.Task[str] = asyncio.create_task(ainput(prompt))  # type: ignore
     if cancellation_token is not None:
         cancellation_token.link_future(task)
@@ -126,16 +128,22 @@ class UserProxyAgent(BaseChatAgent):
         """Message types this agent can produce."""
         return (TextMessage, HandoffMessage)
 
-    def _get_latest_handoff(self, messages: Sequence[ChatMessage]) -> Optional[HandoffMessage]:
+    def _get_latest_handoff(
+        self, messages: Sequence[ChatMessage]
+    ) -> Optional[HandoffMessage]:
         """Find the HandoffMessage in the message sequence that addresses this agent."""
         if len(messages) > 0 and isinstance(messages[-1], HandoffMessage):
             if messages[-1].target == self.name:
                 return messages[-1]
             else:
-                raise RuntimeError(f"Handoff message target does not match agent name: {messages[-1].source}")
+                raise RuntimeError(
+                    f"Handoff message target does not match agent name: {messages[-1].source}"
+                )
         return None
 
-    async def _get_input(self, prompt: str, cancellation_token: Optional[CancellationToken]) -> str:
+    async def _get_input(
+        self, prompt: str, cancellation_token: Optional[CancellationToken]
+    ) -> str:
         """Handle input based on function signature."""
         try:
             if self._is_async:
@@ -154,14 +162,18 @@ class UserProxyAgent(BaseChatAgent):
             raise RuntimeError(f"Failed to get user input: {str(e)}") from e
 
     async def on_messages(
-        self, messages: Sequence[ChatMessage], cancellation_token: Optional[CancellationToken] = None
+        self,
+        messages: Sequence[ChatMessage],
+        cancellation_token: Optional[CancellationToken] = None,
     ) -> Response:
         """Handle incoming messages by requesting user input."""
         try:
             # Check for handoff first
             handoff = self._get_latest_handoff(messages)
             prompt = (
-                f"Handoff received from {handoff.source}. Enter your response: " if handoff else "Enter your response: "
+                f"Handoff received from {handoff.source}. Enter your response: "
+                if handoff
+                else "Enter your response: "
             )
 
             user_input = await self._get_input(prompt, cancellation_token)
@@ -169,16 +181,22 @@ class UserProxyAgent(BaseChatAgent):
             # Return appropriate message type based on handoff presence
             if handoff:
                 return Response(
-                    chat_message=HandoffMessage(content=user_input, target=handoff.source, source=self.name)
+                    chat_message=HandoffMessage(
+                        content=user_input, target=handoff.source, source=self.name
+                    )
                 )
             else:
-                return Response(chat_message=TextMessage(content=user_input, source=self.name))
+                return Response(
+                    chat_message=TextMessage(content=user_input, source=self.name)
+                )
 
         except asyncio.CancelledError:
             raise
         except Exception as e:
             raise RuntimeError(f"Failed to get user input: {str(e)}") from e
 
-    async def on_reset(self, cancellation_token: Optional[CancellationToken] = None) -> None:
+    async def on_reset(
+        self, cancellation_token: Optional[CancellationToken] = None
+    ) -> None:
         """Reset agent state."""
         pass

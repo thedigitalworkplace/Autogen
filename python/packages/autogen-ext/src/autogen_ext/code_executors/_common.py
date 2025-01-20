@@ -5,7 +5,13 @@ from pathlib import Path
 from textwrap import dedent, indent
 from typing import Any, Callable, Optional, Sequence, Set, TypeVar, Union
 
-from autogen_core.code_executor import Alias, CodeResult, FunctionWithRequirements, FunctionWithRequirementsStr, Import
+from autogen_core.code_executor import (
+    Alias,
+    CodeResult,
+    FunctionWithRequirements,
+    FunctionWithRequirementsStr,
+    Import,
+)
 from typing_extensions import ParamSpec
 
 
@@ -20,7 +26,11 @@ T = TypeVar("T")
 P = ParamSpec("P")
 
 
-def _to_code(func: Union[FunctionWithRequirements[T, P], Callable[P, T], FunctionWithRequirementsStr]) -> str:
+def _to_code(
+    func: Union[
+        FunctionWithRequirements[T, P], Callable[P, T], FunctionWithRequirementsStr
+    ]
+) -> str:
     if isinstance(func, FunctionWithRequirementsStr):
         return func.func
 
@@ -49,7 +59,13 @@ def _import_to_str(im: Import) -> str:
 
 
 def build_python_functions_file(
-    funcs: Sequence[Union[FunctionWithRequirements[Any, P], Callable[..., Any], FunctionWithRequirementsStr]],
+    funcs: Sequence[
+        Union[
+            FunctionWithRequirements[Any, P],
+            Callable[..., Any],
+            FunctionWithRequirementsStr,
+        ]
+    ],
 ) -> str:
     """:meta private:"""
     # First collect all global imports
@@ -178,7 +194,11 @@ def infer_lang(code: str) -> str:
     """infer the language for the code.
     TODO: make it robust.
     """
-    if code.startswith("python ") or code.startswith("pip") or code.startswith("python3 "):
+    if (
+        code.startswith("python ")
+        or code.startswith("pip")
+        or code.startswith("python3 ")
+    ):
         return "sh"
 
     # check if code is a valid python code

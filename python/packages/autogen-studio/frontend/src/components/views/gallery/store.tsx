@@ -65,7 +65,7 @@ export const useGalleryStore = create<GalleryStore>()(
                     updated_at: new Date().toISOString(),
                   },
                 }
-              : gallery
+              : gallery,
           ),
         })),
 
@@ -151,6 +151,6 @@ export const useGalleryStore = create<GalleryStore>()(
     }),
     {
       name: "gallery-storage",
-    }
-  )
+    },
+  ),
 );

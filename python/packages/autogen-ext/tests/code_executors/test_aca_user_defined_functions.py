@@ -59,7 +59,9 @@ async def test_azure_can_load_function_with_reqs() -> None:
     assert POOL_ENDPOINT is not None
     cancellation_token = CancellationToken()
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[load_data]
+        pool_management_endpoint=POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[load_data],
     )
     # ACADynamicSessionsCodeExecutor doesn't use the functions module import
     code = """import polars
@@ -88,7 +90,9 @@ async def test_azure_can_load_function() -> None:
 
     cancellation_token = CancellationToken()
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[add_two_numbers]
+        pool_management_endpoint=POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[add_two_numbers],
     )
     # ACADynamicSessionsCodeExecutor doesn't use the functions module import
     code = """print(add_two_numbers(1, 2))"""
@@ -136,7 +140,9 @@ async def test_azure_fails_for_function_incorrect_dep() -> None:
     assert POOL_ENDPOINT is not None
     cancellation_token = CancellationToken()
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[function_incorrect_dep]
+        pool_management_endpoint=POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[function_incorrect_dep],
     )
     code = """function_incorrect_dep()"""
 
@@ -154,7 +160,9 @@ def test_azure_formatted_prompt() -> None:
     """Add two numbers together."""
 '''
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=DUMMY_POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[add_two_numbers]
+        pool_management_endpoint=DUMMY_POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[add_two_numbers],
     )
 
     azure_result = azure_executor.format_functions_for_prompt()
@@ -175,7 +183,9 @@ def add_two_numbers(a: int, b: int) -> int:
 '''
 
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=DUMMY_POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[func]
+        pool_management_endpoint=DUMMY_POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[func],
     )
 
     azure_result = azure_executor.format_functions_for_prompt()
@@ -198,7 +208,9 @@ def add_two_numbers(a: int, b: int) -> int:
 '''
     )
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[func]
+        pool_management_endpoint=POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[func],
     )
     code = """print(add_two_numbers(1, 2))"""
 
@@ -229,7 +241,9 @@ def add_two_numbers(a: int, b: int) -> int:
     )
 
     azure_executor = ACADynamicSessionsCodeExecutor(
-        pool_management_endpoint=POOL_ENDPOINT, credential=DefaultAzureCredential(), functions=[func]
+        pool_management_endpoint=POOL_ENDPOINT,
+        credential=DefaultAzureCredential(),
+        functions=[func],
     )
     code = """print(add_two_numbers(object(), False))"""
 

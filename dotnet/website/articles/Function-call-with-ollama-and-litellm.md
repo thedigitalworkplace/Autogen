@@ -3,13 +3,16 @@ This example shows how to use function call with local LLM models where [Ollama]
 [![](https://img.shields.io/badge/Open%20on%20Github-grey?logo=github)](https://github.com/microsoft/autogen/blob/main/dotnet/samples/AutoGen.OpenAI.Sample/Tool_Call_With_Ollama_And_LiteLLM.cs)
 
 To run this example, the following prerequisites are required:
+
 - Install [Ollama](https://ollama.com/) and [LiteLLM](https://docs.litellm.ai/docs/) on your local machine.
 - A local model that supports function call. In this example `dolphincoder:latest` is used.
 
 ## Install Ollama and pull `dolphincoder:latest` model
+
 First, install Ollama by following the instructions on the [Ollama website](https://ollama.com/).
 
 After installing Ollama, pull the `dolphincoder:latest` model by running the following command:
+
 ```bash
 ollama pull dolphincoder:latest
 ```
@@ -17,6 +20,7 @@ ollama pull dolphincoder:latest
 ## Install LiteLLM and start the proxy server
 
 You can install LiteLLM by following the instructions on the [LiteLLM website](https://docs.litellm.ai/docs/).
+
 ```bash
 pip install 'litellm[proxy]'
 ```
@@ -42,6 +46,7 @@ INFO:     Uvicorn running on http://0.0.0.0:4000 (Press CTRL+C to quit)
 ```
 
 ## Install AutoGen and AutoGen.SourceGenerator
+
 In your project, install the AutoGen and AutoGen.SourceGenerator package using the following command:
 
 ```bash
@@ -76,6 +81,7 @@ Because LiteLLM proxy server is openai-api compatible, we can use @AutoGen.OpenA
 [!code-csharp[Create an agent with tools](../../samples/AutoGen.OpenAI.Sample/Tool_Call_With_Ollama_And_LiteLLM.cs?name=Create_Agent)]
 
 The reply from the agent will similar to the following:
+
 ```bash
 AggregateMessage from assistant
 --------------------

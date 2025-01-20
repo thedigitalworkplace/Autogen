@@ -50,7 +50,9 @@ class TerminationCondition(ABC):
         ...
 
     @abstractmethod
-    async def __call__(self, messages: Sequence[AgentEvent | ChatMessage]) -> StopMessage | None:
+    async def __call__(
+        self, messages: Sequence[AgentEvent | ChatMessage]
+    ) -> StopMessage | None:
         """Check if the conversation should be terminated based on the messages received
         since the last time the condition was called.
         Return a StopMessage if the conversation should be terminated, or None otherwise.
@@ -62,7 +64,8 @@ class TerminationCondition(ABC):
             StopMessage | None: A StopMessage if the conversation should be terminated, or None otherwise.
 
         Raises:
-            TerminatedException: If the termination condition has already been reached."""
+            TerminatedException: If the termination condition has already been reached.
+        """
         ...
 
     @abstractmethod
@@ -88,12 +91,18 @@ class _AndTerminationCondition(TerminationCondition):
     def terminated(self) -> bool:
         return all(condition.terminated for condition in self._conditions)
 
-    async def __call__(self, messages: Sequence[AgentEvent | ChatMessage]) -> StopMessage | None:
+    async def __call__(
+        self, messages: Sequence[AgentEvent | ChatMessage]
+    ) -> StopMessage | None:
         if self.terminated:
             raise TerminatedException("Termination condition has already been reached.")
         # Check all remaining conditions.
         stop_messages = await asyncio.gather(
-            *[condition(messages) for condition in self._conditions if not condition.terminated]
+            *[
+                condition(messages)
+                for condition in self._conditions
+                if not condition.terminated
+            ]
         )
         # Collect stop messages.
         for stop_message in stop_messages:
@@ -102,7 +111,9 @@ class _AndTerminationCondition(TerminationCondition):
         if any(stop_message is None for stop_message in stop_messages):
             # If any remaining condition has not reached termination, it is not terminated.
             return None
-        content = ", ".join(stop_message.content for stop_message in self._stop_messages)
+        content = ", ".join(
+            stop_message.content for stop_message in self._stop_messages
+        )
         source = ", ".join(stop_message.source for stop_message in self._stop_messages)
         return StopMessage(content=content, source=source)
 
@@ -120,13 +131,25 @@ class _OrTerminationCondition(TerminationCondition):
     def terminated(self) -> bool:
         return any(condition.terminated for condition in self._conditions)
 
-    async def __call__(self, messages: Sequence[AgentEvent | ChatMessage]) -> StopMessage | None:
+    async def __call__(
+        self, messages: Sequence[AgentEvent | ChatMessage]
+    ) -> StopMessage | None:
         if self.terminated:
             raise RuntimeError("Termination condition has already been reached")
-        stop_messages = await asyncio.gather(*[condition(messages) for condition in self._conditions])
+        stop_messages = await asyncio.gather(
+            *[condition(messages) for condition in self._conditions]
+        )
         if any(stop_message is not None for stop_message in stop_messages):
-            content = ", ".join(stop_message.content for stop_message in stop_messages if stop_message is not None)
-            source = ", ".join(stop_message.source for stop_message in stop_messages if stop_message is not None)
+            content = ", ".join(
+                stop_message.content
+                for stop_message in stop_messages
+                if stop_message is not None
+            )
+            source = ", ".join(
+                stop_message.source
+                for stop_message in stop_messages
+                if stop_message is not None
+            )
             return StopMessage(content=content, source=source)
         return None
 

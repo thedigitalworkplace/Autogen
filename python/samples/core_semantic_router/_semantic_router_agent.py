@@ -1,6 +1,11 @@
 import logging
 
-from _semantic_router_components import AgentRegistryBase, IntentClassifierBase, TerminationMessage, UserProxyMessage
+from _semantic_router_components import (
+    AgentRegistryBase,
+    IntentClassifierBase,
+    TerminationMessage,
+    UserProxyMessage,
+)
 from autogen_core import (
     TRACE_LOGGER_NAME,
     DefaultTopicId,
@@ -17,7 +22,12 @@ logger.setLevel(logging.DEBUG)
 
 @default_subscription
 class SemanticRouterAgent(RoutedAgent):
-    def __init__(self, name: str, agent_registry: AgentRegistryBase, intent_classifier: IntentClassifierBase) -> None:
+    def __init__(
+        self,
+        name: str,
+        agent_registry: AgentRegistryBase,
+        intent_classifier: IntentClassifierBase,
+    ) -> None:
         super().__init__("Semantic Router Agent")
         self._name = name
         self._registry = agent_registry
@@ -25,7 +35,9 @@ class SemanticRouterAgent(RoutedAgent):
 
     # The User has sent a message that needs to be routed
     @message_handler
-    async def route_to_agent(self, message: UserProxyMessage, ctx: MessageContext) -> None:
+    async def route_to_agent(
+        self, message: UserProxyMessage, ctx: MessageContext
+    ) -> None:
         assert ctx.topic_id is not None
         logger.debug(f"Received message from {message.source}: {message.content}")
         session_id = ctx.topic_id.source
@@ -48,11 +60,17 @@ class SemanticRouterAgent(RoutedAgent):
             return "termination"
 
     ## Forward user message to the appropriate agent, or end the thread.
-    async def contact_agent(self, agent: str, message: UserProxyMessage, session_id: str) -> None:
+    async def contact_agent(
+        self, agent: str, message: UserProxyMessage, session_id: str
+    ) -> None:
         if agent == "termination":
             logger.debug("No relevant agent found")
             await self.publish_message(
-                TerminationMessage(reason="No relevant agent found", content=message.content, source=self.type),
+                TerminationMessage(
+                    reason="No relevant agent found",
+                    content=message.content,
+                    source=self.type,
+                ),
                 DefaultTopicId(type="user_proxy", source=session_id),
             )
         else:

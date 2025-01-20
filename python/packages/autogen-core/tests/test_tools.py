@@ -32,7 +32,9 @@ class MyTool(BaseTool[MyArgs, MyResult]):
         )
         self.called_count = 0
 
-    async def run(self, args: MyArgs, cancellation_token: CancellationToken) -> MyResult:
+    async def run(
+        self, args: MyArgs, cancellation_token: CancellationToken
+    ) -> MyResult:
         self.called_count += 1
         return MyResult(result="value")
 
@@ -47,7 +49,9 @@ class MyNestedTool(BaseTool[MyNestedArgs, MyResult]):
         )
         self.called_count = 0
 
-    async def run(self, args: MyNestedArgs, cancellation_token: CancellationToken) -> MyResult:
+    async def run(
+        self, args: MyNestedArgs, cancellation_token: CancellationToken
+    ) -> MyResult:
         self.called_count += 1
         return MyResult(result="value")
 
@@ -61,7 +65,9 @@ def test_tool_schema_generation() -> None:
     assert "parameters" in schema
     assert schema["parameters"]["type"] == "object"
     assert "properties" in schema["parameters"]
-    assert schema["parameters"]["properties"]["query"]["description"] == "The description."
+    assert (
+        schema["parameters"]["properties"]["query"]["description"] == "The description."
+    )
     assert schema["parameters"]["properties"]["query"]["type"] == "string"
     assert "required" in schema["parameters"]
     assert schema["parameters"]["required"] == ["query"]
@@ -69,7 +75,9 @@ def test_tool_schema_generation() -> None:
 
 
 def test_func_tool_schema_generation() -> None:
-    def my_function(arg: str, other: Annotated[int, "int arg"], nonrequired: int = 5) -> MyResult:
+    def my_function(
+        arg: str, other: Annotated[int, "int arg"], nonrequired: int = 5
+    ) -> MyResult:
         return MyResult(result="test")
 
     tool = FunctionTool(my_function, description="Function tool.")
@@ -86,7 +94,10 @@ def test_func_tool_schema_generation() -> None:
     assert schema["parameters"]["properties"]["other"]["type"] == "integer"
     assert schema["parameters"]["properties"]["other"]["description"] == "int arg"
     assert schema["parameters"]["properties"]["nonrequired"]["type"] == "integer"
-    assert schema["parameters"]["properties"]["nonrequired"]["description"] == "nonrequired"
+    assert (
+        schema["parameters"]["properties"]["nonrequired"]["description"]
+        == "nonrequired"
+    )
     assert "required" in schema["parameters"]
     assert schema["parameters"]["required"] == ["arg", "other"]
     assert len(schema["parameters"]["properties"]) == 3
@@ -388,14 +399,23 @@ def test_nested_tool_schema_generation() -> None:
     assert "properties" in schema["parameters"]["properties"]["arg"]
     assert "query" in schema["parameters"]["properties"]["arg"]["properties"]
     assert "type" in schema["parameters"]["properties"]["arg"]["properties"]["query"]
-    assert "description" in schema["parameters"]["properties"]["arg"]["properties"]["query"]
+    assert (
+        "description"
+        in schema["parameters"]["properties"]["arg"]["properties"]["query"]
+    )
     assert "required" in schema["parameters"]
     assert schema["description"] == "Description of test nested tool."
     assert schema["parameters"]["type"] == "object"
     assert schema["parameters"]["properties"]["arg"]["type"] == "object"
     assert schema["parameters"]["properties"]["arg"]["title"] == "MyArgs"
-    assert schema["parameters"]["properties"]["arg"]["properties"]["query"]["type"] == "string"
-    assert schema["parameters"]["properties"]["arg"]["properties"]["query"]["description"] == "The description."
+    assert (
+        schema["parameters"]["properties"]["arg"]["properties"]["query"]["type"]
+        == "string"
+    )
+    assert (
+        schema["parameters"]["properties"]["arg"]["properties"]["query"]["description"]
+        == "The description."
+    )
     assert schema["parameters"]["properties"]["arg"]["required"] == ["query"]
     assert schema["parameters"]["required"] == ["arg"]
     assert len(schema["parameters"]["properties"]) == 1

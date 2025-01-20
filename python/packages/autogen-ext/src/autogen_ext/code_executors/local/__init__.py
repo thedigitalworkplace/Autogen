@@ -13,7 +13,12 @@ from types import SimpleNamespace
 from typing import Any, Callable, ClassVar, List, Optional, Sequence, Union
 
 from autogen_core import CancellationToken
-from autogen_core.code_executor import CodeBlock, CodeExecutor, FunctionWithRequirements, FunctionWithRequirementsStr
+from autogen_core.code_executor import (
+    CodeBlock,
+    CodeExecutor,
+    FunctionWithRequirements,
+    FunctionWithRequirementsStr,
+)
 from typing_extensions import ParamSpec
 
 from .._common import (
@@ -153,7 +158,9 @@ $functions"""
 
         self._virtual_env_context: Optional[SimpleNamespace] = virtual_env_context
 
-    def format_functions_for_prompt(self, prompt_template: str = FUNCTION_PROMPT_TEMPLATE) -> str:
+    def format_functions_for_prompt(
+        self, prompt_template: str = FUNCTION_PROMPT_TEMPLATE
+    ) -> str:
         """(Experimental) Format the functions for a prompt.
 
         The template includes two variables:
@@ -198,7 +205,11 @@ $functions"""
         func_file.write_text(func_file_content)
 
         # Collect requirements
-        lists_of_packages = [x.python_packages for x in self._functions if isinstance(x, FunctionWithRequirements)]
+        lists_of_packages = [
+            x.python_packages
+            for x in self._functions
+            if isinstance(x, FunctionWithRequirements)
+        ]
         flattened_packages = [item for sublist in lists_of_packages for item in sublist]
         required_packages = list(set(flattened_packages))
         if len(required_packages) > 0:
@@ -224,14 +235,18 @@ $functions"""
             cancellation_token.link_future(task)
             try:
                 proc = await task
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), self._timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(), self._timeout
+                )
             except asyncio.TimeoutError as e:
                 raise ValueError("Pip install timed out") from e
             except asyncio.CancelledError as e:
                 raise ValueError("Pip install was cancelled") from e
 
             if proc.returncode is not None and proc.returncode != 0:
-                raise ValueError(f"Pip install failed. {stdout.decode()}, {stderr.decode()}")
+                raise ValueError(
+                    f"Pip install failed. {stdout.decode()}, {stderr.decode()}"
+                )
 
         # Attempt to load the function file to check for syntax errors, imports etc.
         exec_result = await self._execute_code_dont_check_setup(
@@ -258,7 +273,9 @@ $functions"""
         if not self._setup_functions_complete:
             await self._setup_functions(cancellation_token)
 
-        return await self._execute_code_dont_check_setup(code_blocks, cancellation_token)
+        return await self._execute_code_dont_check_setup(
+            code_blocks, cancellation_token
+        )
 
     async def _execute_code_dont_check_setup(
         self, code_blocks: List[CodeBlock], cancellation_token: CancellationToken
@@ -304,13 +321,23 @@ $functions"""
             env = os.environ.copy()
 
             if self._virtual_env_context:
-                virtual_env_exe_abs_path = os.path.abspath(self._virtual_env_context.env_exe)
-                virtual_env_bin_abs_path = os.path.abspath(self._virtual_env_context.bin_path)
+                virtual_env_exe_abs_path = os.path.abspath(
+                    self._virtual_env_context.env_exe
+                )
+                virtual_env_bin_abs_path = os.path.abspath(
+                    self._virtual_env_context.bin_path
+                )
                 env["PATH"] = f"{virtual_env_bin_abs_path}{os.pathsep}{env['PATH']}"
 
-                program = virtual_env_exe_abs_path if lang.startswith("python") else lang_to_cmd(lang)
+                program = (
+                    virtual_env_exe_abs_path
+                    if lang.startswith("python")
+                    else lang_to_cmd(lang)
+                )
             else:
-                program = sys.executable if lang.startswith("python") else lang_to_cmd(lang)
+                program = (
+                    sys.executable if lang.startswith("python") else lang_to_cmd(lang)
+                )
 
             # Wrap in a task to make it cancellable
             task = asyncio.create_task(
@@ -326,7 +353,9 @@ $functions"""
             cancellation_token.link_future(task)
             try:
                 proc = await task
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), self._timeout)
+                stdout, stderr = await asyncio.wait_for(
+                    proc.communicate(), self._timeout
+                )
                 exitcode = proc.returncode or 0
 
             except asyncio.TimeoutError:
@@ -349,7 +378,9 @@ $functions"""
                 break
 
         code_file = str(file_names[0]) if len(file_names) > 0 else None
-        return CommandLineCodeResult(exit_code=exitcode, output=logs_all, code_file=code_file)
+        return CommandLineCodeResult(
+            exit_code=exitcode, output=logs_all, code_file=code_file
+        )
 
     async def restart(self) -> None:
         """(Experimental) Restart the code executor."""

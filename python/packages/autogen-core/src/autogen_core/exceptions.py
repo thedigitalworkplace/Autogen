@@ -1,4 +1,9 @@
-__all__ = ["CantHandleException", "UndeliverableException", "MessageDroppedException", "NotAccessibleError"]
+__all__ = [
+    "CantHandleException",
+    "UndeliverableException",
+    "MessageDroppedException",
+    "NotAccessibleError",
+]
 
 
 class CantHandleException(Exception):

@@ -2,8 +2,16 @@ import pytest
 from typing import List
 
 from autogen_agentchat.agents import AssistantAgent
-from autogen_agentchat.teams import RoundRobinGroupChat, SelectorGroupChat, MagenticOneGroupChat
-from autogen_agentchat.conditions import MaxMessageTermination, StopMessageTermination, TextMentionTermination
+from autogen_agentchat.teams import (
+    RoundRobinGroupChat,
+    SelectorGroupChat,
+    MagenticOneGroupChat,
+)
+from autogen_agentchat.conditions import (
+    MaxMessageTermination,
+    StopMessageTermination,
+    TextMentionTermination,
+)
 from autogen_core.tools import FunctionTool
 
 from autogenstudio.datamodel.types import (
@@ -71,7 +79,9 @@ def sample_model_config():
 
 
 @pytest.fixture
-def sample_agent_config(sample_model_config: OpenAIModelConfig, sample_tool_config: ToolConfig):
+def sample_agent_config(
+    sample_model_config: OpenAIModelConfig, sample_tool_config: ToolConfig
+):
     return AssistantAgentConfig(
         name="test_agent",
         agent_type=AgentTypes.ASSISTANT,
@@ -95,7 +105,9 @@ def sample_termination_config():
 
 @pytest.fixture
 def sample_team_config(
-    sample_agent_config: AssistantAgentConfig, sample_termination_config: MaxMessageTerminationConfig, sample_model_config: OpenAIModelConfig
+    sample_agent_config: AssistantAgentConfig,
+    sample_termination_config: MaxMessageTerminationConfig,
+    sample_model_config: OpenAIModelConfig,
 ):
     return RoundRobinTeamConfig(
         name="test_team",
@@ -110,7 +122,9 @@ def sample_team_config(
 
 
 @pytest.mark.asyncio
-async def test_load_tool(component_factory: ComponentFactory, sample_tool_config: ToolConfig):
+async def test_load_tool(
+    component_factory: ComponentFactory, sample_tool_config: ToolConfig
+):
     # Test loading tool from ToolConfig
     tool = await component_factory.load_tool(sample_tool_config)
     assert isinstance(tool, FunctionTool)
@@ -151,14 +165,18 @@ async def test_load_tool_invalid_config(component_factory: ComponentFactory):
 
 
 @pytest.mark.asyncio
-async def test_load_model(component_factory: ComponentFactory, sample_model_config: OpenAIModelConfig):
+async def test_load_model(
+    component_factory: ComponentFactory, sample_model_config: OpenAIModelConfig
+):
     # Test loading model from ModelConfig
     model = await component_factory.load_model(sample_model_config)
     assert model is not None
 
 
 @pytest.mark.asyncio
-async def test_load_agent(component_factory: ComponentFactory, sample_agent_config: AssistantAgentConfig):
+async def test_load_agent(
+    component_factory: ComponentFactory, sample_agent_config: AssistantAgentConfig
+):
     # Test loading agent from AgentConfig
     agent = await component_factory.load_agent(sample_agent_config)
     assert isinstance(agent, AssistantAgent)
@@ -181,7 +199,9 @@ async def test_load_termination(component_factory: ComponentFactory):
 
     # Test StopMessageTermination
     stop_msg_config = StopMessageTerminationConfig(
-        termination_type=TerminationTypes.STOP_MESSAGE, component_type=ComponentTypes.TERMINATION, version="1.0.0"
+        termination_type=TerminationTypes.STOP_MESSAGE,
+        component_type=ComponentTypes.TERMINATION,
+        version="1.0.0",
     )
     termination = await component_factory.load_termination(stop_msg_config)
     assert isinstance(termination, StopMessageTermination)
@@ -301,7 +321,9 @@ async def test_load_termination(component_factory: ComponentFactory):
 
 @pytest.mark.asyncio
 async def test_load_team(
-    component_factory: ComponentFactory, sample_team_config: RoundRobinTeamConfig, sample_model_config: OpenAIModelConfig
+    component_factory: ComponentFactory,
+    sample_team_config: RoundRobinTeamConfig,
+    sample_model_config: OpenAIModelConfig,
 ):
     # Test loading RoundRobinGroupChat team
     team = await component_factory.load_team(sample_team_config)

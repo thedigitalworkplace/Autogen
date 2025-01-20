@@ -186,7 +186,7 @@ const Header = ({ meta, link }: any) => {
                                   }}
                                   className={classNames(
                                     active ? "bg-secondary" : "",
-                                    "block px-4 py-2 text-sm text-primary"
+                                    "block px-4 py-2 text-sm text-primary",
                                   )}
                                 >
                                   Sign out

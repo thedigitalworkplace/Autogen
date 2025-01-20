@@ -2,12 +2,19 @@ from typing import List
 
 from autogen_core import Image
 
-from ._types import AssistantContent, FunctionExecutionContent, SystemContent, UserContent
+from ._types import (
+    AssistantContent,
+    FunctionExecutionContent,
+    SystemContent,
+    UserContent,
+)
 
 
 # Convert UserContent to a string
 def message_content_to_str(
-    message_content: UserContent | AssistantContent | SystemContent | FunctionExecutionContent,
+    message_content: (
+        UserContent | AssistantContent | SystemContent | FunctionExecutionContent
+    ),
 ) -> str:
     if isinstance(message_content, str):
         return message_content

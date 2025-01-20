@@ -45,11 +45,17 @@ class ReceiveAgent(RoutedAgent):
 
     @message_handler
     async def on_greet(self, message: Greeting, ctx: MessageContext) -> None:
-        await self.publish_message(ReturnedGreeting(f"Returned greeting: {message.content}"), topic_id=DefaultTopicId())
+        await self.publish_message(
+            ReturnedGreeting(f"Returned greeting: {message.content}"),
+            topic_id=DefaultTopicId(),
+        )
 
     @message_handler
     async def on_feedback(self, message: Feedback, ctx: MessageContext) -> None:
-        await self.publish_message(ReturnedFeedback(f"Returned feedback: {message.content}"), topic_id=DefaultTopicId())
+        await self.publish_message(
+            ReturnedFeedback(f"Returned feedback: {message.content}"),
+            topic_id=DefaultTopicId(),
+        )
 
     async def on_unhandled_message(self, message: Any, ctx: MessageContext) -> NoReturn:  # type: ignore
         print(f"Unhandled message: {message}")
@@ -61,11 +67,17 @@ class GreeterAgent(RoutedAgent):
 
     @message_handler
     async def on_ask(self, message: AskToGreet, ctx: MessageContext) -> None:
-        await self.publish_message(Greeting(f"Hello, {message.content}!"), topic_id=DefaultTopicId())
+        await self.publish_message(
+            Greeting(f"Hello, {message.content}!"), topic_id=DefaultTopicId()
+        )
 
     @message_handler
-    async def on_returned_greet(self, message: ReturnedGreeting, ctx: MessageContext) -> None:
-        await self.publish_message(Feedback(f"Feedback: {message.content}"), topic_id=DefaultTopicId())
+    async def on_returned_greet(
+        self, message: ReturnedGreeting, ctx: MessageContext
+    ) -> None:
+        await self.publish_message(
+            Feedback(f"Feedback: {message.content}"), topic_id=DefaultTopicId()
+        )
 
     async def on_unhandled_message(self, message: Any, ctx: MessageContext) -> NoReturn:  # type: ignore
         print(f"Unhandled message: {message}")

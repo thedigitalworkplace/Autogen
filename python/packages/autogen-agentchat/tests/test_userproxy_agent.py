@@ -16,13 +16,20 @@ async def test_basic_input() -> None:
         return "The height of the eiffel tower is 324 meters. Aloha!"
 
     agent = UserProxyAgent(name="test_user", input_func=custom_input)
-    messages = [TextMessage(content="What is the height of the eiffel tower?", source="assistant")]
+    messages = [
+        TextMessage(
+            content="What is the height of the eiffel tower?", source="assistant"
+        )
+    ]
 
     response = await agent.on_messages(messages, CancellationToken())
 
     assert isinstance(response, Response)
     assert isinstance(response.chat_message, TextMessage)
-    assert response.chat_message.content == "The height of the eiffel tower is 324 meters. Aloha!"
+    assert (
+        response.chat_message.content
+        == "The height of the eiffel tower is 324 meters. Aloha!"
+    )
     assert response.chat_message.source == "test_user"
 
 
@@ -30,7 +37,9 @@ async def test_basic_input() -> None:
 async def test_async_input() -> None:
     """Test handling of async input function"""
 
-    async def async_input(prompt: str, token: Optional[CancellationToken] = None) -> str:
+    async def async_input(
+        prompt: str, token: Optional[CancellationToken] = None
+    ) -> str:
         await asyncio.sleep(0.1)
         return "async response"
 
@@ -55,7 +64,11 @@ async def test_handoff_handling() -> None:
 
     messages: Sequence[ChatMessage] = [
         TextMessage(content="Initial message", source="assistant"),
-        HandoffMessage(content="Handing off to user for confirmation", source="assistant", target="test_user"),
+        HandoffMessage(
+            content="Handing off to user for confirmation",
+            source="assistant",
+            target="test_user",
+        ),
     ]
 
     response = await agent.on_messages(messages, CancellationToken())
@@ -68,7 +81,11 @@ async def test_handoff_handling() -> None:
     # The latest message if is a handoff message, it must be addressed to this agent.
     messages = [
         TextMessage(content="Initial message", source="assistant"),
-        HandoffMessage(content="Handing off to user for confirmation", source="assistant", target="other_agent"),
+        HandoffMessage(
+            content="Handing off to user for confirmation",
+            source="assistant",
+            target="other_agent",
+        ),
     ]
     with pytest.raises(RuntimeError):
         await agent.on_messages(messages, CancellationToken())
@@ -76,7 +93,11 @@ async def test_handoff_handling() -> None:
     # No handoff message if the latest message is not a handoff message addressed to this agent.
     messages = [
         TextMessage(content="Initial message", source="assistant"),
-        HandoffMessage(content="Handing off to other agent", source="assistant", target="other_agent"),
+        HandoffMessage(
+            content="Handing off to other agent",
+            source="assistant",
+            target="other_agent",
+        ),
         TextMessage(content="Another message", source="other_agent"),
     ]
     response = await agent.on_messages(messages, CancellationToken())
@@ -87,7 +108,9 @@ async def test_handoff_handling() -> None:
 async def test_cancellation() -> None:
     """Test cancellation during message handling"""
 
-    async def cancellable_input(prompt: str, token: Optional[CancellationToken] = None) -> str:
+    async def cancellable_input(
+        prompt: str, token: Optional[CancellationToken] = None
+    ) -> str:
         await asyncio.sleep(0.1)
         if token and token.is_cancelled():
             raise asyncio.CancelledError()

@@ -75,7 +75,9 @@ class Evaluator(object):
             # is_bearable(trajectory[-1], Action)
             last_action = trajectory[-1]
         except Exception:
-            raise ValueError("The last element of trajectory should be an action, add a fake stop action if needed")
+            raise ValueError(
+                "The last element of trajectory should be an action, add a fake stop action if needed"
+            )
 
         return last_action  # type: ignore[return-value]
 
@@ -112,7 +114,9 @@ class StringEvaluator(Evaluator):
     @staticmethod
     @beartype
     def exact_match(ref: str, pred: str) -> float:
-        return float(StringEvaluator.clean_answer(pred) == StringEvaluator.clean_answer(ref))
+        return float(
+            StringEvaluator.clean_answer(pred) == StringEvaluator.clean_answer(ref)
+        )
 
     @staticmethod
     @beartype
@@ -129,12 +133,16 @@ class StringEvaluator(Evaluator):
 
     @staticmethod
     @beartype
-    def fuzzy_match(ref: str, pred: str, intent: str, azure_config: dict[str, Any] | None) -> float:
+    def fuzzy_match(
+        ref: str, pred: str, intent: str, azure_config: dict[str, Any] | None
+    ) -> float:
         return llm_fuzzy_match(pred, ref, intent, azure_config)
 
     @staticmethod
     @beartype
-    def ua_match(ref: str, pred: str, intent: str, azure_config: dict[str, Any] | None) -> float:
+    def ua_match(
+        ref: str, pred: str, intent: str, azure_config: dict[str, Any] | None
+    ) -> float:
         return llm_ua_match(pred, ref, intent, azure_config)
 
     async def __call__(
@@ -184,7 +192,10 @@ class StringEvaluator(Evaluator):
                         assert isinstance(value, list)
                         for reference in value:
                             score *= self.fuzzy_match(
-                                ref=reference, pred=pred, intent=intent, azure_config=azure_config
+                                ref=reference,
+                                pred=pred,
+                                intent=intent,
+                                azure_config=azure_config,
                             )
         return score
 
@@ -239,11 +250,21 @@ class URLEvaluator(Evaluator):
             ref_base_paths, ref_queries = parse_urls(ref_urls)
             pred_base_paths, pred_query = parse_url(pred)
 
-            base_score = float(any([ref_base_path in pred_base_paths for ref_base_path in ref_base_paths]))
+            base_score = float(
+                any(
+                    [
+                        ref_base_path in pred_base_paths
+                        for ref_base_path in ref_base_paths
+                    ]
+                )
+            )
             query_score = 1.0
             for k, possible_values in ref_queries.items():
                 query_score *= float(
-                    any(possible_ref_value in pred_query.get(k, []) for possible_ref_value in possible_values)
+                    any(
+                        possible_ref_value in pred_query.get(k, [])
+                        for possible_ref_value in possible_values
+                    )
                 )
             score = base_score * query_score
 
@@ -320,7 +341,9 @@ class HTMLContentEvaluator(Evaluator):
 
             if "exact_match" in target["required_contents"]:
                 required_contents = target["required_contents"]["exact_match"]
-                cur_score = StringEvaluator.exact_match(ref=required_contents, pred=selected_element)
+                cur_score = StringEvaluator.exact_match(
+                    ref=required_contents, pred=selected_element
+                )
                 score *= float(cur_score)
                 # print(f"[exact match] {cur_score}, selected element: {selected_element}, required contents: {required_contents}")
             elif "must_include" in target["required_contents"]:
@@ -341,7 +364,9 @@ class HTMLContentEvaluator(Evaluator):
                     score *= float(cur_score)
                     # print(f"[must include] {cur_score}, selected element: {selected_element}, required contents: {content_or}")
             else:
-                raise ValueError(f"Unknown required_contents: {target['required_contents'].keys()}")
+                raise ValueError(
+                    f"Unknown required_contents: {target['required_contents'].keys()}"
+                )
         return score
 
 
@@ -360,7 +385,9 @@ class EvaluatorComb:
     ) -> float:
         score = 1.0
         for evaluator in self.evaluators:
-            cur_score = await evaluator(trajectory, config_file, page, client, azure_config)
+            cur_score = await evaluator(
+                trajectory, config_file, page, client, azure_config
+            )
             score *= cur_score
         return score
 

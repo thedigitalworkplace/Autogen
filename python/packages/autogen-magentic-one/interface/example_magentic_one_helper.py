@@ -33,7 +33,9 @@ async def main(task, logs_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a task with MagenticOneHelper.")
     parser.add_argument("task", type=str, help="The task to run")
-    parser.add_argument("--logs_dir", type=str, default="./logs", help="Directory to store logs")
+    parser.add_argument(
+        "--logs_dir", type=str, default="./logs", help="Directory to store logs"
+    )
     args = parser.parse_args()
     if not os.path.exists(args.logs_dir):
         os.makedirs(args.logs_dir)

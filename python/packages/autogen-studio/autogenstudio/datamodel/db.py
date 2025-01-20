@@ -10,7 +10,15 @@ from pydantic import BaseModel
 from sqlalchemy import ForeignKey, Integer, UniqueConstraint
 from sqlmodel import JSON, Column, DateTime, Field, Relationship, SQLModel, func
 
-from .types import AgentConfig, MessageConfig, MessageMeta, ModelConfig, TeamConfig, TeamResult, ToolConfig
+from .types import (
+    AgentConfig,
+    MessageConfig,
+    MessageMeta,
+    ModelConfig,
+    TeamConfig,
+    TeamResult,
+    ToolConfig,
+)
 
 # added for python3.11 and sqlmodel 0.0.22 incompatibility
 if hasattr(SQLModel, "model_config"):
@@ -119,7 +127,9 @@ class Tool(SQLModel, table=True):
     user_id: Optional[str] = None
     version: Optional[str] = "0.0.1"
     config: Union[ToolConfig, dict] = Field(sa_column=Column(JSON))
-    agents: List["Agent"] = Relationship(back_populates="tools", link_model=AgentToolLink)
+    agents: List["Agent"] = Relationship(
+        back_populates="tools", link_model=AgentToolLink
+    )
 
 
 class Model(SQLModel, table=True):
@@ -136,7 +146,9 @@ class Model(SQLModel, table=True):
     user_id: Optional[str] = None
     version: Optional[str] = "0.0.1"
     config: Union[ModelConfig, dict] = Field(sa_column=Column(JSON))
-    agents: List["Agent"] = Relationship(back_populates="models", link_model=AgentModelLink)
+    agents: List["Agent"] = Relationship(
+        back_populates="models", link_model=AgentModelLink
+    )
 
 
 class Team(SQLModel, table=True):
@@ -153,7 +165,9 @@ class Team(SQLModel, table=True):
     user_id: Optional[str] = None
     version: Optional[str] = "0.0.1"
     config: Union[TeamConfig, dict] = Field(sa_column=Column(JSON))
-    agents: List["Agent"] = Relationship(back_populates="teams", link_model=TeamAgentLink)
+    agents: List["Agent"] = Relationship(
+        back_populates="teams", link_model=TeamAgentLink
+    )
 
 
 class Agent(SQLModel, table=True):
@@ -171,7 +185,9 @@ class Agent(SQLModel, table=True):
     version: Optional[str] = "0.0.1"
     config: Union[AgentConfig, dict] = Field(sa_column=Column(JSON))
     tools: List[Tool] = Relationship(back_populates="agents", link_model=AgentToolLink)
-    models: List[Model] = Relationship(back_populates="agents", link_model=AgentModelLink)
+    models: List[Model] = Relationship(
+        back_populates="agents", link_model=AgentModelLink
+    )
     teams: List[Team] = Relationship(back_populates="agents", link_model=TeamAgentLink)
 
 
@@ -188,12 +204,17 @@ class Message(SQLModel, table=True):
     )  # pylint: disable=not-callable
     user_id: Optional[str] = None
     version: Optional[str] = "0.0.1"
-    config: Union[MessageConfig, dict] = Field(default_factory=MessageConfig, sa_column=Column(JSON))
+    config: Union[MessageConfig, dict] = Field(
+        default_factory=MessageConfig, sa_column=Column(JSON)
+    )
     session_id: Optional[int] = Field(
-        default=None, sa_column=Column(Integer, ForeignKey("session.id", ondelete="CASCADE"))
+        default=None,
+        sa_column=Column(Integer, ForeignKey("session.id", ondelete="CASCADE")),
     )
     run_id: Optional[UUID] = Field(default=None, foreign_key="run.id")
-    message_meta: Optional[Union[MessageMeta, dict]] = Field(default={}, sa_column=Column(JSON))
+    message_meta: Optional[Union[MessageMeta, dict]] = Field(
+        default={}, sa_column=Column(JSON)
+    )
 
 
 class Session(SQLModel, table=True):
@@ -209,7 +230,10 @@ class Session(SQLModel, table=True):
     )  # pylint: disable=not-callable
     user_id: Optional[str] = None
     version: Optional[str] = "0.0.1"
-    team_id: Optional[int] = Field(default=None, sa_column=Column(Integer, ForeignKey("team.id", ondelete="CASCADE")))
+    team_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(Integer, ForeignKey("team.id", ondelete="CASCADE")),
+    )
     name: Optional[str] = None
 
 
@@ -228,25 +252,34 @@ class Run(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     created_at: datetime = Field(
-        default_factory=datetime.now, sa_column=Column(DateTime(timezone=True), server_default=func.now())
+        default_factory=datetime.now,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now, sa_column=Column(DateTime(timezone=True), onupdate=func.now())
+        default_factory=datetime.now,
+        sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
     )
     session_id: Optional[int] = Field(
-        default=None, sa_column=Column(Integer, ForeignKey("session.id", ondelete="CASCADE"), nullable=False)
+        default=None,
+        sa_column=Column(
+            Integer, ForeignKey("session.id", ondelete="CASCADE"), nullable=False
+        ),
     )
     status: RunStatus = Field(default=RunStatus.CREATED)
 
     # Store the original user task
-    task: Union[MessageConfig, dict] = Field(default_factory=MessageConfig, sa_column=Column(JSON))
+    task: Union[MessageConfig, dict] = Field(
+        default_factory=MessageConfig, sa_column=Column(JSON)
+    )
 
     # Store TeamResult which contains TaskResult
     team_result: Union[TeamResult, dict] = Field(default=None, sa_column=Column(JSON))
 
     error_message: Optional[str] = None
     version: Optional[str] = "0.0.1"
-    messages: Union[List[Message], List[dict]] = Field(default_factory=list, sa_column=Column(JSON))
+    messages: Union[List[Message], List[dict]] = Field(
+        default_factory=list, sa_column=Column(JSON)
+    )
 
     class Config:
         json_encoders = {UUID: str, datetime: lambda v: v.isoformat()}
@@ -278,4 +311,6 @@ class Gallery(SQLModel, table=True):
     )
     user_id: Optional[str] = None
     version: Optional[str] = "0.0.1"
-    config: Union[GalleryConfig, dict] = Field(default_factory=GalleryConfig, sa_column=Column(JSON))
+    config: Union[GalleryConfig, dict] = Field(
+        default_factory=GalleryConfig, sa_column=Column(JSON)
+    )

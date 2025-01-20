@@ -25,14 +25,16 @@ def get_db_context():
     """Provide a transactional scope around a series of operations."""
     if not _db_manager:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database manager not initialized"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database manager not initialized",
         )
     try:
         yield _db_manager
     except Exception as e:
         logger.error(f"Database operation failed: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database operation failed"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database operation failed",
         ) from e
 
 
@@ -43,7 +45,8 @@ async def get_db() -> DatabaseManager:
     """Dependency provider for database manager"""
     if not _db_manager:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database manager not initialized"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database manager not initialized",
         )
     return _db_manager
 
@@ -52,7 +55,8 @@ async def get_websocket_manager() -> WebSocketManager:
     """Dependency provider for connection manager"""
     if not _websocket_manager:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Connection manager not initialized"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Connection manager not initialized",
         )
     return _websocket_manager
 
@@ -60,7 +64,10 @@ async def get_websocket_manager() -> WebSocketManager:
 async def get_team_manager() -> TeamManager:
     """Dependency provider for team manager"""
     if not _team_manager:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Team manager not initialized")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Team manager not initialized",
+        )
     return _team_manager
 
 
@@ -96,7 +103,9 @@ async def init_managers(database_uri: str, config_dir: str, app_root: str) -> No
         # init default team config
 
         _team_config_manager = ConfigurationManager(db_manager=_db_manager)
-        await _team_config_manager.import_directory(config_dir, settings.DEFAULT_USER_ID, check_exists=True)
+        await _team_config_manager.import_directory(
+            config_dir, settings.DEFAULT_USER_ID, check_exists=True
+        )
 
         # Initialize connection manager
         _websocket_manager = WebSocketManager(db_manager=_db_manager)
@@ -159,7 +168,11 @@ def get_manager_status() -> dict:
 
 async def get_managers():
     """Get all managers in one dependency"""
-    return {"db": await get_db(), "connection": await get_websocket_manager(), "team": await get_team_manager()}
+    return {
+        "db": await get_db(),
+        "connection": await get_websocket_manager(),
+        "team": await get_team_manager(),
+    }
 
 
 # Error handling for manager operations

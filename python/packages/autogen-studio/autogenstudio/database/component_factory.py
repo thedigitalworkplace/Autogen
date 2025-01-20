@@ -17,12 +17,19 @@ from autogen_agentchat.conditions import (
     TimeoutTermination,
     TokenUsageTermination,
 )
-from autogen_agentchat.teams import MagenticOneGroupChat, RoundRobinGroupChat, SelectorGroupChat
+from autogen_agentchat.teams import (
+    MagenticOneGroupChat,
+    RoundRobinGroupChat,
+    SelectorGroupChat,
+)
 from autogen_core.tools import FunctionTool
 from autogen_ext.agents.file_surfer import FileSurfer
 from autogen_ext.agents.magentic_one import MagenticOneCoderAgent
 from autogen_ext.agents.web_surfer import MultimodalWebSurfer
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
+from autogen_ext.models.openai import (
+    AzureOpenAIChatCompletionClient,
+    OpenAIChatCompletionClient,
+)
 
 from ..datamodel.types import (
     AgentConfig,
@@ -55,7 +62,13 @@ from ..utils.utils import Version
 logger = logging.getLogger(__name__)
 
 TeamComponent = Union[RoundRobinGroupChat, SelectorGroupChat, MagenticOneGroupChat]
-AgentComponent = Union[AssistantAgent, MultimodalWebSurfer, UserProxyAgent, FileSurfer, MagenticOneCoderAgent]
+AgentComponent = Union[
+    AssistantAgent,
+    MultimodalWebSurfer,
+    UserProxyAgent,
+    FileSurfer,
+    MagenticOneCoderAgent,
+]
 ModelComponent = Union[OpenAIChatCompletionClient, AzureOpenAIChatCompletionClient]
 ToolComponent = Union[FunctionTool]  # Will grow with more tool types
 TerminationComponent = Union[
@@ -70,7 +83,9 @@ TerminationComponent = Union[
     StopMessageTermination,
 ]
 
-Component = Union[TeamComponent, AgentComponent, ModelComponent, ToolComponent, TerminationComponent]
+Component = Union[
+    TeamComponent, AgentComponent, ModelComponent, ToolComponent, TerminationComponent
+]
 
 ReturnType = Literal["object", "dict", "config"]
 
@@ -103,7 +118,10 @@ class ComponentFactory:
         self._last_cache_clear = datetime.now()
 
     async def load(
-        self, component: ComponentConfigInput, input_func: Optional[Callable] = None, return_type: ReturnType = "object"
+        self,
+        component: ComponentConfigInput,
+        input_func: Optional[Callable] = None,
+        return_type: ReturnType = "object",
     ) -> Union[Component, dict, ComponentConfig]:
         """
         Universal loader for any component type
@@ -243,24 +261,40 @@ class ComponentFactory:
         try:
             if config.termination_type == TerminationTypes.COMBINATION:
                 if not config.conditions or len(config.conditions) < 2:
-                    raise ValueError("Combination termination requires at least 2 conditions")
+                    raise ValueError(
+                        "Combination termination requires at least 2 conditions"
+                    )
                 if not config.operator:
-                    raise ValueError("Combination termination requires an operator (and/or)")
+                    raise ValueError(
+                        "Combination termination requires an operator (and/or)"
+                    )
 
                 # Load first two conditions
-                conditions = [await self.load_termination(cond) for cond in config.conditions[:2]]
-                result = conditions[0] & conditions[1] if config.operator == "and" else conditions[0] | conditions[1]
+                conditions = [
+                    await self.load_termination(cond) for cond in config.conditions[:2]
+                ]
+                result = (
+                    conditions[0] & conditions[1]
+                    if config.operator == "and"
+                    else conditions[0] | conditions[1]
+                )
 
                 # Process remaining conditions if any
                 for condition in config.conditions[2:]:
                     next_condition = await self.load_termination(condition)
-                    result = result & next_condition if config.operator == "and" else result | next_condition
+                    result = (
+                        result & next_condition
+                        if config.operator == "and"
+                        else result | next_condition
+                    )
 
                 return result
 
             elif config.termination_type == TerminationTypes.MAX_MESSAGES:
                 if config.max_messages is None:
-                    raise ValueError("max_messages parameter required for MaxMessageTermination")
+                    raise ValueError(
+                        "max_messages parameter required for MaxMessageTermination"
+                    )
                 return MaxMessageTermination(max_messages=config.max_messages)
 
             elif config.termination_type == TerminationTypes.STOP_MESSAGE:
@@ -268,17 +302,23 @@ class ComponentFactory:
 
             elif config.termination_type == TerminationTypes.TEXT_MENTION:
                 if not config.text:
-                    raise ValueError("text parameter required for TextMentionTermination")
+                    raise ValueError(
+                        "text parameter required for TextMentionTermination"
+                    )
                 return TextMentionTermination(text=config.text)
 
             else:
-                raise ValueError(f"Unsupported termination type: {config.termination_type}")
+                raise ValueError(
+                    f"Unsupported termination type: {config.termination_type}"
+                )
 
         except Exception as e:
             logger.error(f"Failed to create termination condition: {str(e)}")
             raise ValueError(f"Termination condition creation failed: {str(e)}") from e
 
-    async def load_team(self, config: TeamConfig, input_func: Optional[Callable] = None) -> TeamComponent:
+    async def load_team(
+        self, config: TeamConfig, input_func: Optional[Callable] = None
+    ) -> TeamComponent:
         """Create team instance from configuration."""
         try:
             # Load participants (agents) with input_func
@@ -294,12 +334,18 @@ class ComponentFactory:
 
             # Create team based on type
             if config.team_type == TeamTypes.ROUND_ROBIN:
-                return RoundRobinGroupChat(participants=participants, termination_condition=termination)
+                return RoundRobinGroupChat(
+                    participants=participants, termination_condition=termination
+                )
             elif config.team_type == TeamTypes.SELECTOR:
                 model_client = await self.load(config.model_client)
                 if not model_client:
                     raise ValueError("SelectorGroupChat requires a model_client")
-                selector_prompt = config.selector_prompt if config.selector_prompt else DEFAULT_SELECTOR_PROMPT
+                selector_prompt = (
+                    config.selector_prompt
+                    if config.selector_prompt
+                    else DEFAULT_SELECTOR_PROMPT
+                )
                 return SelectorGroupChat(
                     participants=participants,
                     model_client=model_client,
@@ -313,7 +359,9 @@ class ComponentFactory:
                 return MagenticOneGroupChat(
                     participants=participants,
                     model_client=model_client,
-                    termination_condition=termination if termination is not None else None,
+                    termination_condition=(
+                        termination if termination is not None else None
+                    ),
                     max_turns=config.max_turns if config.max_turns is not None else 20,
                 )
             else:
@@ -323,7 +371,9 @@ class ComponentFactory:
             logger.error(f"Failed to create team {config.name}: {str(e)}")
             raise ValueError(f"Team creation failed: {str(e)}") from e
 
-    async def load_agent(self, config: AgentConfig, input_func: Optional[Callable] = None) -> AgentComponent:
+    async def load_agent(
+        self, config: AgentConfig, input_func: Optional[Callable] = None
+    ) -> AgentComponent:
         """Create agent instance from configuration."""
 
         model_client = None
@@ -346,7 +396,11 @@ class ComponentFactory:
                     input_func=input_func,  # Pass through to UserProxyAgent
                 )
             elif config.agent_type == AgentTypes.ASSISTANT:
-                system_message = config.system_message if config.system_message else "You are a helpful assistant"
+                system_message = (
+                    config.system_message
+                    if config.system_message
+                    else "You are a helpful assistant"
+                )
 
                 return AssistantAgent(
                     name=config.name,
@@ -361,10 +415,20 @@ class ComponentFactory:
                     model_client=model_client,
                     headless=config.headless if config.headless is not None else True,
                     debug_dir=config.logs_dir if config.logs_dir is not None else None,
-                    downloads_folder=config.logs_dir if config.logs_dir is not None else None,
-                    to_save_screenshots=config.to_save_screenshots if config.to_save_screenshots is not None else False,
+                    downloads_folder=(
+                        config.logs_dir if config.logs_dir is not None else None
+                    ),
+                    to_save_screenshots=(
+                        config.to_save_screenshots
+                        if config.to_save_screenshots is not None
+                        else False
+                    ),
                     use_ocr=config.use_ocr if config.use_ocr is not None else False,
-                    animate_actions=config.animate_actions if config.animate_actions is not None else False,
+                    animate_actions=(
+                        config.animate_actions
+                        if config.animate_actions is not None
+                        else False
+                    ),
                 )
             elif config.agent_type == AgentTypes.FILE_SURFER:
                 return FileSurfer(
@@ -399,7 +463,10 @@ class ComponentFactory:
                     "base_url": config.base_url,
                 }
 
-                if hasattr(config, "model_capabilities") and config.model_capabilities is not None:
+                if (
+                    hasattr(config, "model_capabilities")
+                    and config.model_capabilities is not None
+                ):
                     args["model_capabilities"] = config.model_capabilities
 
                 model = OpenAIChatCompletionClient(**args)
@@ -426,7 +493,9 @@ class ComponentFactory:
         """Create tool instance from configuration."""
         try:
             # Validate required fields
-            if not all([config.name, config.description, config.content, config.tool_type]):
+            if not all(
+                [config.name, config.description, config.content, config.tool_type]
+            ):
                 raise ValueError("Tool configuration missing required fields")
 
             # Check cache first
@@ -437,7 +506,9 @@ class ComponentFactory:
 
             if config.tool_type == ToolTypes.PYTHON_FUNCTION:
                 tool = FunctionTool(
-                    name=config.name, description=config.description, func=self._func_from_string(config.content)
+                    name=config.name,
+                    description=config.description,
+                    func=self._func_from_string(config.content),
                 )
                 self._tool_cache[cache_key] = tool
                 return tool

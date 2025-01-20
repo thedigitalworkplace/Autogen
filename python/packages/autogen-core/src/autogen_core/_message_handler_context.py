@@ -11,7 +11,9 @@ class MessageHandlerContext:
             "MessageHandlerContext cannot be instantiated. It is a static class that provides context management for message handling."
         )
 
-    _MESSAGE_HANDLER_CONTEXT: ClassVar[ContextVar[AgentId]] = ContextVar("_MESSAGE_HANDLER_CONTEXT")
+    _MESSAGE_HANDLER_CONTEXT: ClassVar[ContextVar[AgentId]] = ContextVar(
+        "_MESSAGE_HANDLER_CONTEXT"
+    )
 
     @classmethod
     @contextmanager
@@ -28,4 +30,6 @@ class MessageHandlerContext:
         try:
             return cls._MESSAGE_HANDLER_CONTEXT.get()
         except LookupError as e:
-            raise RuntimeError("MessageHandlerContext.agent_id() must be called within a message handler.") from e
+            raise RuntimeError(
+                "MessageHandlerContext.agent_id() must be called within a message handler."
+            ) from e

@@ -130,7 +130,9 @@ def get_file_type(file_path: str) -> str:
     return file_type
 
 
-def get_modified_files(start_timestamp: float, end_timestamp: float, source_dir: str) -> List[Dict[str, str]]:
+def get_modified_files(
+    start_timestamp: float, end_timestamp: float, source_dir: str
+) -> List[Dict[str, str]]:
     """
     Identify files from source_dir that were modified within a specified timestamp range.
     The function excludes files with certain file extensions and names.
@@ -152,7 +154,11 @@ def get_modified_files(start_timestamp: float, end_timestamp: float, source_dir:
     for root, dirs, files in os.walk(source_dir):
         # Update directories and files to exclude those to be ignored
         dirs[:] = [d for d in dirs if d not in ignore_files]
-        files[:] = [f for f in files if f not in ignore_files and os.path.splitext(f)[1] not in ignore_extensions]
+        files[:] = [
+            f
+            for f in files
+            if f not in ignore_files and os.path.splitext(f)[1] not in ignore_extensions
+        ]
 
         for file in files:
             file_path = os.path.join(root, file)
@@ -161,7 +167,9 @@ def get_modified_files(start_timestamp: float, end_timestamp: float, source_dir:
             # Verify if the file was modified within the given timestamp range
             if start_timestamp <= file_mtime <= end_timestamp:
                 file_relative_path = (
-                    "files/user" + file_path.split("files/user", 1)[1] if "files/user" in file_path else ""
+                    "files/user" + file_path.split("files/user", 1)[1]
+                    if "files/user" in file_path
+                    else ""
                 )
                 file_type = get_file_type(file_path)
 
@@ -249,7 +257,11 @@ def sanitize_model(model: Model):
         model = model.model_dump()
     valid_keys = ["model", "base_url", "api_key", "api_type", "api_version"]
     # only add key if value is not None
-    sanitized_model = {k: v for k, v in model.items() if (v is not None and v != "") and k in valid_keys}
+    sanitized_model = {
+        k: v
+        for k, v in model.items()
+        if (v is not None and v != "") and k in valid_keys
+    }
     return sanitized_model
 
 
@@ -259,7 +271,9 @@ class Version:
             # Split into major.minor.patch
             self.major, self.minor, self.patch = map(int, ver_str.split("."))
         except (ValueError, AttributeError) as err:
-            raise ValueError(f"Invalid version format: {ver_str}. Expected: major.minor.patch") from err
+            raise ValueError(
+                f"Invalid version format: {ver_str}. Expected: major.minor.patch"
+            ) from err
 
     def __str__(self):
         return f"{self.major}.{self.minor}.{self.patch}"
@@ -267,9 +281,17 @@ class Version:
     def __eq__(self, other):
         if isinstance(other, str):
             other = Version(other)
-        return (self.major, self.minor, self.patch) == (other.major, other.minor, other.patch)
+        return (self.major, self.minor, self.patch) == (
+            other.major,
+            other.minor,
+            other.patch,
+        )
 
     def __gt__(self, other):
         if isinstance(other, str):
             other = Version(other)
-        return (self.major, self.minor, self.patch) > (other.major, other.minor, other.patch)
+        return (self.major, self.minor, self.patch) > (
+            other.major,
+            other.minor,
+            other.patch,
+        )

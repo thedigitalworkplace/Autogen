@@ -65,7 +65,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
         id: session?.id,
       });
       messageApi.success(
-        `Session ${session ? "updated" : "created"} successfully`
+        `Session ${session ? "updated" : "created"} successfully`,
       );
     } catch (error) {
       if (error instanceof Error) {
@@ -75,7 +75,7 @@ export const SessionEditor: React.FC<SessionEditorProps> = ({
   };
 
   const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (
-    errorInfo
+    errorInfo,
   ) => {
     messageApi.error("Please check the form for errors");
     console.error("Form validation failed:", errorInfo);

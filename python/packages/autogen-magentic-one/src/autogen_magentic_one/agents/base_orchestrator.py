@@ -2,10 +2,20 @@ import logging
 import time
 from typing import List, Optional
 
-from autogen_core import EVENT_LOGGER_NAME, AgentProxy, CancellationToken, MessageContext
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    AgentProxy,
+    CancellationToken,
+    MessageContext,
+)
 from autogen_core.models import AssistantMessage, LLMMessage, UserMessage
 
-from ..messages import BroadcastMessage, OrchestrationEvent, RequestReplyMessage, ResetMessage
+from ..messages import (
+    BroadcastMessage,
+    OrchestrationEvent,
+    RequestReplyMessage,
+    ResetMessage,
+)
 from ..utils import message_content_to_str
 from .base_agent import MagenticOneBaseAgent
 
@@ -21,15 +31,21 @@ class BaseOrchestrator(MagenticOneBaseAgent):
         max_time: float = float("inf"),
         handle_messages_concurrently: bool = False,
     ) -> None:
-        super().__init__(description, handle_messages_concurrently=handle_messages_concurrently)
+        super().__init__(
+            description, handle_messages_concurrently=handle_messages_concurrently
+        )
         self._agents = agents
         self._max_rounds = max_rounds
         self._max_time = max_time
         self._num_rounds = 0
         self._start_time: float = -1.0
-        self.logger = logging.getLogger(EVENT_LOGGER_NAME + f".{self.id.key}.orchestrator")
+        self.logger = logging.getLogger(
+            EVENT_LOGGER_NAME + f".{self.id.key}.orchestrator"
+        )
 
-    async def _handle_broadcast(self, message: BroadcastMessage, ctx: MessageContext) -> None:
+    async def _handle_broadcast(
+        self, message: BroadcastMessage, ctx: MessageContext
+    ) -> None:
         """Handle an incoming message."""
 
         # First broadcast sets the timer
@@ -37,7 +53,9 @@ class BaseOrchestrator(MagenticOneBaseAgent):
             self._start_time = time.time()
 
         source = "Unknown"
-        if isinstance(message.content, UserMessage) or isinstance(message.content, AssistantMessage):
+        if isinstance(message.content, UserMessage) or isinstance(
+            message.content, AssistantMessage
+        ):
             source = message.content.source
 
         content = message_content_to_str(message.content.content)
@@ -92,7 +110,11 @@ class BaseOrchestrator(MagenticOneBaseAgent):
         )
 
         self._num_rounds += 1  # Call before sending the message
-        await self.send_message(request_reply_message, next_agent.id, cancellation_token=ctx.cancellation_token)
+        await self.send_message(
+            request_reply_message,
+            next_agent.id,
+            cancellation_token=ctx.cancellation_token,
+        )
 
     async def _select_next_agent(self, message: LLMMessage) -> Optional[AgentProxy]:
         raise NotImplementedError()

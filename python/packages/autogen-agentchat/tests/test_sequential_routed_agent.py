@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from typing import List
 
 import pytest
-from autogen_agentchat.teams._group_chat._sequential_routed_agent import SequentialRoutedAgent
+from autogen_agentchat.teams._group_chat._sequential_routed_agent import (
+    SequentialRoutedAgent,
+)
 from autogen_core import (
     AgentId,
     DefaultTopicId,
@@ -27,7 +29,9 @@ class _TestAgent(SequentialRoutedAgent):
         self.messages: List[Message] = []
 
     @message_handler
-    async def handle_content_publish(self, message: Message, ctx: MessageContext) -> None:
+    async def handle_content_publish(
+        self, message: Message, ctx: MessageContext
+    ) -> None:
         # Sleep a random amount of time to simulate processing time.
         await asyncio.sleep(random.random() / 100)
         self.messages.append(message)
@@ -37,11 +41,17 @@ class _TestAgent(SequentialRoutedAgent):
 async def test_sequential_routed_agent() -> None:
     runtime = SingleThreadedAgentRuntime()
     runtime.start()
-    await _TestAgent.register(runtime, type="test_agent", factory=lambda: _TestAgent(description="Test Agent"))
+    await _TestAgent.register(
+        runtime, type="test_agent", factory=lambda: _TestAgent(description="Test Agent")
+    )
     test_agent_id = AgentId(type="test_agent", key="default")
     for i in range(100):
-        await runtime.publish_message(Message(content=f"{i}"), topic_id=DefaultTopicId())
+        await runtime.publish_message(
+            Message(content=f"{i}"), topic_id=DefaultTopicId()
+        )
     await runtime.stop_when_idle()
-    test_agent = await runtime.try_get_underlying_agent_instance(test_agent_id, _TestAgent)
+    test_agent = await runtime.try_get_underlying_agent_instance(
+        test_agent_id, _TestAgent
+    )
     for i in range(100):
         assert test_agent.messages[i].content == f"{i}"

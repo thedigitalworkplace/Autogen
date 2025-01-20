@@ -1,6 +1,6 @@
 # Creating your own extension
 
-With the new package structure in 0.4, it is easier than ever to create and publish your own extension to the AutoGen ecosystem. This page details some best practices so that your extension package  integrates well with the AutoGen ecosystem.
+With the new package structure in 0.4, it is easier than ever to create and publish your own extension to the AutoGen ecosystem. This page details some best practices so that your extension package integrates well with the AutoGen ecosystem.
 
 ## Best practices
 

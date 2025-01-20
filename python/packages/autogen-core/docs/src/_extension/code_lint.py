@@ -71,7 +71,9 @@ class CodeLinter(Builder):
                     # Run pyright on the temporary file using subprocess.run
                     import subprocess
 
-                    result = subprocess.run(["pyright", temp_file.name], capture_output=True, text=True)
+                    result = subprocess.run(
+                        ["pyright", temp_file.name], capture_output=True, text=True
+                    )
                     if result.returncode != 0:
                         logger.info(" " + darkred("FAIL"))
                         highlighted_code = highlight(code.astext(), PythonLexer(), TerminalFormatter())  # type: ignore

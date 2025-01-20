@@ -2,7 +2,7 @@
 
 Thre are two sets of packages here:
 AutoGen.\* the older packages derived from AutoGen 0.2 for .NET - these will gradually be deprecated and ported into the new packages
-Microsoft.AutoGen.* the new packages for .NET that use the event-driven model - These APIs are not yet stable and are subject to change.
+Microsoft.AutoGen.\* the new packages for .NET that use the event-driven model - These APIs are not yet stable and are subject to change.
 
 To get started with the new packages, please see the [samples](./samples/) and in particular the [Hello](./samples/Hello) sample.
 
@@ -57,10 +57,12 @@ You can find more examples under the [sample project](https://github.com/microso
 ## Functionality
 
 - ConversableAgent
+
   - [x] function call
   - [x] code execution (dotnet only, powered by [`dotnet-interactive`](https://github.com/dotnet/interactive))
 
 - Agent communication
+
   - [x] Two-agent chat
   - [x] Group chat
 

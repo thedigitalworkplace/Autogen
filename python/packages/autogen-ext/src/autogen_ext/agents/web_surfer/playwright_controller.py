@@ -64,7 +64,10 @@ class PlaywrightController:
         self._markdown_converter: Optional[Any] | None = None
 
         # Read page_script
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js"), "rt") as fh:
+        with open(
+            os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js"),
+            "rt",
+        ) as fh:
             self._page_script = fh.read()
 
     async def sleep(self, page: Page, duration: Union[int, float]) -> None:
@@ -94,7 +97,10 @@ class PlaywrightController:
             await page.evaluate(self._page_script)
         except Exception:
             pass
-        result = cast(Dict[str, Dict[str, Any]], await page.evaluate("MultimodalWebSurfer.getInteractiveRects();"))
+        result = cast(
+            Dict[str, Dict[str, Any]],
+            await page.evaluate("MultimodalWebSurfer.getInteractiveRects();"),
+        )
 
         # Convert the results into appropriate types
         assert isinstance(result, dict)
@@ -120,7 +126,9 @@ class PlaywrightController:
             await page.evaluate(self._page_script)
         except Exception:
             pass
-        return visualviewport_from_dict(await page.evaluate("MultimodalWebSurfer.getVisualViewport();"))
+        return visualviewport_from_dict(
+            await page.evaluate("MultimodalWebSurfer.getVisualViewport();")
+        )
 
     async def get_focused_rect_id(self, page: Page) -> str:
         """
@@ -169,9 +177,15 @@ class PlaywrightController:
         assert page is not None
         page.on("download", self._download_handler)  # type: ignore
         if self.to_resize_viewport and self.viewport_width and self.viewport_height:
-            await page.set_viewport_size({"width": self.viewport_width, "height": self.viewport_height})
+            await page.set_viewport_size(
+                {"width": self.viewport_width, "height": self.viewport_height}
+            )
         await self.sleep(page, 0.2)
-        await page.add_init_script(path=os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js"))
+        await page.add_init_script(
+            path=os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), "page_script.js"
+            )
+        )
         await page.wait_for_load_state()
 
     async def back(self, page: Page) -> None:
@@ -215,11 +229,14 @@ class PlaywrightController:
                         else:
                             raise e_inner
                     download = await download_info.value
-                    fname = os.path.join(self.downloads_folder, download.suggested_filename)
+                    fname = os.path.join(
+                        self.downloads_folder, download.suggested_filename
+                    )
                     await download.save_as(fname)
                     message = f"<body style=\"margin: 20px;\"><h1>Successfully downloaded '{download.suggested_filename}' to local path:<br><br>{fname}</h1></body>"
                     await page.goto(
-                        "data:text/html;base64," + base64.b64encode(message.encode("utf-8")).decode("utf-8")
+                        "data:text/html;base64,"
+                        + base64.b64encode(message.encode("utf-8")).decode("utf-8")
                     )
                     reset_last_download = True
             else:
@@ -265,13 +282,15 @@ class PlaywrightController:
             x = start_x + (end_x - start_x) * (step / steps)
             y = start_y + (end_y - start_y) * (step / steps)
             # await page.mouse.move(x, y, steps=1)
-            await page.evaluate(f"""
+            await page.evaluate(
+                f"""
                 (function() {{
                     let cursor = document.getElementById('red-cursor');
                     cursor.style.left = '{x}px';
                     cursor.style.top = '{y}px';
                 }})();
-            """)
+            """
+            )
             await asyncio.sleep(0.05)
 
         self.last_cursor_position = (end_x, end_y)
@@ -285,7 +304,8 @@ class PlaywrightController:
             identifier (str): The element identifier.
         """
         # animation helper
-        await page.evaluate(f"""
+        await page.evaluate(
+            f"""
             (function() {{
                 let elm = document.querySelector("[__elementId='{identifier}']");
                 if (elm) {{
@@ -293,11 +313,13 @@ class PlaywrightController:
                     elm.style.border = '2px solid red';
                 }}
             }})();
-        """)
+        """
+        )
         await asyncio.sleep(0.3)
 
         # Create a red cursor
-        await page.evaluate("""
+        await page.evaluate(
+            """
             (function() {
                 let cursor = document.createElement('div');
                 cursor.id = 'red-cursor';
@@ -309,7 +331,8 @@ class PlaywrightController:
                 cursor.style.zIndex = '10000';
                 document.body.appendChild(cursor);
             })();
-        """)
+        """
+        )
 
     async def remove_cursor_box(self, page: Page, identifier: str) -> None:
         """
@@ -320,7 +343,8 @@ class PlaywrightController:
             identifier (str): The element identifier.
         """
         # Remove the highlight and cursor
-        await page.evaluate(f"""
+        await page.evaluate(
+            f"""
             (function() {{
                 let elm = document.querySelector("[__elementId='{identifier}']");
                 if (elm) {{
@@ -331,7 +355,8 @@ class PlaywrightController:
                     cursor.remove();
                 }}
             }})();
-        """)
+        """
+        )
 
     async def click_id(self, page: Page, identifier: str) -> Page | None:
         """
@@ -383,7 +408,11 @@ class PlaywrightController:
             try:
                 # Give it a chance to open a new page
                 async with page.expect_event("popup", timeout=1000) as page_info:  # type: ignore
-                    await page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, delay=10)
+                    await page.mouse.click(
+                        box["x"] + box["width"] / 2,
+                        box["y"] + box["height"] / 2,
+                        delay=10,
+                    )
                     new_page = await page_info.value  # type: ignore
                     assert isinstance(new_page, Page)
                     await self.on_new_page(new_page)
@@ -421,13 +450,19 @@ class PlaywrightController:
             end_x, end_y = box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
             await self.gradual_cursor_animation(page, start_x, start_y, end_x, end_y)
             await asyncio.sleep(0.1)
-            await page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+            await page.mouse.move(
+                box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+            )
 
             await self.remove_cursor_box(page, identifier)
         else:
-            await page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+            await page.mouse.move(
+                box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+            )
 
-    async def fill_id(self, page: Page, identifier: str, value: str, press_enter: bool = True) -> None:
+    async def fill_id(
+        self, page: Page, identifier: str, value: str, press_enter: bool = True
+    ) -> None:
         """
         Fill the element with the given identifier with the specified value.
 
@@ -516,12 +551,16 @@ class PlaywrightController:
         """
         assert page is not None
         try:
-            text_in_viewport = await page.evaluate("""() => {
+            text_in_viewport = await page.evaluate(
+                """() => {
                 return document.body.innerText;
-            }""")
+            }"""
+            )
             text_in_viewport = "\n".join(text_in_viewport.split("\n")[:n_lines])
             # remove empty lines
-            text_in_viewport = "\n".join([line for line in text_in_viewport.split("\n") if line.strip()])
+            text_in_viewport = "\n".join(
+                [line for line in text_in_viewport.split("\n") if line.strip()]
+            )
             assert isinstance(text_in_viewport, str)
             return text_in_viewport
         except Exception:

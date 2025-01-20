@@ -19,7 +19,9 @@ class UserProxy(BaseWorker):
     ) -> None:
         super().__init__(description)
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, UserContent]:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, UserContent]:
         """Respond to a reply request."""
         # Make an inference to the model.
         response = await self.ainput("User input ('exit' to quit): ")

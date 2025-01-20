@@ -4,7 +4,14 @@ import warnings
 from abc import ABC, abstractmethod
 from typing import Literal, Mapping, Optional, Sequence, TypeAlias
 
-from typing_extensions import Any, AsyncGenerator, Required, TypedDict, Union, deprecated
+from typing_extensions import (
+    Any,
+    AsyncGenerator,
+    Required,
+    TypedDict,
+    Union,
+    deprecated,
+)
 
 from .. import CancellationToken
 from .._component_config import ComponentLoader
@@ -15,7 +22,8 @@ from ._types import CreateResult, LLMMessage, RequestUsage
 class ModelFamily:
     """A model family is a group of models that share similar characteristics from a capabilities perspective. This is different to discrete supported features such as vision, function calling, and JSON output.
 
-    This namespace class holds constants for the model families that AutoGen understands. Other families definitely exist and can be represented by a string, however, AutoGen will treat them as unknown."""
+    This namespace class holds constants for the model families that AutoGen understands. Other families definitely exist and can be represented by a string, however, AutoGen will treat them as unknown.
+    """
 
     GPT_4O = "gpt-4o"
     O1 = "o1"
@@ -26,7 +34,9 @@ class ModelFamily:
     ANY: TypeAlias = Literal["gpt-4o", "o1", "gpt-4", "gpt-35", "unknown"]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> ModelFamily:
-        raise TypeError(f"{cls.__name__} is a namespace class and cannot be instantiated.")
+        raise TypeError(
+            f"{cls.__name__} is a namespace class and cannot be instantiated."
+        )
 
 
 @deprecated("Use the ModelInfo class instead ModelCapabilities.")
@@ -82,10 +92,14 @@ class ChatCompletionClient(ABC, ComponentLoader):
     def total_usage(self) -> RequestUsage: ...
 
     @abstractmethod
-    def count_tokens(self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []) -> int: ...
+    def count_tokens(
+        self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []
+    ) -> int: ...
 
     @abstractmethod
-    def remaining_tokens(self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []) -> int: ...
+    def remaining_tokens(
+        self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []
+    ) -> int: ...
 
     # Deprecated
     @property

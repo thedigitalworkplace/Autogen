@@ -86,7 +86,9 @@ def save_screenshot(video_path: str, timestamp: float, output_path: str) -> None
     cap.release()
 
 
-async def transcribe_video_screenshot(video_path: str, timestamp: float, model_client: ChatCompletionClient) -> str:
+async def transcribe_video_screenshot(
+    video_path: str, timestamp: float, model_client: ChatCompletionClient
+) -> str:
     """
     Transcribes the content of a video screenshot captured at the specified timestamp using OpenAI API.
 
@@ -120,7 +122,9 @@ async def transcribe_video_screenshot(video_path: str, timestamp: float, model_c
     return str(result.content)
 
 
-def get_screenshot_at(video_path: str, timestamps: List[float]) -> List[Tuple[float, np.ndarray[Any, Any]]]:
+def get_screenshot_at(
+    video_path: str, timestamps: List[float]
+) -> List[Tuple[float, np.ndarray[Any, Any]]]:
     """
     Captures screenshots at the specified timestamps and returns them as Python objects.
 
@@ -150,7 +154,9 @@ def get_screenshot_at(video_path: str, timestamps: List[float]) -> List[Tuple[fl
             else:
                 raise IOError(f"Failed to capture frame at {timestamp:.2f}s")
         else:
-            raise ValueError(f"Timestamp {timestamp:.2f}s is out of range [0s, {duration:.2f}s]")
+            raise ValueError(
+                f"Timestamp {timestamp:.2f}s is out of range [0s, {duration:.2f}s]"
+            )
 
     cap.release()
     return screenshots

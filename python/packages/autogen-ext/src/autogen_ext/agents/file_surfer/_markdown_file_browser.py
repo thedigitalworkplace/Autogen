@@ -16,9 +16,7 @@ class MarkdownFileBrowser:
     """
 
     # TODO: Fix unfollowed import
-    def __init__(  # type: ignore
-        self, viewport_size: Union[int, None] = 1024 * 8
-    ):
+    def __init__(self, viewport_size: Union[int, None] = 1024 * 8):  # type: ignore
         """
         Instantiate a new MarkdownFileBrowser.
 
@@ -34,7 +32,9 @@ class MarkdownFileBrowser:
         self.set_path(os.getcwd())
         self._page_content: str = ""
         self._find_on_page_query: Union[str, None] = None
-        self._find_on_page_last_result: Union[int, None] = None  # Location of the last result
+        self._find_on_page_last_result: Union[int, None] = (
+            None  # Location of the last result
+        )
 
     @property
     def path(self) -> str:
@@ -92,7 +92,9 @@ class MarkdownFileBrowser:
 
     def page_down(self) -> None:
         """Move the viewport down one page, if possible."""
-        self.viewport_current_page = min(self.viewport_current_page + 1, len(self.viewport_pages) - 1)
+        self.viewport_current_page = min(
+            self.viewport_current_page + 1, len(self.viewport_pages) - 1
+        )
 
     def page_up(self) -> None:
         """Move the viewport up one page, if possible."""
@@ -103,7 +105,10 @@ class MarkdownFileBrowser:
 
         # Did we get here via a previous find_on_page search with the same query?
         # If so, map to find_next
-        if query == self._find_on_page_query and self.viewport_current_page == self._find_on_page_last_result:
+        if (
+            query == self._find_on_page_query
+            and self.viewport_current_page == self._find_on_page_last_result
+        ):
             return self.find_next()
 
         # Ok it's a new search start from the current viewport
@@ -131,7 +136,9 @@ class MarkdownFileBrowser:
             if starting_viewport >= len(self.viewport_pages):
                 starting_viewport = 0
 
-        viewport_match = self._find_next_viewport(self._find_on_page_query, starting_viewport)
+        viewport_match = self._find_next_viewport(
+            self._find_on_page_query, starting_viewport
+        )
         if viewport_match is None:
             self._find_on_page_last_result = None
             return None
@@ -140,7 +147,9 @@ class MarkdownFileBrowser:
             self._find_on_page_last_result = viewport_match
             return self.viewport
 
-    def _find_next_viewport(self, query: Optional[str], starting_viewport: int) -> Union[int, None]:
+    def _find_next_viewport(
+        self, query: Optional[str], starting_viewport: int
+    ) -> Union[int, None]:
         """Search for matches between the starting viewport looping when reaching the end."""
 
         if query is None:
@@ -149,7 +158,9 @@ class MarkdownFileBrowser:
         # Normalize the query, and convert to a regular expression
         nquery = re.sub(r"\*", "__STAR__", query)
         nquery = " " + (" ".join(re.split(r"\W+", nquery))).strip() + " "
-        nquery = nquery.replace(" __STAR__ ", "__STAR__ ")  # Merge isolated stars with prior word
+        nquery = nquery.replace(
+            " __STAR__ ", "__STAR__ "
+        )  # Merge isolated stars with prior word
         nquery = nquery.replace("__STAR__", ".*").lower()
 
         if nquery.strip() == "":
@@ -188,7 +199,9 @@ class MarkdownFileBrowser:
         while start_idx < len(self._page_content):
             end_idx = min(start_idx + self.viewport_size, len(self._page_content))  # type: ignore[operator]
             # Adjust to end on a space
-            while end_idx < len(self._page_content) and self._page_content[end_idx - 1] not in [" ", "\t", "\r", "\n"]:
+            while end_idx < len(self._page_content) and self._page_content[
+                end_idx - 1
+            ] not in [" ", "\t", "\r", "\n"]:
                 end_idx += 1
             self.viewport_pages.append((start_idx, end_idx))
             start_idx = end_idx
@@ -243,7 +256,9 @@ class MarkdownFileBrowser:
         for entry in os.listdir(local_path):
             size = ""
             full_path = os.path.join(local_path, entry)
-            mtime = datetime.datetime.fromtimestamp(os.path.getmtime(full_path)).strftime("%Y-%m-%d %H:%M")
+            mtime = datetime.datetime.fromtimestamp(
+                os.path.getmtime(full_path)
+            ).strftime("%Y-%m-%d %H:%M")
 
             if os.path.isdir(full_path):
                 entry = entry + os.path.sep

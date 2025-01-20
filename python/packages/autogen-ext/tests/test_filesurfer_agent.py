@@ -14,7 +14,10 @@ from openai.resources.chat.completions import AsyncCompletions
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel
 
@@ -62,7 +65,8 @@ async def test_run_filesurfer(monkeypatch: pytest.MonkeyPatch) -> None:
     # Create a test file
     test_file = os.path.abspath("test_filesurfer_agent.html")
     async with aiofiles.open(test_file, "wt") as file:
-        await file.write("""<html>
+        await file.write(
+            """<html>
   <head>
     <title>FileSurfer test file</title>
   </head>
@@ -70,7 +74,8 @@ async def test_run_filesurfer(monkeypatch: pytest.MonkeyPatch) -> None:
     <h1>FileSurfer test H1</h1>
     <p>FileSurfer test body</p>
   </body>
-</html>""")
+</html>"""
+        )
 
     # Mock the API calls
     model = "gpt-4o-2024-05-13"
@@ -100,7 +105,9 @@ async def test_run_filesurfer(monkeypatch: pytest.MonkeyPatch) -> None:
             created=0,
             model=model,
             object="chat.completion",
-            usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=0),
+            usage=CompletionUsage(
+                prompt_tokens=10, completion_tokens=5, total_tokens=0
+            ),
         ),
         ChatCompletion(
             id="id2",
@@ -116,7 +123,9 @@ async def test_run_filesurfer(monkeypatch: pytest.MonkeyPatch) -> None:
                                 type="function",
                                 function=Function(
                                     name="open_path",
-                                    arguments=json.dumps({"path": os.path.dirname(test_file)}),
+                                    arguments=json.dumps(
+                                        {"path": os.path.dirname(test_file)}
+                                    ),
                                 ),
                             )
                         ],
@@ -127,7 +136,9 @@ async def test_run_filesurfer(monkeypatch: pytest.MonkeyPatch) -> None:
             created=0,
             model=model,
             object="chat.completion",
-            usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=0),
+            usage=CompletionUsage(
+                prompt_tokens=10, completion_tokens=5, total_tokens=0
+            ),
         ),
     ]
     mock = _MockChatCompletion(chat_completions)

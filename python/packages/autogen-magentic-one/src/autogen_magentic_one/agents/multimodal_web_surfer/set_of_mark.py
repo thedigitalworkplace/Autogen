@@ -10,7 +10,8 @@ TOP_NO_LABEL_ZONE = 20  # Don't print any labels close the top of the page
 
 
 def add_set_of_mark(
-    screenshot: bytes | Image.Image | io.BufferedIOBase, ROIs: Dict[str, InteractiveRegion]
+    screenshot: bytes | Image.Image | io.BufferedIOBase,
+    ROIs: Dict[str, InteractiveRegion],
 ) -> Tuple[Image.Image, List[str], List[str], List[str]]:
     if isinstance(screenshot, Image.Image):
         return _add_set_of_mark(screenshot, ROIs)
@@ -45,7 +46,10 @@ def _add_set_of_mark(
             if rect["width"] * rect["height"] == 0:
                 continue
 
-            mid = ((rect["right"] + rect["left"]) / 2.0, (rect["top"] + rect["bottom"]) / 2.0)
+            mid = (
+                (rect["right"] + rect["left"]) / 2.0,
+                (rect["top"] + rect["bottom"]) / 2.0,
+            )
 
             if 0 <= mid[0] and mid[0] < base.size[0]:
                 if mid[1] < 0:
@@ -62,7 +66,10 @@ def _add_set_of_mark(
 
 
 def _draw_roi(
-    draw: ImageDraw.ImageDraw, idx: int, font: ImageFont.FreeTypeFont | ImageFont.ImageFont, rect: DOMRectangle
+    draw: ImageDraw.ImageDraw,
+    idx: int,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    rect: DOMRectangle,
 ) -> None:
     color = _color(idx)
     luminance = color[0] * 0.3 + color[1] * 0.59 + color[2] * 0.11

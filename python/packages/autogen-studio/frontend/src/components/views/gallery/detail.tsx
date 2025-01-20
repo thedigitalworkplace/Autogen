@@ -195,7 +195,7 @@ export const GalleryDetail: React.FC<GalleryDetailProps> = ({
               <span className="text-sm">
                 {Object.values(gallery.items.components).reduce(
                   (sum, arr) => sum + arr.length,
-                  0
+                  0,
                 )}{" "}
                 components
               </span>
@@ -222,7 +222,7 @@ export const GalleryDetail: React.FC<GalleryDetailProps> = ({
             title={
               getLastSyncTime(gallery.id)
                 ? `Last synced: ${getRelativeTimeString(
-                    getLastSyncTime(gallery.id) || ""
+                    getLastSyncTime(gallery.id) || "",
                   )}`
                 : "Never synced"
             }

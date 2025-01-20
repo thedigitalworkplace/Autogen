@@ -23,7 +23,9 @@ async def create_run(
 ) -> Dict:
     """Create a new run with initial state"""
     session_response = db.get(
-        Session, filters={"id": request.session_id, "user_id": request.user_id}, return_json=False
+        Session,
+        filters={"id": request.session_id, "user_id": request.user_id},
+        return_json=False,
     )
     if not session_response.status or not session_response.data:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -60,6 +62,8 @@ async def get_run(run_id: UUID, db=Depends(get_db)) -> Dict:
 @router.get("/{run_id}/messages")
 async def get_run_messages(run_id: UUID, db=Depends(get_db)) -> Dict:
     """Get all messages for a run"""
-    messages = db.get(Message, filters={"run_id": run_id}, order="created_at asc", return_json=False)
+    messages = db.get(
+        Message, filters={"run_id": run_id}, order="created_at asc", return_json=False
+    )
 
     return {"status": True, "data": messages.data}

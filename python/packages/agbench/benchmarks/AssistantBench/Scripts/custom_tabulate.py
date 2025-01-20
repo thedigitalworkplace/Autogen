@@ -7,6 +7,7 @@ import pandas as pd
 import sqlite3
 import glob
 import numpy as np
+
 sys.path.append(os.path.dirname(__file__))
 
 from assistantbench_evaluator import question_scorer
@@ -188,33 +189,41 @@ def main(args):
                         "num_of_chat_messages": num_of_chat_messages,
                         "prompt_tokens": telemetry_df["response"]
                         .apply(
-                            lambda x: json.loads(x)["usage"]["prompt_tokens"]
-                            if "usage" in json.loads(x)
-                            and "prompt_tokens" in json.loads(x)["usage"]
-                            else 0
+                            lambda x: (
+                                json.loads(x)["usage"]["prompt_tokens"]
+                                if "usage" in json.loads(x)
+                                and "prompt_tokens" in json.loads(x)["usage"]
+                                else 0
+                            )
                         )
                         .sum(),
                         "completion_tokens": telemetry_df["response"]
                         .apply(
-                            lambda x: json.loads(x)["usage"]["completion_tokens"]
-                            if "usage" in json.loads(x)
-                            and "completion_tokens" in json.loads(x)["usage"]
-                            else 0
+                            lambda x: (
+                                json.loads(x)["usage"]["completion_tokens"]
+                                if "usage" in json.loads(x)
+                                and "completion_tokens" in json.loads(x)["usage"]
+                                else 0
+                            )
                         )
                         .sum(),
                         "total_tokens": telemetry_df["response"]
                         .apply(
-                            lambda x: json.loads(x)["usage"]["total_tokens"]
-                            if "usage" in json.loads(x)
-                            and "total_tokens" in json.loads(x)["usage"]
-                            else 0
+                            lambda x: (
+                                json.loads(x)["usage"]["total_tokens"]
+                                if "usage" in json.loads(x)
+                                and "total_tokens" in json.loads(x)["usage"]
+                                else 0
+                            )
                         )
                         .sum(),
                         "model": telemetry_df["response"]
                         .apply(
-                            lambda x: json.loads(x)["model"]
-                            if "model" in json.loads(x)
-                            else ""
+                            lambda x: (
+                                json.loads(x)["model"]
+                                if "model" in json.loads(x)
+                                else ""
+                            )
                         )
                         .unique(),
                     }

@@ -23,11 +23,15 @@ async def test_register_receives_publish() -> None:
 
     queue = asyncio.Queue[tuple[str, str]]()
 
-    async def log_message(closure_ctx: ClosureContext, message: Message, ctx: MessageContext) -> None:
+    async def log_message(
+        closure_ctx: ClosureContext, message: Message, ctx: MessageContext
+    ) -> None:
         key = closure_ctx.id.key
         await queue.put((key, message.content))
 
-    await ClosureAgent.register_closure(runtime, "name", log_message, subscriptions=lambda: [DefaultSubscription()])
+    await ClosureAgent.register_closure(
+        runtime, "name", log_message, subscriptions=lambda: [DefaultSubscription()]
+    )
     runtime.start()
 
     await runtime.publish_message(Message("first message"), topic_id=DefaultTopicId())

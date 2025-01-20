@@ -16,7 +16,9 @@ from autogen_agentchat.messages import (
 from autogen_agentchat.teams import (
     MagenticOneGroupChat,
 )
-from autogen_agentchat.teams._group_chat._magentic_one._magentic_one_orchestrator import MagenticOneOrchestrator
+from autogen_agentchat.teams._group_chat._magentic_one._magentic_one_orchestrator import (
+    MagenticOneOrchestrator,
+)
 from autogen_core import AgentId, CancellationToken
 from autogen_ext.models.replay import ReplayChatCompletionClient
 from utils import FileLogHandler
@@ -40,16 +42,22 @@ class _EchoAgent(BaseChatAgent):
     def total_messages(self) -> int:
         return self._total_messages
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         if len(messages) > 0:
             assert isinstance(messages[0], TextMessage)
             self._last_message = messages[0].content
             self._total_messages += 1
-            return Response(chat_message=TextMessage(content=messages[0].content, source=self.name))
+            return Response(
+                chat_message=TextMessage(content=messages[0].content, source=self.name)
+            )
         else:
             assert self._last_message is not None
             self._total_messages += 1
-            return Response(chat_message=TextMessage(content=self._last_message, source=self.name))
+            return Response(
+                chat_message=TextMessage(content=self._last_message, source=self.name)
+            )
 
     async def on_reset(self, cancellation_token: CancellationToken) -> None:
         self._last_message = None
@@ -63,11 +71,17 @@ async def test_magentic_one_group_chat_cancellation() -> None:
     agent_4 = _EchoAgent("agent_4", description="echo agent 4")
 
     model_client = ReplayChatCompletionClient(
-        chat_completions=["test", "test", json.dumps({"is_request_satisfied": {"answer": True, "reason": "test"}})],
+        chat_completions=[
+            "test",
+            "test",
+            json.dumps({"is_request_satisfied": {"answer": True, "reason": "test"}}),
+        ],
     )
 
     # Set max_turns to a large number to avoid stopping due to max_turns before cancellation.
-    team = MagenticOneGroupChat(participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client)
+    team = MagenticOneGroupChat(
+        participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client
+    )
     cancellation_token = CancellationToken()
     run_task = asyncio.create_task(
         team.run(
@@ -98,7 +112,10 @@ async def test_magentic_one_group_chat_basic() -> None:
                     "is_request_satisfied": {"answer": False, "reason": "test"},
                     "is_progress_being_made": {"answer": True, "reason": "test"},
                     "is_in_loop": {"answer": False, "reason": "test"},
-                    "instruction_or_question": {"answer": "Continue task", "reason": "test"},
+                    "instruction_or_question": {
+                        "answer": "Continue task",
+                        "reason": "test",
+                    },
                     "next_speaker": {"answer": "agent_1", "reason": "test"},
                 }
             ),
@@ -107,7 +124,10 @@ async def test_magentic_one_group_chat_basic() -> None:
                     "is_request_satisfied": {"answer": True, "reason": "Because"},
                     "is_progress_being_made": {"answer": True, "reason": "test"},
                     "is_in_loop": {"answer": False, "reason": "test"},
-                    "instruction_or_question": {"answer": "Task completed", "reason": "Because"},
+                    "instruction_or_question": {
+                        "answer": "Task completed",
+                        "reason": "Because",
+                    },
                     "next_speaker": {"answer": "agent_1", "reason": "test"},
                 }
             ),
@@ -115,7 +135,9 @@ async def test_magentic_one_group_chat_basic() -> None:
         ],
     )
 
-    team = MagenticOneGroupChat(participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client)
+    team = MagenticOneGroupChat(
+        participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client
+    )
     result = await team.run(task="Write a program that prints 'Hello, world!'")
     assert len(result.messages) == 5
     assert result.messages[2].content == "Continue task"
@@ -124,17 +146,23 @@ async def test_magentic_one_group_chat_basic() -> None:
 
     # Test save and load.
     state = await team.save_state()
-    team2 = MagenticOneGroupChat(participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client)
+    team2 = MagenticOneGroupChat(
+        participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client
+    )
     await team2.load_state(state)
     state2 = await team2.save_state()
     assert state == state2
-    manager_1 = await team._runtime.try_get_underlying_agent_instance(  # pyright: ignore
-        AgentId("group_chat_manager", team._team_id),  # pyright: ignore
-        MagenticOneOrchestrator,  # pyright: ignore
+    manager_1 = (
+        await team._runtime.try_get_underlying_agent_instance(  # pyright: ignore
+            AgentId("group_chat_manager", team._team_id),  # pyright: ignore
+            MagenticOneOrchestrator,  # pyright: ignore
+        )
     )  # pyright: ignore
-    manager_2 = await team2._runtime.try_get_underlying_agent_instance(  # pyright: ignore
-        AgentId("group_chat_manager", team2._team_id),  # pyright: ignore
-        MagenticOneOrchestrator,  # pyright: ignore
+    manager_2 = (
+        await team2._runtime.try_get_underlying_agent_instance(  # pyright: ignore
+            AgentId("group_chat_manager", team2._team_id),  # pyright: ignore
+            MagenticOneOrchestrator,  # pyright: ignore
+        )
     )  # pyright: ignore
     assert manager_1._message_thread == manager_2._message_thread  # pyright: ignore
     assert manager_1._task == manager_2._task  # pyright: ignore
@@ -169,7 +197,10 @@ async def test_magentic_one_group_chat_with_stalls() -> None:
                     "is_request_satisfied": {"answer": False, "reason": "test"},
                     "is_progress_being_made": {"answer": False, "reason": "test"},
                     "is_in_loop": {"answer": True, "reason": "test"},
-                    "instruction_or_question": {"answer": "Stalling again", "reason": "test"},
+                    "instruction_or_question": {
+                        "answer": "Stalling again",
+                        "reason": "test",
+                    },
                     "next_speaker": {"answer": "agent_2", "reason": "test"},
                 }
             ),
@@ -180,7 +211,10 @@ async def test_magentic_one_group_chat_with_stalls() -> None:
                     "is_request_satisfied": {"answer": True, "reason": "test"},
                     "is_progress_being_made": {"answer": True, "reason": "test"},
                     "is_in_loop": {"answer": False, "reason": "test"},
-                    "instruction_or_question": {"answer": "Task completed", "reason": "test"},
+                    "instruction_or_question": {
+                        "answer": "Task completed",
+                        "reason": "test",
+                    },
                     "next_speaker": {"answer": "agent_3", "reason": "test"},
                 }
             ),
@@ -189,12 +223,18 @@ async def test_magentic_one_group_chat_with_stalls() -> None:
     )
 
     team = MagenticOneGroupChat(
-        participants=[agent_1, agent_2, agent_3, agent_4], model_client=model_client, max_stalls=2
+        participants=[agent_1, agent_2, agent_3, agent_4],
+        model_client=model_client,
+        max_stalls=2,
     )
     result = await team.run(task="Write a program that prints 'Hello, world!'")
     assert len(result.messages) == 6
     assert isinstance(result.messages[1].content, str)
-    assert result.messages[1].content.startswith("\nWe are working to address the following user request:")
+    assert result.messages[1].content.startswith(
+        "\nWe are working to address the following user request:"
+    )
     assert isinstance(result.messages[4].content, str)
-    assert result.messages[4].content.startswith("\nWe are working to address the following user request:")
+    assert result.messages[4].content.startswith(
+        "\nWe are working to address the following user request:"
+    )
     assert result.stop_reason is not None and result.stop_reason == "test"

@@ -3,7 +3,12 @@ import json
 from typing import Any, AsyncGenerator, List, Mapping, Optional, Sequence, Union
 
 import pytest
-from autogen_core import AgentId, CancellationToken, FunctionCall, SingleThreadedAgentRuntime
+from autogen_core import (
+    AgentId,
+    CancellationToken,
+    FunctionCall,
+    SingleThreadedAgentRuntime,
+)
 from autogen_core.models import (
     AssistantMessage,
     ChatCompletionClient,
@@ -49,8 +54,12 @@ async def test_tool_agent() -> None:
             description="Tool agent",
             tools=[
                 FunctionTool(_pass_function, name="pass", description="Pass function"),
-                FunctionTool(_raise_function, name="raise", description="Raise function"),
-                FunctionTool(_async_sleep_function, name="sleep", description="Sleep function"),
+                FunctionTool(
+                    _raise_function, name="raise", description="Raise function"
+                ),
+                FunctionTool(
+                    _async_sleep_function, name="sleep", description="Sleep function"
+                ),
             ],
         ),
     )
@@ -59,26 +68,41 @@ async def test_tool_agent() -> None:
 
     # Test pass function
     result = await runtime.send_message(
-        FunctionCall(id="1", arguments=json.dumps({"input": "pass"}), name="pass"), agent
+        FunctionCall(id="1", arguments=json.dumps({"input": "pass"}), name="pass"),
+        agent,
     )
     assert result == FunctionExecutionResult(call_id="1", content="pass")
 
     # Test raise function
     with pytest.raises(ToolExecutionException):
-        await runtime.send_message(FunctionCall(id="2", arguments=json.dumps({"input": "raise"}), name="raise"), agent)
+        await runtime.send_message(
+            FunctionCall(
+                id="2", arguments=json.dumps({"input": "raise"}), name="raise"
+            ),
+            agent,
+        )
 
     # Test invalid tool name
     with pytest.raises(ToolNotFoundException):
-        await runtime.send_message(FunctionCall(id="3", arguments=json.dumps({"input": "pass"}), name="invalid"), agent)
+        await runtime.send_message(
+            FunctionCall(
+                id="3", arguments=json.dumps({"input": "pass"}), name="invalid"
+            ),
+            agent,
+        )
 
     # Test invalid arguments
     with pytest.raises(InvalidToolArgumentsException):
-        await runtime.send_message(FunctionCall(id="3", arguments="invalid json /xd", name="pass"), agent)
+        await runtime.send_message(
+            FunctionCall(id="3", arguments="invalid json /xd", name="pass"), agent
+        )
 
     # Test sleep and cancel.
     token = CancellationToken()
     result_future = runtime.send_message(
-        FunctionCall(id="3", arguments=json.dumps({"input": "sleep"}), name="sleep"), agent, cancellation_token=token
+        FunctionCall(id="3", arguments=json.dumps({"input": "sleep"}), name="sleep"),
+        agent,
+        cancellation_token=token,
     )
     token.cancel()
     with pytest.raises(asyncio.CancelledError):
@@ -101,7 +125,11 @@ async def test_caller_loop() -> None:
         ) -> CreateResult:
             if len(messages) == 1:
                 return CreateResult(
-                    content=[FunctionCall(id="1", name="pass", arguments=json.dumps({"input": "test"}))],
+                    content=[
+                        FunctionCall(
+                            id="1", name="pass", arguments=json.dumps({"input": "test"})
+                        )
+                    ],
                     finish_reason="stop",
                     usage=RequestUsage(prompt_tokens=0, completion_tokens=0),
                     cached=False,
@@ -132,10 +160,20 @@ async def test_caller_loop() -> None:
         def total_usage(self) -> RequestUsage:
             return RequestUsage(prompt_tokens=0, completion_tokens=0)
 
-        def count_tokens(self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []) -> int:
+        def count_tokens(
+            self,
+            messages: Sequence[LLMMessage],
+            *,
+            tools: Sequence[Tool | ToolSchema] = [],
+        ) -> int:
             return 0
 
-        def remaining_tokens(self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []) -> int:
+        def remaining_tokens(
+            self,
+            messages: Sequence[LLMMessage],
+            *,
+            tools: Sequence[Tool | ToolSchema] = [],
+        ) -> int:
             return 0
 
         @property
@@ -144,10 +182,17 @@ async def test_caller_loop() -> None:
 
         @property
         def model_info(self) -> ModelInfo:
-            return ModelInfo(vision=False, function_calling=True, json_output=False, family=ModelFamily.UNKNOWN)
+            return ModelInfo(
+                vision=False,
+                function_calling=True,
+                json_output=False,
+                family=ModelFamily.UNKNOWN,
+            )
 
     client = MockChatCompletionClient()
-    tools: List[Tool] = [FunctionTool(_pass_function, name="pass", description="Pass function")]
+    tools: List[Tool] = [
+        FunctionTool(_pass_function, name="pass", description="Pass function")
+    ]
     runtime = SingleThreadedAgentRuntime()
     await ToolAgent.register(
         runtime,
@@ -160,7 +205,11 @@ async def test_caller_loop() -> None:
     agent = AgentId("tool_agent", "default")
     runtime.start()
     messages = await tool_agent_caller_loop(
-        runtime, agent, client, [UserMessage(content="Hello", source="user")], tool_schema=tools
+        runtime,
+        agent,
+        client,
+        [UserMessage(content="Hello", source="user")],
+        tool_schema=tools,
     )
     assert len(messages) == 3
     assert isinstance(messages[0], AssistantMessage)

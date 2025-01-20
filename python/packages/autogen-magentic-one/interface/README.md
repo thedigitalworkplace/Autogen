@@ -2,7 +2,6 @@
 
 This repository contains a preview interface for interacting with the MagenticOne system. It includes helper classes, and example usage.
 
-
 ## Usage
 
 ### MagenticOneHelper
@@ -10,6 +9,7 @@ This repository contains a preview interface for interacting with the MagenticOn
 The MagenticOneHelper class provides an interface to interact with the MagenticOne system. It saves logs to a user-specified directory and provides methods to run tasks, stream logs, and retrieve the final answer.
 
 The class provides the following methods:
+
 - async initialize(self) -> None: Initializes the MagenticOne system, setting up agents and runtime.
 - async run_task(self, task: str) -> None: Runs a specific task through the MagenticOne system.
 - get_final_answer(self) -> Optional[str]: Retrieves the final answer from the Orchestrator.
@@ -28,7 +28,7 @@ async def magentic_one_example():
     magnetic_one = MagenticOneHelper(logs_dir="./logs")
     await magnetic_one.initialize()
     print("MagenticOne initialized.")
-    
+
     # Start a task and stream logs
     task = "How many members are in the MSR HAX Team"
     task_future = asyncio.create_task(magnetic_one.run_task(task))

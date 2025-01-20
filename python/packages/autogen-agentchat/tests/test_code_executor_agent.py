@@ -10,7 +10,9 @@ from autogen_ext.code_executors.local import LocalCommandLineCodeExecutor
 async def test_basic_code_execution() -> None:
     """Test basic code execution"""
 
-    agent = CodeExecutorAgent(name="code_executor", code_executor=LocalCommandLineCodeExecutor())
+    agent = CodeExecutorAgent(
+        name="code_executor", code_executor=LocalCommandLineCodeExecutor()
+    )
 
     messages = [
         TextMessage(
@@ -38,7 +40,9 @@ print("%0.3f" % (square_root,))
 async def test_code_execution_error() -> None:
     """Test basic code execution"""
 
-    agent = CodeExecutorAgent(name="code_executor", code_executor=LocalCommandLineCodeExecutor())
+    agent = CodeExecutorAgent(
+        name="code_executor", code_executor=LocalCommandLineCodeExecutor()
+    )
 
     messages = [
         TextMessage(
@@ -58,7 +62,10 @@ print("%0.3f" % (square_root,))
 
     assert isinstance(response, Response)
     assert isinstance(response.chat_message, TextMessage)
-    assert "The script ran, then exited with an error (POSIX exit code: 1)" in response.chat_message.content
+    assert (
+        "The script ran, then exited with an error (POSIX exit code: 1)"
+        in response.chat_message.content
+    )
     assert "ValueError: math domain error" in response.chat_message.content
 
 
@@ -66,7 +73,9 @@ print("%0.3f" % (square_root,))
 async def test_code_execution_no_output() -> None:
     """Test basic code execution"""
 
-    agent = CodeExecutorAgent(name="code_executor", code_executor=LocalCommandLineCodeExecutor())
+    agent = CodeExecutorAgent(
+        name="code_executor", code_executor=LocalCommandLineCodeExecutor()
+    )
 
     messages = [
         TextMessage(
@@ -95,7 +104,9 @@ square_root = math.sqrt(number)
 async def test_code_execution_no_block() -> None:
     """Test basic code execution"""
 
-    agent = CodeExecutorAgent(name="code_executor", code_executor=LocalCommandLineCodeExecutor())
+    agent = CodeExecutorAgent(
+        name="code_executor", code_executor=LocalCommandLineCodeExecutor()
+    )
 
     messages = [
         TextMessage(
@@ -122,7 +133,9 @@ square_root = math.sqrt(number)
 async def test_code_execution_multiple_blocks() -> None:
     """Test basic code execution"""
 
-    agent = CodeExecutorAgent(name="code_executor", code_executor=LocalCommandLineCodeExecutor())
+    agent = CodeExecutorAgent(
+        name="code_executor", code_executor=LocalCommandLineCodeExecutor()
+    )
 
     messages = [
         TextMessage(
@@ -162,5 +175,8 @@ print("%0.3f" % (square_root,))
     assert isinstance(response.chat_message, TextMessage)
     assert "6.481" in response.chat_message.content
     assert "The current time is:" in response.chat_message.content
-    assert "The script ran, then exited with an error (POSIX exit code: 1)" in response.chat_message.content
+    assert (
+        "The script ran, then exited with an error (POSIX exit code: 1)"
+        in response.chat_message.content
+    )
     assert "ValueError: math domain error" in response.chat_message.content

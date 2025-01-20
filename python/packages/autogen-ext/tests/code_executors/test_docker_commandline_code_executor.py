@@ -53,9 +53,15 @@ async def test_execute_code(executor_and_temp_dir: ExecutorFixture) -> None:
     cancellation_token = CancellationToken()
 
     # Test single code block.
-    code_blocks = [CodeBlock(code="import sys; print('hello world!')", language="python")]
+    code_blocks = [
+        CodeBlock(code="import sys; print('hello world!')", language="python")
+    ]
     code_result = await executor.execute_code_blocks(code_blocks, cancellation_token)
-    assert code_result.exit_code == 0 and "hello world!" in code_result.output and code_result.code_file is not None
+    assert (
+        code_result.exit_code == 0
+        and "hello world!" in code_result.output
+        and code_result.code_file is not None
+    )
 
     # Test multiple code blocks.
     code_blocks = [
@@ -73,8 +79,14 @@ async def test_execute_code(executor_and_temp_dir: ExecutorFixture) -> None:
     # Test bash script.
     if sys.platform not in ["win32"]:
         code_blocks = [CodeBlock(code="echo 'hello world!'", language="bash")]
-        code_result = await executor.execute_code_blocks(code_blocks, cancellation_token)
-        assert code_result.exit_code == 0 and "hello world!" in code_result.output and code_result.code_file is not None
+        code_result = await executor.execute_code_blocks(
+            code_blocks, cancellation_token
+        )
+        assert (
+            code_result.exit_code == 0
+            and "hello world!" in code_result.output
+            and code_result.code_file is not None
+        )
 
     # Test running code.
     file_lines = ["import sys", "print('hello world!')", "a = 100 + 100", "print(a)"]
@@ -96,13 +108,21 @@ async def test_execute_code(executor_and_temp_dir: ExecutorFixture) -> None:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("executor_and_temp_dir", ["docker"], indirect=True)
-async def test_commandline_code_executor_timeout(executor_and_temp_dir: ExecutorFixture) -> None:
+async def test_commandline_code_executor_timeout(
+    executor_and_temp_dir: ExecutorFixture,
+) -> None:
     _executor, temp_dir = executor_and_temp_dir
     cancellation_token = CancellationToken()
-    code_blocks = [CodeBlock(code="import time; time.sleep(10); print('hello world!')", language="python")]
+    code_blocks = [
+        CodeBlock(
+            code="import time; time.sleep(10); print('hello world!')", language="python"
+        )
+    ]
 
     async with DockerCommandLineCodeExecutor(timeout=1, work_dir=temp_dir) as executor:
-        code_result = await executor.execute_code_blocks(code_blocks, cancellation_token)
+        code_result = await executor.execute_code_blocks(
+            code_blocks, cancellation_token
+        )
 
     assert code_result.exit_code and "Timeout" in code_result.output
 

@@ -6,13 +6,13 @@ This directory provides ability to benchmarks agents (e.g., built using Autogen)
 
 1. Install Docker Desktop. After installation, restart is needed, then open Docker Desktop, in Settings, Ressources, WSL Integration, Enable integration with additional distros – Ubuntu
 2. Clone autogen and export `AUTOGEN_REPO_BASE`. This environment variable enables the Docker containers to use the correct version agents.
-    ```bash
-    git clone git@github.com:microsoft/autogen.git
-    export AUTOGEN_REPO_BASE=<path_to_autogen>
-    ```
+   ```bash
+   git clone git@github.com:microsoft/autogen.git
+   export AUTOGEN_REPO_BASE=<path_to_autogen>
+   ```
 3. Install `agbench`. AgBench is currently a tool in the Autogen repo.
 
-    ```bash
-    cd autogen/python/packages/agbench
-    pip install -e .
-    ```
+   ```bash
+   cd autogen/python/packages/agbench
+   pip install -e .
+   ```

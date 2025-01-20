@@ -64,7 +64,9 @@ class FunctionTool(BaseTool[BaseModel, BaseModel]):
             asyncio.run(example())
     """
 
-    def __init__(self, func: Callable[..., Any], description: str, name: str | None = None) -> None:
+    def __init__(
+        self, func: Callable[..., Any], description: str, name: str | None = None
+    ) -> None:
         self._func = func
         signature = get_typed_signature(func)
         func_name = name or func.__name__
@@ -77,7 +79,9 @@ class FunctionTool(BaseTool[BaseModel, BaseModel]):
     async def run(self, args: BaseModel, cancellation_token: CancellationToken) -> Any:
         if asyncio.iscoroutinefunction(self._func):
             if self._has_cancellation_support:
-                result = await self._func(**args.model_dump(), cancellation_token=cancellation_token)
+                result = await self._func(
+                    **args.model_dump(), cancellation_token=cancellation_token
+                )
             else:
                 result = await self._func(**args.model_dump())
         else:

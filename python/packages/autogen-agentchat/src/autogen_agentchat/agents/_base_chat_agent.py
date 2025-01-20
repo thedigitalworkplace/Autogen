@@ -62,7 +62,9 @@ class BaseChatAgent(ChatAgent, ABC):
         ...
 
     @abstractmethod
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         """Handles incoming messages and returns a response.
 
         .. note::
@@ -169,7 +171,9 @@ class BaseChatAgent(ChatAgent, ABC):
                     yield msg
                 else:
                     raise ValueError(f"Invalid message type in sequence: {type(msg)}")
-        async for message in self.on_messages_stream(input_messages, cancellation_token):
+        async for message in self.on_messages_stream(
+            input_messages, cancellation_token
+        ):
             if isinstance(message, Response):
                 yield message.chat_message
                 output_messages.append(message.chat_message)

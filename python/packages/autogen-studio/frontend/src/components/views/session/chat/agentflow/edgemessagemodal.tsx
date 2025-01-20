@@ -35,7 +35,7 @@ export const EdgeMessageModal: React.FC<EdgeMessageModalProps> = ({
     return edge.data.messages.filter(
       (msg) =>
         typeof msg.content === "string" &&
-        msg.content.toLowerCase().includes(searchTerm.toLowerCase())
+        msg.content.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [edge?.data?.messages, searchTerm]);
 

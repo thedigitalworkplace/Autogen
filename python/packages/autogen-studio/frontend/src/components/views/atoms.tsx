@@ -109,7 +109,7 @@ export const TruncatableText = memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 const FullScreenImage: React.FC<{

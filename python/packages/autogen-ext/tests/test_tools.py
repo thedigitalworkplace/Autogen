@@ -4,7 +4,10 @@ import pytest
 from autogen_core import CancellationToken
 from autogen_core.tools import Tool
 from autogen_ext.tools.langchain import LangChainToolAdapter  # type: ignore
-from langchain_core.callbacks.manager import AsyncCallbackManagerForToolRun, CallbackManagerForToolRun
+from langchain_core.callbacks.manager import (
+    AsyncCallbackManagerForToolRun,
+    CallbackManagerForToolRun,
+)
 from langchain_core.tools import BaseTool as LangChainTool
 from langchain_core.tools import tool  # pyright: ignore
 from pydantic import BaseModel, Field
@@ -27,7 +30,9 @@ class CustomCalculatorTool(LangChainTool):
     args_schema: Type[BaseModel] = CalculatorInput
     return_direct: bool = True
 
-    def _run(self, a: int, b: int, run_manager: Optional[CallbackManagerForToolRun] = None) -> int:
+    def _run(
+        self, a: int, b: int, run_manager: Optional[CallbackManagerForToolRun] = None
+    ) -> int:
         """Use the tool."""
         return a * b
 
@@ -38,7 +43,9 @@ class CustomCalculatorTool(LangChainTool):
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> int:
         """Use the tool asynchronously."""
-        return self._run(a, b, run_manager=run_manager.get_sync() if run_manager else None)
+        return self._run(
+            a, b, run_manager=run_manager.get_sync() if run_manager else None
+        )
 
 
 @pytest.mark.asyncio

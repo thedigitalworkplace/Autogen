@@ -50,7 +50,11 @@ from autogen_core._runtime_impl_helpers import SubscriptionManager, get_impl
 from autogen_core._serialization import (
     SerializationRegistry,
 )
-from autogen_core._telemetry import MessageRuntimeTracingConfig, TraceHelper, get_telemetry_grpc_metadata
+from autogen_core._telemetry import (
+    MessageRuntimeTracingConfig,
+    TraceHelper,
+    get_telemetry_grpc_metadata,
+)
 from google.protobuf import any_pb2
 from opentelemetry.trace import TracerProvider
 from typing_extensions import Self
@@ -119,11 +123,19 @@ class HostConnection:
         self._connection_task: Task[None] | None = None
 
     @classmethod
-    def from_host_address(cls, host_address: str, extra_grpc_config: ChannelArgumentType = DEFAULT_GRPC_CONFIG) -> Self:
+    def from_host_address(
+        cls,
+        host_address: str,
+        extra_grpc_config: ChannelArgumentType = DEFAULT_GRPC_CONFIG,
+    ) -> Self:
         logger.info("Connecting to %s", host_address)
         #  Always use DEFAULT_GRPC_CONFIG and override it with provided grpc_config
         merged_options = [
-            (k, v) for k, v in {**dict(HostConnection.DEFAULT_GRPC_CONFIG), **dict(extra_grpc_config)}.items()
+            (k, v)
+            for k, v in {
+                **dict(HostConnection.DEFAULT_GRPC_CONFIG),
+                **dict(extra_grpc_config),
+            }.items()
         ]
 
         channel = grpc.aio.insecure_channel(
@@ -213,10 +225,16 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
         payload_serialization_format: str = JSON_DATA_CONTENT_TYPE,
     ) -> None:
         self._host_address = host_address
-        self._trace_helper = TraceHelper(tracer_provider, MessageRuntimeTracingConfig("Worker Runtime"))
-        self._per_type_subscribers: DefaultDict[tuple[str, str], Set[AgentId]] = defaultdict(set)
+        self._trace_helper = TraceHelper(
+            tracer_provider, MessageRuntimeTracingConfig("Worker Runtime")
+        )
+        self._per_type_subscribers: DefaultDict[tuple[str, str], Set[AgentId]] = (
+            defaultdict(set)
+        )
         self._agent_factories: Dict[
-            str, Callable[[], Agent | Awaitable[Agent]] | Callable[[AgentRuntime, AgentId], Agent | Awaitable[Agent]]
+            str,
+            Callable[[], Agent | Awaitable[Agent]]
+            | Callable[[AgentRuntime, AgentId], Agent | Awaitable[Agent]],
         ] = {}
         self._instantiated_agents: Dict[AgentId, Agent] = {}
         self._known_namespaces: set[str] = set()
@@ -231,8 +249,13 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
         self._serialization_registry = SerializationRegistry()
         self._extra_grpc_config = extra_grpc_config or []
 
-        if payload_serialization_format not in {JSON_DATA_CONTENT_TYPE, PROTOBUF_DATA_CONTENT_TYPE}:
-            raise ValueError(f"Unsupported payload serialization format: {payload_serialization_format}")
+        if payload_serialization_format not in {
+            JSON_DATA_CONTENT_TYPE,
+            PROTOBUF_DATA_CONTENT_TYPE,
+        }:
+            raise ValueError(
+                f"Unsupported payload serialization format: {payload_serialization_format}"
+            )
 
         self._payload_serialization_format = payload_serialization_format
 
@@ -265,12 +288,16 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
                     case "registerAgentTypeRequest" | "addSubscriptionRequest":
                         logger.warning(f"Cant handle {oneofcase}, skipping.")
                     case "request":
-                        task = asyncio.create_task(self._process_request(message.request))
+                        task = asyncio.create_task(
+                            self._process_request(message.request)
+                        )
                         self._background_tasks.add(task)
                         task.add_done_callback(self._raise_on_exception)
                         task.add_done_callback(self._background_tasks.discard)
                     case "response":
-                        task = asyncio.create_task(self._process_response(message.response))
+                        task = asyncio.create_task(
+                            self._process_response(message.response)
+                        )
                         self._background_tasks.add(task)
                         task.add_done_callback(self._raise_on_exception)
                         task.add_done_callback(self._background_tasks.discard)
@@ -283,14 +310,18 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
                         task.add_done_callback(self._background_tasks.discard)
                     case "registerAgentTypeResponse":
                         task = asyncio.create_task(
-                            self._process_register_agent_type_response(message.registerAgentTypeResponse)
+                            self._process_register_agent_type_response(
+                                message.registerAgentTypeResponse
+                            )
                         )
                         self._background_tasks.add(task)
                         task.add_done_callback(self._raise_on_exception)
                         task.add_done_callback(self._background_tasks.discard)
                     case "addSubscriptionResponse":
                         task = asyncio.create_task(
-                            self._process_add_subscription_response(message.addSubscriptionResponse)
+                            self._process_add_subscription_response(
+                                message.addSubscriptionResponse
+                            )
                         )
                         self._background_tasks.add(task)
                         task.add_done_callback(self._raise_on_exception)
@@ -306,7 +337,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             raise RuntimeError("Runtime is not running.")
         self._running = False
         # Wait for all background tasks to finish.
-        final_tasks_results = await asyncio.gather(*self._background_tasks, return_exceptions=True)
+        final_tasks_results = await asyncio.gather(
+            *self._background_tasks, return_exceptions=True
+        )
         for task_result in final_tasks_results:
             if isinstance(task_result, Exception):
                 logger.error("Error in background task", exc_info=task_result)
@@ -324,7 +357,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             except asyncio.CancelledError:
                 pass
 
-    async def stop_when_signal(self, signals: Sequence[signal.Signals] = (signal.SIGTERM, signal.SIGINT)) -> None:
+    async def stop_when_signal(
+        self, signals: Sequence[signal.Signals] = (signal.SIGTERM, signal.SIGINT)
+    ) -> None:
         """Stop the runtime when a signal is received."""
         loop = asyncio.get_running_loop()
         shutdown_event = asyncio.Event()
@@ -355,7 +390,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
     ) -> None:
         if self._host_connection is None:
             raise RuntimeError("Host connection is not set.")
-        with self._trace_helper.trace_block(send_type, recipient, parent=telemetry_metadata):
+        with self._trace_helper.trace_block(
+            send_type, recipient, parent=telemetry_metadata
+        ):
             await self._host_connection.send(runtime_message)
 
     async def send_message(
@@ -374,7 +411,10 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             raise RuntimeError("Host connection is not set.")
         data_type = self._serialization_registry.type_name(message)
         with self._trace_helper.trace_block(
-            "create", recipient, parent=None, extraAttributes={"message_type": data_type}
+            "create",
+            recipient,
+            parent=None,
+            extraAttributes={"message_type": data_type},
         ):
             # create a new future for the result
             future = asyncio.get_event_loop().create_future()
@@ -387,8 +427,14 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             runtime_message = agent_worker_pb2.Message(
                 request=agent_worker_pb2.RpcRequest(
                     request_id=request_id,
-                    target=agent_worker_pb2.AgentId(type=recipient.type, key=recipient.key),
-                    source=agent_worker_pb2.AgentId(type=sender.type, key=sender.key) if sender is not None else None,
+                    target=agent_worker_pb2.AgentId(
+                        type=recipient.type, key=recipient.key
+                    ),
+                    source=(
+                        agent_worker_pb2.AgentId(type=sender.type, key=sender.key)
+                        if sender is not None
+                        else None
+                    ),
                     metadata=telemetry_metadata,
                     payload=agent_worker_pb2.Payload(
                         data_type=data_type,
@@ -399,7 +445,11 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             )
 
             # TODO: Find a way to handle timeouts/errors
-            task = asyncio.create_task(self._send_message(runtime_message, "send", recipient, telemetry_metadata))
+            task = asyncio.create_task(
+                self._send_message(
+                    runtime_message, "send", recipient, telemetry_metadata
+                )
+            )
             self._background_tasks.add(task)
             task.add_done_callback(self._raise_on_exception)
             task.add_done_callback(self._background_tasks.discard)
@@ -423,10 +473,15 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
 
         message_type = self._serialization_registry.type_name(message)
         with self._trace_helper.trace_block(
-            "create", topic_id, parent=None, extraAttributes={"message_type": message_type}
+            "create",
+            topic_id,
+            parent=None,
+            extraAttributes={"message_type": message_type},
         ):
             serialized_message = self._serialization_registry.serialize(
-                message, type_name=message_type, data_content_type=self._payload_serialization_format
+                message,
+                type_name=message_type,
+                data_content_type=self._payload_serialization_format,
             )
 
             sender_id = sender or AgentId("unknown", "unknown")
@@ -434,7 +489,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
                 _constants.DATA_CONTENT_TYPE_ATTR: cloudevent_pb2.CloudEvent.CloudEventAttributeValue(
                     ce_string=self._payload_serialization_format
                 ),
-                _constants.DATA_SCHEMA_ATTR: cloudevent_pb2.CloudEvent.CloudEventAttributeValue(ce_string=message_type),
+                _constants.DATA_SCHEMA_ATTR: cloudevent_pb2.CloudEvent.CloudEventAttributeValue(
+                    ce_string=message_type
+                ),
                 _constants.AGENT_SENDER_TYPE_ATTR: cloudevent_pb2.CloudEvent.CloudEventAttributeValue(
                     ce_string=sender_id.type
                 ),
@@ -479,7 +536,11 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
                 )
 
             telemetry_metadata = get_telemetry_grpc_metadata()
-            task = asyncio.create_task(self._send_message(runtime_message, "publish", topic_id, telemetry_metadata))
+            task = asyncio.create_task(
+                self._send_message(
+                    runtime_message, "publish", topic_id, telemetry_metadata
+                )
+            )
             self._background_tasks.add(task)
             task.add_done_callback(self._raise_on_exception)
             task.add_done_callback(self._background_tasks.discard)
@@ -610,33 +671,49 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             )
         topic_id = TopicId(event.type, event.source)
         # Get the recipients for the topic.
-        recipients = await self._subscription_manager.get_subscribed_recipients(topic_id)
+        recipients = await self._subscription_manager.get_subscribed_recipients(
+            topic_id
+        )
 
-        message_content_type = event_attributes[_constants.DATA_CONTENT_TYPE_ATTR].ce_string
+        message_content_type = event_attributes[
+            _constants.DATA_CONTENT_TYPE_ATTR
+        ].ce_string
         message_type = event_attributes[_constants.DATA_SCHEMA_ATTR].ce_string
 
         if message_content_type == JSON_DATA_CONTENT_TYPE:
             message = self._serialization_registry.deserialize(
-                event.binary_data, type_name=message_type, data_content_type=message_content_type
+                event.binary_data,
+                type_name=message_type,
+                data_content_type=message_content_type,
             )
         elif message_content_type == PROTOBUF_DATA_CONTENT_TYPE:
             # TODO: find a way to prevent the roundtrip serialization
             proto_binary_data = event.proto_data.SerializeToString()
             message = self._serialization_registry.deserialize(
-                proto_binary_data, type_name=message_type, data_content_type=message_content_type
+                proto_binary_data,
+                type_name=message_type,
+                data_content_type=message_content_type,
             )
         else:
-            raise ValueError(f"Unsupported message content type: {message_content_type}")
+            raise ValueError(
+                f"Unsupported message content type: {message_content_type}"
+            )
 
         # TODO: dont read these values in the runtime
-        topic_type_suffix = topic_id.type.split(":", maxsplit=1)[1] if ":" in topic_id.type else ""
+        topic_type_suffix = (
+            topic_id.type.split(":", maxsplit=1)[1] if ":" in topic_id.type else ""
+        )
         is_rpc = topic_type_suffix == _constants.MESSAGE_KIND_VALUE_RPC_REQUEST
         is_marked_rpc_type = (
             _constants.MESSAGE_KIND_ATTR in event_attributes
-            and event_attributes[_constants.MESSAGE_KIND_ATTR].ce_string == _constants.MESSAGE_KIND_VALUE_RPC_REQUEST
+            and event_attributes[_constants.MESSAGE_KIND_ATTR].ce_string
+            == _constants.MESSAGE_KIND_VALUE_RPC_REQUEST
         )
         if is_rpc and not is_marked_rpc_type:
-            warnings.warn("Received RPC request with topic type suffix but not marked as RPC request.", stacklevel=2)
+            warnings.warn(
+                "Received RPC request with topic type suffix but not marked as RPC request.",
+                stacklevel=2,
+            )
 
         # Send the message to each recipient.
         responses: List[Awaitable[Any]] = []
@@ -654,7 +731,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             with MessageHandlerContext.populate_context(agent.id):
 
                 def stringify_attributes(
-                    attributes: Mapping[str, cloudevent_pb2.CloudEvent.CloudEventAttributeValue],
+                    attributes: Mapping[
+                        str, cloudevent_pb2.CloudEvent.CloudEventAttributeValue
+                    ],
                 ) -> Mapping[str, str]:
                     result: Dict[str, str] = {}
                     for key, value in attributes.items():
@@ -680,7 +759,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
 
                     return result
 
-                async def send_message(agent: Agent, message_context: MessageContext) -> Any:
+                async def send_message(
+                    agent: Agent, message_context: MessageContext
+                ) -> Any:
                     with self._trace_helper.trace_block(
                         "process",
                         agent.id,
@@ -733,7 +814,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
 
         # Send the registration request message to the host.
         message = agent_worker_pb2.Message(
-            registerAgentTypeRequest=agent_worker_pb2.RegisterAgentTypeRequest(request_id=request_id, type=type.type)
+            registerAgentTypeRequest=agent_worker_pb2.RegisterAgentTypeRequest(
+                request_id=request_id, type=type.type
+            )
         )
         await self._host_connection.send(message)
 
@@ -742,7 +825,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
 
         return type
 
-    async def _process_register_agent_type_response(self, response: agent_worker_pb2.RegisterAgentTypeResponse) -> None:
+    async def _process_register_agent_type_response(
+        self, response: agent_worker_pb2.RegisterAgentTypeResponse
+    ) -> None:
         future = self._pending_requests.pop(response.request_id)
         if response.HasField("error") and response.error != "":
             future.set_exception(RuntimeError(response.error))
@@ -751,7 +836,10 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
 
     async def _invoke_agent_factory(
         self,
-        agent_factory: Callable[[], T | Awaitable[T]] | Callable[[AgentRuntime, AgentId], T | Awaitable[T]],
+        agent_factory: (
+            Callable[[], T | Awaitable[T]]
+            | Callable[[AgentRuntime, AgentId], T | Awaitable[T]]
+        ),
         agent_id: AgentId,
     ) -> T:
         with AgentInstantiationContext.populate_context((self, agent_id)):
@@ -818,13 +906,16 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
                         ),
                     )
                 )
-            case TypePrefixSubscription(topic_type_prefix=topic_type_prefix, agent_type=agent_type):
+            case TypePrefixSubscription(
+                topic_type_prefix=topic_type_prefix, agent_type=agent_type
+            ):
                 message = agent_worker_pb2.Message(
                     addSubscriptionRequest=agent_worker_pb2.AddSubscriptionRequest(
                         request_id=request_id,
                         subscription=agent_worker_pb2.Subscription(
                             typePrefixSubscription=agent_worker_pb2.TypePrefixSubscription(
-                                topic_type_prefix=topic_type_prefix, agent_type=agent_type
+                                topic_type_prefix=topic_type_prefix,
+                                agent_type=agent_type,
                             )
                         ),
                     )
@@ -844,7 +935,9 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
         # Wait for the subscription response.
         await future
 
-    async def _process_add_subscription_response(self, response: agent_worker_pb2.AddSubscriptionResponse) -> None:
+    async def _process_add_subscription_response(
+        self, response: agent_worker_pb2.AddSubscriptionResponse
+    ) -> None:
         future = self._pending_requests.pop(response.request_id)
         if response.HasField("error") and response.error != "":
             future.set_exception(RuntimeError(response.error))
@@ -852,10 +945,17 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             future.set_result(None)
 
     async def remove_subscription(self, id: str) -> None:
-        raise NotImplementedError("Subscriptions cannot be removed while using distributed runtime currently.")
+        raise NotImplementedError(
+            "Subscriptions cannot be removed while using distributed runtime currently."
+        )
 
     async def get(
-        self, id_or_type: AgentId | AgentType | str, /, key: str = "default", *, lazy: bool = True
+        self,
+        id_or_type: AgentId | AgentType | str,
+        /,
+        key: str = "default",
+        *,
+        lazy: bool = True,
     ) -> AgentId:
         return await get_impl(
             id_or_type=id_or_type,
@@ -864,5 +964,7 @@ class GrpcWorkerAgentRuntime(AgentRuntime):
             instance_getter=self._get_agent,
         )
 
-    def add_message_serializer(self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]) -> None:
+    def add_message_serializer(
+        self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]
+    ) -> None:
         self._serialization_registry.add_serializer(serializer)

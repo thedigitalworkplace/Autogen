@@ -2,6 +2,7 @@ This tutorial shows how to perform image chat with an agent using the @AutoGen.O
 
 > [!NOTE]
 > To chat image with an agent, the model behind the agent needs to support image input. Here is a partial list of models that support image input:
+>
 > - gpt-4o
 > - gemini-1.5
 > - llava
@@ -41,10 +42,11 @@ Here is how to create a multimodal message using @AutoGen.Core.MultiModalMessage
 
 ## Step 5: Generate Response
 
-To generate response, you can use one of the overloaded methods of @AutoGen.Core.AgentExtension.SendAsync* method. The following code shows how to generate response with an image message:
+To generate response, you can use one of the overloaded methods of @AutoGen.Core.AgentExtension.SendAsync\* method. The following code shows how to generate response with an image message:
 
 [!code-csharp[Generate Response](../../samples/AutoGen.BasicSamples/GettingStart/Image_Chat_With_Agent.cs?name=Chat_With_Agent)]
 
 ## Further Reading
+
 - [Image chat with gemini](../articles/AutoGen.Gemini/Image-chat-with-gemini.md)
 - [Image chat with llava](../articles/AutoGen.Ollama/Chat-with-llava.md)

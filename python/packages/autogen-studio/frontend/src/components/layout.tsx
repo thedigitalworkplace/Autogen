@@ -87,7 +87,7 @@ const Layout = ({
           "flex-1 flex flex-col min-h-screen",
           "transition-all duration-300 ease-in-out",
           "md:pl-16",
-          isExpanded ? "md:pl-72" : "md:pl-16"
+          isExpanded ? "md:pl-72" : "md:pl-16",
         )}
       >
         {showHeader && (

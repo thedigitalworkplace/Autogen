@@ -55,6 +55,7 @@ A framework for building AI agents and applications
 
 {fas}`book;pst-color-primary`
 Magentic-One CLI [![PyPi magentic-one-cli](https://img.shields.io/badge/PyPi-magentic--one--cli-blue?logo=pypi)](https://pypi.org/project/magentic-one-cli/)
+
 </div>
 A console-based multi-agent assistant for web and file-based tasks.
 Built on AgentChat.
@@ -143,9 +144,9 @@ Get Started
 
 An event-driven programming framework for building scalable multi-agent AI systems. Example scenarios:
 
-* Deterministic and dynamic agentic workflows for business processes.
-* Research on multi-agent collaboration.
-* Distributed agents for multi-language applications.
+- Deterministic and dynamic agentic workflows for business processes.
+- Research on multi-agent collaboration.
+- Distributed agents for multi-language applications.
 
 _Start here if you are building workflows or distributed agent systems._
 
@@ -167,10 +168,10 @@ Get Started
 Implementations of Core and AgentChat components that interface with external services or other libraries.
 You can find and use community extensions or create your own. Examples of built-in extensions:
 
-* {py:class}`~autogen_ext.tools.langchain.LangChainToolAdapter` for using LangChain tools.
-* {py:class}`~autogen_ext.agents.openai.OpenAIAssistantAgent` for using Assistant API.
-* {py:class}`~autogen_ext.code_executors.docker.DockerCommandLineCodeExecutor` for running model-generated code in a Docker container.
-* {py:class}`~autogen_ext.runtimes.grpc.GrpcWorkerAgentRuntime` for distributed agents.
+- {py:class}`~autogen_ext.tools.langchain.LangChainToolAdapter` for using LangChain tools.
+- {py:class}`~autogen_ext.agents.openai.OpenAIAssistantAgent` for using Assistant API.
+- {py:class}`~autogen_ext.code_executors.docker.DockerCommandLineCodeExecutor` for running model-generated code in a Docker container.
+- {py:class}`~autogen_ext.runtimes.grpc.GrpcWorkerAgentRuntime` for distributed agents.
 
 +++
 

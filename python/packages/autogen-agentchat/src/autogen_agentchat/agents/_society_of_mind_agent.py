@@ -1,7 +1,12 @@
 from typing import Any, AsyncGenerator, List, Mapping, Sequence
 
 from autogen_core import CancellationToken
-from autogen_core.models import ChatCompletionClient, LLMMessage, SystemMessage, UserMessage
+from autogen_core.models import (
+    ChatCompletionClient,
+    LLMMessage,
+    SystemMessage,
+    UserMessage,
+)
 
 from autogen_agentchat.base import Response
 from autogen_agentchat.state import SocietyOfMindAgentState
@@ -80,9 +85,7 @@ class SocietyOfMindAgent(BaseChatAgent):
     messages when generating a response using the model. It assumes the role of
     'system'."""
 
-    DEFAULT_RESPONSE_PROMPT = (
-        "Output a standalone response to the original request, without mentioning any of the intermediate discussion."
-    )
+    DEFAULT_RESPONSE_PROMPT = "Output a standalone response to the original request, without mentioning any of the intermediate discussion."
     """str: The default response prompt to use when generating a response using
     the inner team's messages. It assumes the role of 'system'."""
 
@@ -106,7 +109,9 @@ class SocietyOfMindAgent(BaseChatAgent):
     def produced_message_types(self) -> Sequence[type[ChatMessage]]:
         return (TextMessage,)
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         # Call the stream method and collect the messages.
         response: Response | None = None
         async for msg in self.on_messages_stream(messages, cancellation_token):
@@ -125,7 +130,9 @@ class SocietyOfMindAgent(BaseChatAgent):
         result: TaskResult | None = None
         inner_messages: List[AgentEvent | ChatMessage] = []
         count = 0
-        async for inner_msg in self._team.run_stream(task=task, cancellation_token=cancellation_token):
+        async for inner_msg in self._team.run_stream(
+            task=task, cancellation_token=cancellation_token
+        ):
             if isinstance(inner_msg, TaskResult):
                 result = inner_msg
             else:
@@ -139,7 +146,8 @@ class SocietyOfMindAgent(BaseChatAgent):
 
         if len(inner_messages) == 0:
             yield Response(
-                chat_message=TextMessage(source=self.name, content="No response."), inner_messages=inner_messages
+                chat_message=TextMessage(source=self.name, content="No response."),
+                inner_messages=inner_messages,
             )
         else:
             # Generate a response using the model client.
@@ -152,10 +160,16 @@ class SocietyOfMindAgent(BaseChatAgent):
                 ]
             )
             llm_messages.append(SystemMessage(content=self._response_prompt))
-            completion = await self._model_client.create(messages=llm_messages, cancellation_token=cancellation_token)
+            completion = await self._model_client.create(
+                messages=llm_messages, cancellation_token=cancellation_token
+            )
             assert isinstance(completion.content, str)
             yield Response(
-                chat_message=TextMessage(source=self.name, content=completion.content, models_usage=completion.usage),
+                chat_message=TextMessage(
+                    source=self.name,
+                    content=completion.content,
+                    models_usage=completion.usage,
+                ),
                 inner_messages=inner_messages,
             )
 

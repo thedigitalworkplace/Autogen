@@ -33,7 +33,9 @@ class SubscriptionManager:
     def __init__(self) -> None:
         self._subscriptions: List[Subscription] = []
         self._seen_topics: Set[TopicId] = set()
-        self._subscribed_recipients: DefaultDict[TopicId, List[AgentId]] = defaultdict(list)
+        self._subscribed_recipients: DefaultDict[TopicId, List[AgentId]] = defaultdict(
+            list
+        )
 
     async def add_subscription(self, subscription: Subscription) -> None:
         # Check if the subscription already exists
@@ -71,4 +73,6 @@ class SubscriptionManager:
         self._seen_topics.add(topic)
         for subscription in self._subscriptions:
             if subscription.is_match(topic):
-                self._subscribed_recipients[topic].append(subscription.map_to_agent(topic))
+                self._subscribed_recipients[topic].append(
+                    subscription.map_to_agent(topic)
+                )

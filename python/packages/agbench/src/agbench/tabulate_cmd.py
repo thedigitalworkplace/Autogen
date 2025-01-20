@@ -22,7 +22,9 @@ SUCCESS_STRINGS = [
 EXCLUDE_DIR_NAMES = ["__pycache__"]
 
 
-def find_tabulate_module(search_dir: str, stop_dir: Optional[str] = None) -> Optional[str]:
+def find_tabulate_module(
+    search_dir: str, stop_dir: Optional[str] = None
+) -> Optional[str]:
     """Hunt for the tabulate script."""
 
     search_dir = os.path.abspath(search_dir)
@@ -58,7 +60,9 @@ def find_tabulate_module(search_dir: str, stop_dir: Optional[str] = None) -> Opt
     return None
 
 
-def default_scorer(instance_dir: str, success_strings: List[str] = SUCCESS_STRINGS) -> Optional[bool]:
+def default_scorer(
+    instance_dir: str, success_strings: List[str] = SUCCESS_STRINGS
+) -> Optional[bool]:
     console_log = os.path.join(instance_dir, "console_log.txt")
     if os.path.isfile(console_log):
         with open(console_log, "rt") as fh:
@@ -75,7 +79,9 @@ ScorerFunc = Callable[[str], Optional[bool]]
 
 
 def default_tabulate(
-    args: List[str], scorer: ScorerFunc = default_scorer, exclude_dir_names: List[str] = EXCLUDE_DIR_NAMES
+    args: List[str],
+    scorer: ScorerFunc = default_scorer,
+    exclude_dir_names: List[str] = EXCLUDE_DIR_NAMES,
 ) -> Tuple[argparse.Namespace, List[List[Any]]]:
     invocation_cmd = args[0]
     args = args[1:]
@@ -100,7 +106,10 @@ def default_tabulate(
     )
 
     parser.add_argument(
-        "-e", "--excel", help="Output the results in Excel format. Please specify a path for the Excel file.", type=str
+        "-e",
+        "--excel",
+        help="Output the results in Excel format. Please specify a path for the Excel file.",
+        type=str,
     )
 
     parsed_args = parser.parse_args(args)
@@ -161,7 +170,11 @@ def default_tabulate(
         def _count_equals(value: Optional[bool], trial: int) -> int:
             count = 0
             for row in all_results:
-                is_answer_matched = row[trial + 1][0] if isinstance(row[trial + 1], tuple) else row[trial + 1]
+                is_answer_matched = (
+                    row[trial + 1][0]
+                    if isinstance(row[trial + 1], tuple)
+                    else row[trial + 1]
+                )
 
                 # Count missing
                 if value is None:
@@ -203,7 +216,10 @@ def default_tabulate(
 
         footer_row = ["Average Success Rate"]
         for i in range(0, max_instances):
-            footer_row.append(_count_equals(True, i) / (footer[0][i + 1] + footer[1][i + 1] + footer[2][i + 1]))
+            footer_row.append(
+                _count_equals(True, i)
+                / (footer[0][i + 1] + footer[1][i + 1] + footer[2][i + 1])
+            )
         footer.append(footer_row)
 
         footer_row = ["Average Score"]

@@ -10,6 +10,7 @@ HTML_PAGE_TEMPLATE_FILE = THIS_FILE_DIR / "redirect_template.html"
 HTML_REDIRECT_TEMPLATE = HTML_PAGE_TEMPLATE_FILE.open("r").read()
 REDIRECT_URLS_FILE = THIS_FILE_DIR / "redirect_urls.txt"
 
+
 def generate_redirect(file_to_write: str, new_url: str, base_dir: Path):
     # Create a new redirect page
     redirect_page = Template(HTML_REDIRECT_TEMPLATE).substitute(to_url=new_url)
@@ -52,5 +53,6 @@ def main():
         file_to_write = old_url.replace("/autogen/", "/")
         generate_redirect(file_to_write, new_url, base_dir)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

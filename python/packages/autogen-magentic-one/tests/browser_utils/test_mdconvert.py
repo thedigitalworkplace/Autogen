@@ -22,7 +22,9 @@ JPG_TEST_EXIFTOOL = {
 }
 
 PDF_TEST_URL = "https://arxiv.org/pdf/2308.08155v2.pdf"
-PDF_TEST_STRINGS = ["While there is contemporaneous exploration of multi-agent approaches"]
+PDF_TEST_STRINGS = [
+    "While there is contemporaneous exploration of multi-agent approaches"
+]
 
 YOUTUBE_TEST_URL = "https://www.youtube.com/watch?v=V2qZ_lgxTzg"
 YOUTUBE_TEST_STRINGS = [
@@ -98,7 +100,9 @@ def test_mdconvert_remote() -> None:
 
     # By stream
     response = requests.get(PDF_TEST_URL)
-    result = mdconvert.convert_stream(io.BytesIO(response.content), file_extension=".pdf", url=PDF_TEST_URL)
+    result = mdconvert.convert_stream(
+        io.BytesIO(response.content), file_extension=".pdf", url=PDF_TEST_URL
+    )
     for test_string in PDF_TEST_STRINGS:
         assert test_string in result.text_content
 
@@ -135,13 +139,17 @@ def test_mdconvert_local() -> None:
         assert test_string in text_content
 
     # Test HTML processing
-    result = mdconvert.convert(os.path.join(TEST_FILES_DIR, "test_blog.html"), url=BLOG_TEST_URL)
+    result = mdconvert.convert(
+        os.path.join(TEST_FILES_DIR, "test_blog.html"), url=BLOG_TEST_URL
+    )
     for test_string in BLOG_TEST_STRINGS:
         text_content = result.text_content.replace("\\", "")
         assert test_string in text_content
 
     # Test Wikipedia processing
-    result = mdconvert.convert(os.path.join(TEST_FILES_DIR, "test_wikipedia.html"), url=WIKIPEDIA_TEST_URL)
+    result = mdconvert.convert(
+        os.path.join(TEST_FILES_DIR, "test_wikipedia.html"), url=WIKIPEDIA_TEST_URL
+    )
     text_content = result.text_content.replace("\\", "")
     for test_string in WIKIPEDIA_TEST_EXCLUDES:
         assert test_string not in text_content
@@ -149,7 +157,9 @@ def test_mdconvert_local() -> None:
         assert test_string in text_content
 
     # Test Bing processing
-    result = mdconvert.convert(os.path.join(TEST_FILES_DIR, "test_serp.html"), url=SERP_TEST_URL)
+    result = mdconvert.convert(
+        os.path.join(TEST_FILES_DIR, "test_serp.html"), url=SERP_TEST_URL
+    )
     text_content = result.text_content.replace("\\", "")
     for test_string in SERP_TEST_EXCLUDES:
         assert test_string not in text_content

@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="autogen_project", 
-    version="0.1.0", 
+    name="autogen_project",
+    version="0.1.0",
     description="A project for AutoGen Studio functionality",
     long_description="This project provides advanced tools for AutoGen Studio integration.",  # Replace with your detailed description
     long_description_content_type="text/markdown",
-    author="app.officio.com",  
-    author_email=" ",  
-    url="app.officio.work",  
+    author="app.officio.com",
+    author_email=" ",
+    url="app.officio.work",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[

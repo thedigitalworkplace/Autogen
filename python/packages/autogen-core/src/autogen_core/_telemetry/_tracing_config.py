@@ -92,11 +92,15 @@ class ExtraMessageRuntimeAttributes(TypedDict):
 
 
 MessagingDestination = Union[AgentId, TopicId, str, None]
-MessagingOperation = Literal["create", "send", "publish", "receive", "intercept", "process", "ack"]
+MessagingOperation = Literal[
+    "create", "send", "publish", "receive", "intercept", "process", "ack"
+]
 
 
 class MessageRuntimeTracingConfig(
-    TracingConfig[MessagingOperation, MessagingDestination, ExtraMessageRuntimeAttributes]
+    TracingConfig[
+        MessagingOperation, MessagingDestination, ExtraMessageRuntimeAttributes
+    ]
 ):
     """
     A class that defines the configuration for message runtime instrumentation.
@@ -126,7 +130,9 @@ class MessageRuntimeTracingConfig(
         if extraAttributes:
             # TODO: Make this more pythonic?
             if "message_size" in extraAttributes:
-                attrs["messaging.message.envelope.size"] = extraAttributes["message_size"]
+                attrs["messaging.message.envelope.size"] = extraAttributes[
+                    "message_size"
+                ]
             if "message_type" in extraAttributes:
                 attrs["messaging.message.type"] = extraAttributes["message_type"]
         return attrs

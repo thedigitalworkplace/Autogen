@@ -13,7 +13,9 @@ async def main(host_config: HostConfig):
 
     console = Console()
     console.print(
-        Markdown(f"**`Distributed Host`** is now running and listening for connection at **`{host_config.address}`**")
+        Markdown(
+            f"**`Distributed Host`** is now running and listening for connection at **`{host_config.address}`**"
+        )
     )
     await host.stop_when_signal()
 

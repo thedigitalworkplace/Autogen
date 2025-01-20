@@ -17,10 +17,14 @@ logger = logging.getLogger("autogen_core")
 
 
 class GrpcWorkerAgentRuntimeHost:
-    def __init__(self, address: str, extra_grpc_config: Optional[ChannelArgumentType] = None) -> None:
+    def __init__(
+        self, address: str, extra_grpc_config: Optional[ChannelArgumentType] = None
+    ) -> None:
         self._server = grpc.aio.server(options=extra_grpc_config)
         self._servicer = GrpcWorkerAgentRuntimeHostServicer()
-        agent_worker_pb2_grpc.add_AgentRpcServicer_to_server(self._servicer, self._server)
+        agent_worker_pb2_grpc.add_AgentRpcServicer_to_server(
+            self._servicer, self._server
+        )
         self._server.add_insecure_port(address)
         self._address = address
         self._serve_task: asyncio.Task[None] | None = None
@@ -50,7 +54,9 @@ class GrpcWorkerAgentRuntimeHost:
         self._serve_task = None
 
     async def stop_when_signal(
-        self, grace: int = 5, signals: Sequence[signal.Signals] = (signal.SIGTERM, signal.SIGINT)
+        self,
+        grace: int = 5,
+        signals: Sequence[signal.Signals] = (signal.SIGTERM, signal.SIGINT),
     ) -> None:
         """Stop the server when a signal is received."""
         if self._serve_task is None:

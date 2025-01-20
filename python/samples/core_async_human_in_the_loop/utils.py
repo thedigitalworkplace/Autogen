@@ -4,7 +4,10 @@ from typing import Any
 from autogen_core.models import (
     ChatCompletionClient,
 )
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
+from autogen_ext.models.openai import (
+    AzureOpenAIChatCompletionClient,
+    OpenAIChatCompletionClient,
+)
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
 

@@ -61,9 +61,12 @@ class MagenticOneHelper:
         logger.handlers = [self.log_handler]
 
         # Create client
-        client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
-        assert client.model_info["family"] == "gpt-4o", "This example requires the gpt-4o model"
-
+        client = ChatCompletionClient.load_component(
+            json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+        )
+        assert (
+            client.model_info["family"] == "gpt-4o"
+        ), "This example requires the gpt-4o model"
 
         # Set up code executor
         self.code_executor = DockerCommandLineCodeExecutor(work_dir=self.logs_dir)
@@ -76,15 +79,23 @@ class MagenticOneHelper:
         await Executor.register(
             self.runtime,
             "Executor",
-            lambda: Executor("A agent for executing code", executor=self.code_executor, confirm_execution=confirm_code),
+            lambda: Executor(
+                "A agent for executing code",
+                executor=self.code_executor,
+                confirm_execution=confirm_code,
+            ),
         )
         executor = AgentProxy(AgentId("Executor", "default"), self.runtime)
 
         # Register agents.
-        await MultimodalWebSurfer.register(self.runtime, "WebSurfer", MultimodalWebSurfer)
+        await MultimodalWebSurfer.register(
+            self.runtime, "WebSurfer", MultimodalWebSurfer
+        )
         web_surfer = AgentProxy(AgentId("WebSurfer", "default"), self.runtime)
 
-        await FileSurfer.register(self.runtime, "file_surfer", lambda: FileSurfer(model_client=client))
+        await FileSurfer.register(
+            self.runtime, "file_surfer", lambda: FileSurfer(model_client=client)
+        )
         file_surfer = AgentProxy(AgentId("file_surfer", "default"), self.runtime)
 
         agent_list = [web_surfer, coder, executor, file_surfer]
@@ -103,7 +114,9 @@ class MagenticOneHelper:
 
         self.runtime.start()
 
-        actual_surfer = await self.runtime.try_get_underlying_agent_instance(web_surfer.id, type=MultimodalWebSurfer)
+        actual_surfer = await self.runtime.try_get_underlying_agent_instance(
+            web_surfer.id, type=MultimodalWebSurfer
+        )
         await actual_surfer.init(
             model_client=client,
             downloads_folder=os.getcwd(),
@@ -131,7 +144,9 @@ class MagenticOneHelper:
         if not self.runtime:
             raise RuntimeError("MagenticOne not initialized. Call initialize() first.")
 
-        task_message = BroadcastMessage(content=UserMessage(content=task, source="UserProxy"))
+        task_message = BroadcastMessage(
+            content=UserMessage(content=task, source="UserProxy")
+        )
 
         await self.runtime.publish_message(task_message, topic_id=DefaultTopicId())
         await self.runtime.stop_when_idle()
@@ -185,13 +200,15 @@ class MagenticOneHelper:
 
                 if (
                     log_entry.get("type") == "OrchestrationEvent"
-                    and log_entry.get("source") == "Orchestrator (termination condition)"
+                    and log_entry.get("source")
+                    == "Orchestrator (termination condition)"
                 ):
                     found_termination = True
 
                 if (
                     log_entry.get("type") == "OrchestrationEvent"
-                    and log_entry.get("source") == "Orchestrator (termination condition)"
+                    and log_entry.get("source")
+                    == "Orchestrator (termination condition)"
                     and log_entry.get("message") == "No agent selected."
                 ):
                     found_termination_no_agent = True

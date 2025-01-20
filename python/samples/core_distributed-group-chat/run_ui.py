@@ -53,7 +53,9 @@ async def main(config: AppConfig):
     )
 
     await ui_agent_runtime.add_subscription(
-        TypeSubscription(topic_type=config.ui_agent.topic_type, agent_type=ui_agent_type.type)
+        TypeSubscription(
+            topic_type=config.ui_agent.topic_type, agent_type=ui_agent_type.type
+        )
     )  # TODO: This could be a great example of using agent_id to route to sepecific element in the ui. Can replace MessageChunk.message_id
 
     await ui_agent_runtime.stop_when_signal()
@@ -63,5 +65,7 @@ async def main(config: AppConfig):
 @cl.on_chat_start  # type: ignore
 async def start_chat():
     set_all_log_levels(logging.ERROR)
-    warnings.filterwarnings("ignore", category=UserWarning, message="Resolved model mismatch.*")
+    warnings.filterwarnings(
+        "ignore", category=UserWarning, message="Resolved model mismatch.*"
+    )
     asyncio.run(main(load_config()))

@@ -2,7 +2,11 @@ import asyncio
 import logging
 import warnings
 
-from _agents import GroupChatManager, publish_message_to_ui, publish_message_to_ui_and_backend
+from _agents import (
+    GroupChatManager,
+    publish_message_to_ui,
+    publish_message_to_ui_and_backend,
+)
 from _types import AppConfig, GroupChatMessage, MessageChunk, RequestToSpeak
 from _utils import get_serializers, load_config, set_all_log_levels
 from autogen_core import (
@@ -18,7 +22,9 @@ set_all_log_levels(logging.ERROR)
 
 async def main(config: AppConfig):
     set_all_log_levels(logging.ERROR)
-    group_chat_manager_runtime = GrpcWorkerAgentRuntime(host_address=config.host.address)
+    group_chat_manager_runtime = GrpcWorkerAgentRuntime(
+        host_address=config.host.address
+    )
 
     group_chat_manager_runtime.add_message_serializer(get_serializers([RequestToSpeak, GroupChatMessage, MessageChunk]))  # type: ignore[arg-type]
     await asyncio.sleep(1)
@@ -31,15 +37,24 @@ async def main(config: AppConfig):
         "group_chat_manager",
         lambda: GroupChatManager(
             model_client=AzureOpenAIChatCompletionClient(**config.client_config),
-            participant_topic_types=[config.writer_agent.topic_type, config.editor_agent.topic_type],
-            participant_descriptions=[config.writer_agent.description, config.editor_agent.description],
+            participant_topic_types=[
+                config.writer_agent.topic_type,
+                config.editor_agent.topic_type,
+            ],
+            participant_descriptions=[
+                config.writer_agent.description,
+                config.editor_agent.description,
+            ],
             max_rounds=config.group_chat_manager.max_rounds,
             ui_config=config.ui_agent,
         ),
     )
 
     await group_chat_manager_runtime.add_subscription(
-        TypeSubscription(topic_type=config.group_chat_manager.topic_type, agent_type=group_chat_manager_type.type)
+        TypeSubscription(
+            topic_type=config.group_chat_manager.topic_type,
+            agent_type=group_chat_manager_type.type,
+        )
     )
 
     await asyncio.sleep(5)
@@ -69,5 +84,7 @@ async def main(config: AppConfig):
 
 if __name__ == "__main__":
     set_all_log_levels(logging.ERROR)
-    warnings.filterwarnings("ignore", category=UserWarning, message="Resolved model mismatch.*")
+    warnings.filterwarnings(
+        "ignore", category=UserWarning, message="Resolved model mismatch.*"
+    )
     asyncio.run(main(load_config()))

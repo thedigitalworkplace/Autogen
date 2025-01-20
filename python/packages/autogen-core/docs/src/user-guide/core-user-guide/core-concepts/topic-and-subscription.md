@@ -13,6 +13,7 @@ with no inter-dependencies.
 This section focuses on the core concepts in broadcast: topic and subscription.
 
 (topic_and_subscription_topic)=
+
 ## Topic
 
 A topic defines the scope of a broadcast message.
@@ -40,10 +41,12 @@ Topic source allows the publisher to limit the scope of messages and create
 silos.
 
 Topic IDs can be converted to and from strings. the format of this string is:
+
 ```{note}
 Topic_Type/Topic_Source
 ```
-Types are considered valid if they are in UTF8 and only contain alphanumeric letters (a-z) and (0-9), or underscores (_). A valid identifier cannot start with a number, or contain any spaces.
+
+Types are considered valid if they are in UTF8 and only contain alphanumeric letters (a-z) and (0-9), or underscores (\_). A valid identifier cannot start with a number, or contain any spaces.
 Sources are considered valid if they are in UTF8 and only contain characters between (inclusive) ascii 32 (space) and 126 (~).
 
 ## Subscription
@@ -88,8 +91,8 @@ topic or agent IDs are data-dependent.
 The scenarios can be broken down by two considerations:
 (1) whether it is single-tenant or multi-tenant, and
 (2) whether it is a single topic or multiple topics per tenant.
-A tenant typically refers to a set of agents that handle a specific 
-user session or a specific request. 
+A tenant typically refers to a set of agents that handle a specific
+user session or a specific request.
 
 #### Single-Tenant, Single Topic
 
@@ -114,7 +117,7 @@ TypeSubscription(topic_type="default", agent_type="coder_agent")
 TypeSubscription(topic_type="default", agent_type="reviewer_agent")
 ```
 
-With the above type-based subscriptions, use the same topic source 
+With the above type-based subscriptions, use the same topic source
 `"default"` for all messages. So the topic is always `("default", "default")`.
 A message published to this topic will be delivered to all the agents of
 all above types. Specifically, the message will be sent to the following agent IDs:
@@ -132,14 +135,13 @@ The following figure shows how type-based subscription works in this example.
 
 If the agent with the ID does not exist, the runtime will create it.
 
-
 #### Single-Tenant, Multiple Topics
 
 In this scenario, there is only one tenant but you want to control
 which agent handles which topic. This is useful when you want to
 create silos and have different agents specialized in handling different topics.
 
-To apply type-based subscription for this scenario, 
+To apply type-based subscription for this scenario,
 create one type-based subscription for each agent type but with different
 topic types. You can map the same topic type to multiple agent types if
 you want these agent types to share a same topic.
@@ -159,12 +161,11 @@ With the above type-based subscriptions, any message published to the topic
 `("triage", "default")` will be delivered to the agent with type
 `"triage_agent"`, and any message published to the topic
 `("coding", "default")` will be delivered to the agents with types
-`"coder_agent"` and `"reviewer_agent"`. 
+`"coder_agent"` and `"reviewer_agent"`.
 
 The following figure shows how type-based subscription works in this example.
 
 ![Type-Based Subscription Single-Tenant, Multiple Topics Scenario Example](type-subscription-single-tenant-multiple-topics.svg)
-
 
 #### Multi-Tenant Scenarios
 
@@ -173,16 +174,16 @@ In single-tenant scenarios, the topic source is always the same (e.g., `"default
 When moving to multi-tenant scenarios, the topic source becomes data-dependent.
 
 ```{note}
-A good indication that you are in a multi-tenant scenario is that you need 
+A good indication that you are in a multi-tenant scenario is that you need
 multiple instances of the same agent type. For example, you may want to have
-different agent instances to handle different user sessions to 
+different agent instances to handle different user sessions to
 keep private data isolated, or, you may want to distribute a heavy workload
 across multiple instances of the same agent type and have them work on it concurrently.
 ```
 
 Continuing the example above, if you want to have dedicated instances of agents
 to handle a specific GitHub issue, you need to set the topic source to be a
-unique identifier for the issue. 
+unique identifier for the issue.
 
 For example, let's say there is one type-based subscription for the agent type
 `"triage_agent"`:

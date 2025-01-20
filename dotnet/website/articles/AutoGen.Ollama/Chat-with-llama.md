@@ -24,4 +24,3 @@ For how to install from nightly build, please refer to [Installation](../Install
 In this step, we create an @AutoGen.Ollama.OllamaAgent and connect it to the Ollama server.
 
 [!code-csharp[](../../../samples/AutoGen.Ollama.Sample/Chat_With_LLaMA.cs?name=Create_Ollama_Agent)]
-

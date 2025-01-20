@@ -34,19 +34,33 @@ async def main() -> None:
         agentHost = agentHost[8:]
     agnext_logger.info("0")
     agnext_logger.info(agentHost)
-    runtime = GrpcWorkerAgentRuntime(host_address=agentHost, payload_serialization_format=PROTOBUF_DATA_CONTENT_TYPE)
+    runtime = GrpcWorkerAgentRuntime(
+        host_address=agentHost, payload_serialization_format=PROTOBUF_DATA_CONTENT_TYPE
+    )
 
     agnext_logger.info("1")
     runtime.start()
-    runtime.add_message_serializer(try_get_known_serializers_for_type(NewMessageReceived))
+    runtime.add_message_serializer(
+        try_get_known_serializers_for_type(NewMessageReceived)
+    )
 
     agnext_logger.info("2")
 
     await UserProxy.register(runtime, "HelloAgent", lambda: UserProxy())
     await runtime.add_subscription(DefaultSubscription(agent_type="HelloAgent"))
-    await runtime.add_subscription(TypeSubscription(topic_type="agents.NewMessageReceived", agent_type="HelloAgent"))
-    await runtime.add_subscription(TypeSubscription(topic_type="agents.ConversationClosed", agent_type="HelloAgent"))
-    await runtime.add_subscription(TypeSubscription(topic_type="agents.Output", agent_type="HelloAgent"))
+    await runtime.add_subscription(
+        TypeSubscription(
+            topic_type="agents.NewMessageReceived", agent_type="HelloAgent"
+        )
+    )
+    await runtime.add_subscription(
+        TypeSubscription(
+            topic_type="agents.ConversationClosed", agent_type="HelloAgent"
+        )
+    )
+    await runtime.add_subscription(
+        TypeSubscription(topic_type="agents.Output", agent_type="HelloAgent")
+    )
     agnext_logger.info("3")
 
     new_message = NewMessageReceived(message="from Python!")

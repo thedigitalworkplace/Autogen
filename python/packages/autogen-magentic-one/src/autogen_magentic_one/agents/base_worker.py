@@ -26,10 +26,14 @@ class BaseWorker(MagenticOneBaseAgent):
         description: str,
         handle_messages_concurrently: bool = False,
     ) -> None:
-        super().__init__(description, handle_messages_concurrently=handle_messages_concurrently)
+        super().__init__(
+            description, handle_messages_concurrently=handle_messages_concurrently
+        )
         self._chat_history: List[LLMMessage] = []
 
-    async def _handle_broadcast(self, message: BroadcastMessage, ctx: MessageContext) -> None:
+    async def _handle_broadcast(
+        self, message: BroadcastMessage, ctx: MessageContext
+    ) -> None:
         assert isinstance(message.content, UserMessage)
         self._chat_history.append(message.content)
 
@@ -37,11 +41,15 @@ class BaseWorker(MagenticOneBaseAgent):
         """Handle a reset message."""
         await self._reset(ctx.cancellation_token)
 
-    async def _handle_request_reply(self, message: RequestReplyMessage, ctx: MessageContext) -> None:
+    async def _handle_request_reply(
+        self, message: RequestReplyMessage, ctx: MessageContext
+    ) -> None:
         """Respond to a reply request."""
         request_halt, response = await self._generate_reply(ctx.cancellation_token)
 
-        assistant_message = AssistantMessage(content=message_content_to_str(response), source=self.metadata["type"])
+        assistant_message = AssistantMessage(
+            content=message_content_to_str(response), source=self.metadata["type"]
+        )
         self._chat_history.append(assistant_message)
 
         user_message = UserMessage(content=response, source=self.metadata["type"])
@@ -52,7 +60,9 @@ class BaseWorker(MagenticOneBaseAgent):
             cancellation_token=ctx.cancellation_token,
         )
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, UserContent]:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, UserContent]:
         """Returns (request_halt, response_message)"""
         raise NotImplementedError()
 

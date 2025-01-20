@@ -4,8 +4,8 @@ if (version === "stable") {
 #bd-header-version-warning {
   display: none;
 }
-  `
-  var styleSheet = document.createElement("style")
-  styleSheet.textContent = styles
-  document.head.appendChild(styleSheet)
+  `;
+  var styleSheet = document.createElement("style");
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
 }

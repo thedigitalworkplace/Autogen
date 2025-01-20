@@ -94,7 +94,7 @@ const ContentHeader = ({
                             index > 0 ? "ml-4" : "",
                             page.current
                               ? "text-primary"
-                              : "text-secondary hover:text-accent"
+                              : "text-secondary hover:text-accent",
                           )}
                         >
                           {page.name}

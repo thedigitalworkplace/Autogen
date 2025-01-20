@@ -13,6 +13,7 @@ flowchart TD
 By having @AutoGen.Core.GroupChat to follow a specific graph flow, we can bring prior knowledge to group chat and make the conversation more efficient and robust. This is where @AutoGen.Core.Graph comes in.
 
 ### Create a graph
+
 The following code shows how to create a graph that represents the diagram above. The graph doesn't need to be a finite state machine where each state can only have one legitimate next state. Instead, it can be a directed graph where each state can have multiple legitimate next states. And if there are multiple legitimate next states, the `admin` agent of @AutoGen.Core.GroupChat will decide which one to go based on the conversation context.
 
 > [!TIP]

@@ -3,9 +3,11 @@
 AutoGen has native support for [open telemetry](https://opentelemetry.io/). This allows you to collect telemetry data from your application and send it to a telemetry backend of your choosing.
 
 These are the components that are currently instrumented:
+
 - Runtime (Single Threaded Agent Runtime, Worker Agent Runtime)
 
 ## Instrumenting your application
+
 To instrument your application, you will need an sdk and an exporter. You may already have these if your application is already instrumented with open telemetry.
 
 ## Clean instrumentation
@@ -26,6 +28,7 @@ pip install opentelemetry-exporter-otlp-proto-grpc
 ```
 
 Next, we need to get a tracer provider:
+
 ```python
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -44,6 +47,7 @@ def configure_oltp_tracing(endpoint: str = None) -> trace.TracerProvider:
 ```
 
 Now you can send the trace_provider when creating your runtime:
+
 ```python
 # for single threaded runtime
 single_threaded_runtime = SingleThreadedAgentRuntime(tracer_provider=tracer_provider)
@@ -56,6 +60,7 @@ And that's it! Your application is now instrumented with open telemetry. You can
 ### Exisiting instrumentation
 
 If you have open telemetry already set up in your application, you can pass the tracer provider to the runtime when creating it:
+
 ```python
 from opentelemetry import trace
 

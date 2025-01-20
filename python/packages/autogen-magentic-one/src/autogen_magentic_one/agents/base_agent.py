@@ -29,7 +29,9 @@ class MagenticOneBaseAgent(RoutedAgent):
 
         if not self._handle_messages_concurrently:
             # TODO: make it possible to stop
-            self._message_queue = asyncio.Queue[tuple[MagenticOneMessages, MessageContext, asyncio.Future[Any]]]()
+            self._message_queue = asyncio.Queue[
+                tuple[MagenticOneMessages, MessageContext, asyncio.Future[Any]]
+            ]()
             self._processing_task = asyncio.create_task(self._process())
 
     async def _process(self) -> None:
@@ -60,7 +62,9 @@ class MagenticOneBaseAgent(RoutedAgent):
     @message_handler
     async def handle_incoming_message(
         self,
-        message: BroadcastMessage | ResetMessage | DeactivateMessage | RequestReplyMessage,
+        message: (
+            BroadcastMessage | ResetMessage | DeactivateMessage | RequestReplyMessage
+        ),
         ctx: MessageContext,
     ) -> None:
         if not self._enabled:
@@ -80,16 +84,22 @@ class MagenticOneBaseAgent(RoutedAgent):
             await self._message_queue.put((message, ctx, future))
             await future
 
-    async def _handle_broadcast(self, message: BroadcastMessage, ctx: MessageContext) -> None:
+    async def _handle_broadcast(
+        self, message: BroadcastMessage, ctx: MessageContext
+    ) -> None:
         raise NotImplementedError()
 
     async def _handle_reset(self, message: ResetMessage, ctx: MessageContext) -> None:
         raise NotImplementedError()
 
-    async def _handle_request_reply(self, message: RequestReplyMessage, ctx: MessageContext) -> None:
+    async def _handle_request_reply(
+        self, message: RequestReplyMessage, ctx: MessageContext
+    ) -> None:
         raise NotImplementedError()
 
-    async def _handle_deactivate(self, message: DeactivateMessage, ctx: MessageContext) -> None:
+    async def _handle_deactivate(
+        self, message: DeactivateMessage, ctx: MessageContext
+    ) -> None:
         """Handle a deactivate message."""
         self._enabled = False
         self.logger.info(

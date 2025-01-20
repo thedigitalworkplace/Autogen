@@ -9,7 +9,10 @@ from autogen_core._component_config import (
     _type_to_provider_str,  # type: ignore
 )
 from autogen_ext.auth.azure import AzureTokenProvider
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient, OpenAIChatCompletionClient
+from autogen_ext.models.openai import (
+    AzureOpenAIChatCompletionClient,
+    OpenAIChatCompletionClient,
+)
 from pydantic import BaseModel
 
 all_defs: Dict[str, Any] = {}
@@ -17,7 +20,9 @@ all_defs: Dict[str, Any] = {}
 T = TypeVar("T", bound=BaseModel)
 
 
-def build_specific_component_schema(component: type[ComponentConfigImpl[T]], provider_str: str) -> Dict[str, Any]:
+def build_specific_component_schema(
+    component: type[ComponentConfigImpl[T]], provider_str: str
+) -> Dict[str, Any]:
     model = component.component_config_schema  # type: ignore
     model_schema = model.model_json_schema()
 
@@ -35,9 +40,13 @@ def build_specific_component_schema(component: type[ComponentConfigImpl[T]], pro
 
     component_model_schema["$defs"][model.__name__] = model_schema
 
-    component_model_schema["properties"]["config"] = {"$ref": f"#/$defs/{model.__name__}"}
+    component_model_schema["properties"]["config"] = {
+        "$ref": f"#/$defs/{model.__name__}"
+    }
 
-    canonical_provider = component.component_provider_override or _type_to_provider_str(component)
+    canonical_provider = component.component_provider_override or _type_to_provider_str(
+        component
+    )
     # TODO: generate this from the component and lookup table
     component_model_schema["properties"]["provider"] = {
         "anyOf": [
@@ -45,10 +54,16 @@ def build_specific_component_schema(component: type[ComponentConfigImpl[T]], pro
         ]
     }
 
-    component_model_schema["properties"]["provider"] = {"type": "string", "const": provider_str}
+    component_model_schema["properties"]["provider"] = {
+        "type": "string",
+        "const": provider_str,
+    }
 
     component_model_schema["properties"]["component_type"] = {
-        "anyOf": [{"type": "string", "const": component.component_type}, {"type": "null"}]
+        "anyOf": [
+            {"type": "string", "const": component.component_type},
+            {"type": "null"},
+        ]
     }
 
     return component_model_schema
@@ -78,7 +93,10 @@ def main() -> None:
             # Add new defs, don't overwrite the existing ones
             for key, value in model["$defs"].items():
                 if key in outer_model_schema["$defs"]:
-                    print(f"Key {key} already exists in outer model schema", file=sys.stderr)
+                    print(
+                        f"Key {key} already exists in outer model schema",
+                        file=sys.stderr,
+                    )
                     continue
                 outer_model_schema["$defs"][key] = value
             del model["$defs"]

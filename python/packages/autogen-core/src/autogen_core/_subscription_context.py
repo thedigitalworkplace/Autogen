@@ -11,7 +11,9 @@ class SubscriptionInstantiationContext:
             "SubscriptionInstantiationContext cannot be instantiated. It is a static class that provides context management for subscription instantiation."
         )
 
-    _SUBSCRIPTION_CONTEXT_VAR: ClassVar[ContextVar[AgentType]] = ContextVar("_SUBSCRIPTION_CONTEXT_VAR")
+    _SUBSCRIPTION_CONTEXT_VAR: ClassVar[ContextVar[AgentType]] = ContextVar(
+        "_SUBSCRIPTION_CONTEXT_VAR"
+    )
 
     @classmethod
     @contextmanager

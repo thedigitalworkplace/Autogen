@@ -57,7 +57,6 @@ chainlit run app.py -h
 - `run_team`: Sends the user's query to the team streams the agent responses back to the chat interface.
 - `chat`: Receives messages from the user and passes them to the `run_team` function.
 
-
 ## Adding a UserProxyAgent
 
 We can add a `UserProxyAgent` to the team so that the user can interact with the team directly with the input box in the chat interface. This requires defining a function for input that uses the Chainlit input box instead of the terminal.
@@ -96,8 +95,6 @@ team = RoundRobinGroupChat(
     participants=[user_proxy_agent, assistant_agent],
     termination_condition=termination)
 ```
-
-
 
 ## Next Steps (Extra Credit)
 

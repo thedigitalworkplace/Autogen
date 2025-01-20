@@ -63,4 +63,6 @@ class TypeSubscription(Subscription):
         if not isinstance(other, TypeSubscription):
             return False
 
-        return self.id == other.id or (self.agent_type == other.agent_type and self.topic_type == other.topic_type)
+        return self.id == other.id or (
+            self.agent_type == other.agent_type and self.topic_type == other.topic_type
+        )

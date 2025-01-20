@@ -1,6 +1,18 @@
 import json
 from dataclasses import asdict, dataclass, fields
-from typing import Any, ClassVar, Dict, List, Protocol, Sequence, TypeVar, cast, get_args, get_origin, runtime_checkable
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    List,
+    Protocol,
+    Sequence,
+    TypeVar,
+    cast,
+    get_args,
+    get_origin,
+    runtime_checkable,
+)
 
 from google.protobuf import any_pb2
 from google.protobuf.message import Message
@@ -102,7 +114,9 @@ PROTOBUF_DATA_CONTENT_TYPE = "application/x-protobuf"
 class DataclassJsonMessageSerializer(MessageSerializer[DataclassT]):
     def __init__(self, cls: type[DataclassT]) -> None:
         if contains_a_union(cls):
-            raise ValueError("Dataclass has a union type, which is not supported. To use a union, use a Pydantic model")
+            raise ValueError(
+                "Dataclass has a union type, which is not supported. To use a union, use a Pydantic model"
+            )
 
         if has_nested_dataclass(cls) or has_nested_base_model(cls):
             raise ValueError(
@@ -222,25 +236,35 @@ class SerializationRegistry:
         # type_name, data_content_type -> serializer
         self._serializers: dict[tuple[str, str], MessageSerializer[Any]] = {}
 
-    def add_serializer(self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]) -> None:
+    def add_serializer(
+        self, serializer: MessageSerializer[Any] | Sequence[MessageSerializer[Any]]
+    ) -> None:
         if isinstance(serializer, Sequence):
             for c in serializer:
                 self.add_serializer(c)
             return
 
-        self._serializers[(serializer.type_name, serializer.data_content_type)] = serializer
+        self._serializers[(serializer.type_name, serializer.data_content_type)] = (
+            serializer
+        )
 
-    def deserialize(self, payload: bytes, *, type_name: str, data_content_type: str) -> Any:
+    def deserialize(
+        self, payload: bytes, *, type_name: str, data_content_type: str
+    ) -> Any:
         serializer = self._serializers.get((type_name, data_content_type))
         if serializer is None:
             return UnknownPayload(type_name, data_content_type, payload)
 
         return serializer.deserialize(payload)
 
-    def serialize(self, message: Any, *, type_name: str, data_content_type: str) -> bytes:
+    def serialize(
+        self, message: Any, *, type_name: str, data_content_type: str
+    ) -> bytes:
         serializer = self._serializers.get((type_name, data_content_type))
         if serializer is None:
-            raise ValueError(f"Unknown type {type_name} with content type {data_content_type}")
+            raise ValueError(
+                f"Unknown type {type_name} with content type {data_content_type}"
+            )
 
         return serializer.serialize(message)
 

@@ -66,7 +66,8 @@ class SwarmGroupChatManager(BaseGroupChatManager):
 
     async def select_speaker(self, thread: List[AgentEvent | ChatMessage]) -> str:
         """Select a speaker from the participants based on handoff message.
-        Looks for the last handoff message in the thread to determine the next speaker."""
+        Looks for the last handoff message in the thread to determine the next speaker.
+        """
         if len(thread) == 0:
             return self._current_speaker
         for message in reversed(thread):
@@ -195,7 +196,9 @@ class Swarm(BaseGroupChat):
         # The first participant must be able to produce handoff messages.
         first_participant = self._participants[0]
         if HandoffMessage not in first_participant.produced_message_types:
-            raise ValueError("The first participant must be able to produce a handoff messages.")
+            raise ValueError(
+                "The first participant must be able to produce a handoff messages."
+            )
 
     def _create_group_chat_manager_factory(
         self,

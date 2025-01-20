@@ -20,7 +20,7 @@ export const GalleryCreateModal: React.FC<GalleryCreateModalProps> = ({
   const [activeTab, setActiveTab] = useState("url");
   const [url, setUrl] = useState("");
   const [jsonContent, setJsonContent] = useState(
-    JSON.stringify(defaultGallery, null, 2)
+    JSON.stringify(defaultGallery, null, 2),
   );
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +108,7 @@ export const GalleryCreateModal: React.FC<GalleryCreateModalProps> = ({
               role="button"
               onClick={(e) => {
                 setUrl(
-                  "https://raw.githubusercontent.com/victordibia/multiagent-systems-with-autogen/refs/heads/main/research/components/gallery/base.json"
+                  "https://raw.githubusercontent.com/victordibia/multiagent-systems-with-autogen/refs/heads/main/research/components/gallery/base.json",
                 );
                 e.preventDefault();
               }}

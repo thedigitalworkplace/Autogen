@@ -32,8 +32,12 @@ def main() -> None:
             "For more information, refer to the following paper: https://arxiv.org/abs/2411.04468"
         )
     )
-    parser.add_argument("task", type=str, nargs=1, help="The task to be executed by MagenticOne.")
-    parser.add_argument("--no-hil", action="store_true", help="Disable human-in-the-loop mode.")
+    parser.add_argument(
+        "task", type=str, nargs=1, help="The task to be executed by MagenticOne."
+    )
+    parser.add_argument(
+        "--no-hil", action="store_true", help="Disable human-in-the-loop mode."
+    )
     args = parser.parse_args()
 
     async def run_task(task: str, hil_mode: bool) -> None:

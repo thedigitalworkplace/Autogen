@@ -28,7 +28,9 @@ class BingMarkdownSearch(AbstractMarkdownSearch):
     Provides Bing web search capabilities to Markdown browsers.
     """
 
-    def __init__(self, bing_api_key: Optional[str] = None, interleave_results: bool = True):
+    def __init__(
+        self, bing_api_key: Optional[str] = None, interleave_results: bool = True
+    ):
         """
         Perform a Bing web search, and return the results formatted in Markdown.
 
@@ -101,7 +103,9 @@ class BingMarkdownSearch(AbstractMarkdownSearch):
                     snippet += "\n" + _processFacts(page["richFacts"])
 
                 if "mentions" in page:
-                    snippet += "\nMentions: " + ", ".join(e["name"] for e in page["mentions"])
+                    snippet += "\nMentions: " + ", ".join(
+                        e["name"] for e in page["mentions"]
+                    )
 
                 if page["id"] not in snippets:
                     snippets[page["id"]] = list()
@@ -118,18 +122,20 @@ class BingMarkdownSearch(AbstractMarkdownSearch):
         news_snippets: List[str] = list()
         if "news" in results:
             for page in results["news"]["value"]:
-                snippet = (
-                    f"__POS__. {self._markdown_link(page['name'], page['url'])}\n{page.get('description', '')}".strip()
-                )
+                snippet = f"__POS__. {self._markdown_link(page['name'], page['url'])}\n{page.get('description', '')}".strip()
 
                 if "datePublished" in page:
-                    snippet += "\nDate published: " + page["datePublished"].split("T")[0]
+                    snippet += (
+                        "\nDate published: " + page["datePublished"].split("T")[0]
+                    )
 
                 if "richFacts" in page:
                     snippet += "\n" + _processFacts(page["richFacts"])
 
                 if "mentions" in page:
-                    snippet += "\nMentions: " + ", ".join(e["name"] for e in page["mentions"])
+                    snippet += "\nMentions: " + ", ".join(
+                        e["name"] for e in page["mentions"]
+                    )
 
                 news_snippets.append(snippet)
 
@@ -140,19 +146,25 @@ class BingMarkdownSearch(AbstractMarkdownSearch):
         video_snippets: List[str] = list()
         if "videos" in results:
             for page in results["videos"]["value"]:
-                if not page["contentUrl"].startswith("https://www.youtube.com/watch?v="):
+                if not page["contentUrl"].startswith(
+                    "https://www.youtube.com/watch?v="
+                ):
                     continue
 
                 snippet = f"__POS__. {self._markdown_link(page['name'], page['contentUrl'])}\n{page.get('description', '')}".strip()
 
                 if "datePublished" in page:
-                    snippet += "\nDate published: " + page["datePublished"].split("T")[0]
+                    snippet += (
+                        "\nDate published: " + page["datePublished"].split("T")[0]
+                    )
 
                 if "richFacts" in page:
                     snippet += "\n" + _processFacts(page["richFacts"])
 
                 if "mentions" in page:
-                    snippet += "\nMentions: " + ", ".join(e["name"] for e in page["mentions"])
+                    snippet += "\nMentions: " + ", ".join(
+                        e["name"] for e in page["mentions"]
+                    )
 
                 video_snippets.append(snippet)
 
@@ -209,7 +221,9 @@ class BingMarkdownSearch(AbstractMarkdownSearch):
             if len(related_searches) > 0:
                 content += related_searches
 
-        return f"## A Bing search for '{query}' found {idx} results:\n\n" + content.strip()
+        return (
+            f"## A Bing search for '{query}' found {idx} results:\n\n" + content.strip()
+        )
 
     def _bing_api_call(self, query: str) -> Dict[str, Any]:
         """Make a Bing API call, and return a Python representation of the JSON response."
@@ -237,7 +251,9 @@ class BingMarkdownSearch(AbstractMarkdownSearch):
         request_kwargs["stream"] = False
 
         # Make the request
-        response = requests.get("https://api.bing.microsoft.com/v7.0/search", **request_kwargs)
+        response = requests.get(
+            "https://api.bing.microsoft.com/v7.0/search", **request_kwargs
+        )
         response.raise_for_status()
         results = response.json()
 

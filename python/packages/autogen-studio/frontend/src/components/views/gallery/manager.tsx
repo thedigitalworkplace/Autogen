@@ -121,7 +121,7 @@ export const GalleryManager: React.FC = () => {
 
   const handleUpdateGallery = async (
     galleryId: string,
-    updates: Partial<Gallery>
+    updates: Partial<Gallery>,
   ) => {
     try {
       await updateGallery(galleryId, updates);

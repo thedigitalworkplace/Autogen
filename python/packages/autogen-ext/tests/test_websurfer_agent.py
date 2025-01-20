@@ -16,7 +16,10 @@ from openai.resources.chat.completions import AsyncCompletions
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
 from openai.types.completion_usage import CompletionUsage
 from pydantic import BaseModel
 
@@ -66,12 +69,18 @@ async def test_run_websurfer(monkeypatch: pytest.MonkeyPatch) -> None:
         ChatCompletion(
             id="id2",
             choices=[
-                Choice(finish_reason="stop", index=0, message=ChatCompletionMessage(content="Hello", role="assistant"))
+                Choice(
+                    finish_reason="stop",
+                    index=0,
+                    message=ChatCompletionMessage(content="Hello", role="assistant"),
+                )
             ],
             created=0,
             model=model,
             object="chat.completion",
-            usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=0),
+            usage=CompletionUsage(
+                prompt_tokens=10, completion_tokens=5, total_tokens=0
+            ),
         ),
         ChatCompletion(
             id="id2",
@@ -87,7 +96,9 @@ async def test_run_websurfer(monkeypatch: pytest.MonkeyPatch) -> None:
                                 type="function",
                                 function=Function(
                                     name="sleep",
-                                    arguments=json.dumps({"reasoning": "sleep is important"}),
+                                    arguments=json.dumps(
+                                        {"reasoning": "sleep is important"}
+                                    ),
                                 ),
                             )
                         ],
@@ -98,13 +109,17 @@ async def test_run_websurfer(monkeypatch: pytest.MonkeyPatch) -> None:
             created=0,
             model=model,
             object="chat.completion",
-            usage=CompletionUsage(prompt_tokens=10, completion_tokens=5, total_tokens=0),
+            usage=CompletionUsage(
+                prompt_tokens=10, completion_tokens=5, total_tokens=0
+            ),
         ),
     ]
     mock = _MockChatCompletion(chat_completions)
     monkeypatch.setattr(AsyncCompletions, "create", mock.mock_create)
     agent = MultimodalWebSurfer(
-        "WebSurfer", model_client=OpenAIChatCompletionClient(model=model, api_key=""), use_ocr=False
+        "WebSurfer",
+        model_client=OpenAIChatCompletionClient(model=model, api_key=""),
+        use_ocr=False,
     )
     # Before lazy init
     assert agent._name == "WebSurfer"  # pyright: ignore[reportPrivateUsage]
@@ -128,8 +143,12 @@ async def test_run_websurfer(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result.messages[2].content == "Hello"
     # check internal web surfer state
     assert len(agent._chat_history) == 2  # pyright: ignore[reportPrivateUsage]
-    assert agent._chat_history[0].content == "task"  # pyright: ignore[reportPrivateUsage]
-    assert agent._chat_history[1].content == "Hello"  # pyright: ignore[reportPrivateUsage]
+    assert (
+        agent._chat_history[0].content == "task"
+    )  # pyright: ignore[reportPrivateUsage]
+    assert (
+        agent._chat_history[1].content == "Hello"
+    )  # pyright: ignore[reportPrivateUsage]
     url_after_no_tool = agent._page.url  # pyright: ignore[reportPrivateUsage]
 
     # run again

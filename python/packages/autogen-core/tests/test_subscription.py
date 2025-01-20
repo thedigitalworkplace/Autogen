@@ -22,7 +22,9 @@ def test_type_subscription_match() -> None:
 def test_type_subscription_map() -> None:
     sub = TypeSubscription(topic_type="t1", agent_type="a1")
 
-    assert sub.map_to_agent(TopicId(type="t1", source="s1")) == AgentId(type="a1", key="s1")
+    assert sub.map_to_agent(TopicId(type="t1", source="s1")) == AgentId(
+        type="a1", key="s1"
+    )
 
     with pytest.raises(CantHandleException):
         _agent_id = sub.map_to_agent(TopicId(type="t0", source="s1"))
@@ -32,7 +34,9 @@ def test_type_subscription_map() -> None:
 async def test_non_default_default_subscription() -> None:
     runtime = SingleThreadedAgentRuntime()
 
-    await LoopbackAgent.register(runtime, "MyAgent", LoopbackAgent, skip_class_subscriptions=True)
+    await LoopbackAgent.register(
+        runtime, "MyAgent", LoopbackAgent, skip_class_subscriptions=True
+    )
     runtime.start()
     await runtime.publish_message(MessageType(), topic_id=DefaultTopicId())
     await runtime.stop_when_idle()
@@ -91,7 +95,9 @@ async def test_non_default_default_subscription() -> None:
 async def test_skipped_class_subscriptions() -> None:
     runtime = SingleThreadedAgentRuntime()
 
-    await LoopbackAgent.register(runtime, "MyAgent", LoopbackAgent, skip_class_subscriptions=True)
+    await LoopbackAgent.register(
+        runtime, "MyAgent", LoopbackAgent, skip_class_subscriptions=True
+    )
     runtime.start()
     await runtime.publish_message(MessageType(), topic_id=DefaultTopicId())
     await runtime.stop_when_idle()

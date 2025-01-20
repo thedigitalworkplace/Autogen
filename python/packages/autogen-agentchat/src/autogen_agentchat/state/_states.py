@@ -21,7 +21,9 @@ class BaseState(BaseModel):
 class AssistantAgentState(BaseState):
     """State for an assistant agent."""
 
-    llm_context: Mapping[str, Any] = Field(default_factory=lambda: dict([("messages", [])]))
+    llm_context: Mapping[str, Any] = Field(
+        default_factory=lambda: dict([("messages", [])])
+    )
     type: str = Field(default="AssistantAgentState")
 
 

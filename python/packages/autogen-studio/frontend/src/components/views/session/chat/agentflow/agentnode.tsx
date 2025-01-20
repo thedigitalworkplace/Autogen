@@ -71,8 +71,8 @@ function AgentNode({ data, isConnectable }: AgentNodeProps) {
           data.status === "complete"
             ? "var(--accent)"
             : data.status === "error"
-            ? "rgb(239 68 68)"
-            : "var(--secondary)",
+              ? "rgb(239 68 68)"
+              : "var(--secondary)",
       };
     }
 

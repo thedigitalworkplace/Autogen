@@ -11,6 +11,7 @@ First, you need a shell with AutoGen core and required dependencies installed.
 ```bash
 pip install "autogen-core" "autogen-ext[openai,azure]" "chess"
 ```
+
 ### Model Configuration
 
 The model configuration should defined in a `model_config.json` file.

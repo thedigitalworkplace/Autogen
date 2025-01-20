@@ -20,10 +20,12 @@ Besides, AutoGen also provides a set of built-in message types that implement th
 - @AutoGen.Core.Message: The original message type before 0.0.9. This message type is reserved for backward compatibility. It is recommended to replace it with a more specific message type like @AutoGen.Core.TextMessage, @AutoGen.Core.ImageMessage, etc.
 
 ### Streaming message support
+
 AutoGen also introduces @AutoGen.Core.IStreamingMessage and @AutoGen.Core.IStreamingMessage`1 which are used in streaming call api. The following built-in message types implement the @AutoGen.Core.IStreamingMessage and @AutoGen.Core.IStreamingMessage`1 interfaces:
 
 > [!NOTE]
-> All @AutoGen.Core.IMessage is also a @AutoGen.Core.IStreamingMessage. That means you can return an @AutoGen.Core.IMessage from a streaming call method. It's also recommended to return the final updated result instead of the last update as the last message in the streaming call method to indicate the end of the stream, which saves caller's effort of assembling the final result from multiple updates. 
+> All @AutoGen.Core.IMessage is also a @AutoGen.Core.IStreamingMessage. That means you can return an @AutoGen.Core.IMessage from a streaming call method. It's also recommended to return the final updated result instead of the last update as the last message in the streaming call method to indicate the end of the stream, which saves caller's effort of assembling the final result from multiple updates.
+
 - @AutoGen.Core.TextMessageUpdate: A message that contains a piece of text update.
 - @AutoGen.Core.ToolCallMessageUpdate: A message that contains a function call request update.
 

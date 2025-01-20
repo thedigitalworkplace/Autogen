@@ -37,7 +37,9 @@ class BaseGroupChatAgent(RoutedAgent):
         self.console = Console()
 
     @message_handler
-    async def handle_message(self, message: GroupChatMessage, ctx: MessageContext) -> None:
+    async def handle_message(
+        self, message: GroupChatMessage, ctx: MessageContext
+    ) -> None:
         self._chat_history.extend(
             [
                 UserMessage(content=f"Transferred to {message.body.source}", source="system"),  # type: ignore[union-attr]
@@ -46,13 +48,22 @@ class BaseGroupChatAgent(RoutedAgent):
         )
 
     @message_handler
-    async def handle_request_to_speak(self, message: RequestToSpeak, ctx: MessageContext) -> None:
+    async def handle_request_to_speak(
+        self, message: RequestToSpeak, ctx: MessageContext
+    ) -> None:
         self._chat_history.append(
-            UserMessage(content=f"Transferred to {self.id.type}, adopt the persona immediately.", source="system")
+            UserMessage(
+                content=f"Transferred to {self.id.type}, adopt the persona immediately.",
+                source="system",
+            )
         )
-        completion = await self._model_client.create([self._system_message] + self._chat_history)
+        completion = await self._model_client.create(
+            [self._system_message] + self._chat_history
+        )
         assert isinstance(completion.content, str)
-        self._chat_history.append(AssistantMessage(content=completion.content, source=self.id.type))
+        self._chat_history.append(
+            AssistantMessage(content=completion.content, source=self.id.type)
+        )
 
         console_message = f"\n{'-'*80}\n**{self.id.type}**: {completion.content}"
         self.console.print(Markdown(console_message))
@@ -87,7 +98,9 @@ class GroupChatManager(RoutedAgent):
         self._ui_config = ui_config
 
     @message_handler
-    async def handle_message(self, message: GroupChatMessage, ctx: MessageContext) -> None:
+    async def handle_message(
+        self, message: GroupChatMessage, ctx: MessageContext
+    ) -> None:
         assert isinstance(message.body, UserMessage)
 
         self._chat_history.append(message.body)  # type: ignore[reportargumenttype,arg-type]
@@ -105,7 +118,9 @@ class GroupChatManager(RoutedAgent):
             [
                 f"{topic_type}: {description}".strip()
                 for topic_type, description in zip(
-                    self._participant_topic_types, self._participant_descriptions, strict=True
+                    self._participant_topic_types,
+                    self._participant_descriptions,
+                    strict=True,
                 )
                 if topic_type != self._previous_participant_topic_type
             ]
@@ -127,17 +142,24 @@ Read the following conversation. Then select the next role from {participants} t
 Read the above conversation. Then select the next role from {participants} to play. if you think it's enough talking (for example they have talked for {self._max_rounds} rounds), return 'FINISH'.
 """
         system_message = SystemMessage(content=selector_prompt)
-        completion = await self._model_client.create([system_message], cancellation_token=ctx.cancellation_token)
+        completion = await self._model_client.create(
+            [system_message], cancellation_token=ctx.cancellation_token
+        )
 
         assert isinstance(
             completion.content, str
         ), f"Completion content must be a string, but is: {type(completion.content)}"
 
         if completion.content.upper() == "FINISH":
-            finish_msg = "I think it's enough iterations on the story! Thanks for collaborating!"
+            finish_msg = (
+                "I think it's enough iterations on the story! Thanks for collaborating!"
+            )
             manager_message = f"\n{'-'*80}\n Manager ({id(self)}): {finish_msg}"
             await publish_message_to_ui(
-                runtime=self, source=self.id.type, user_message=finish_msg, ui_config=self._ui_config
+                runtime=self,
+                source=self.id.type,
+                user_message=finish_msg,
+                ui_config=self._ui_config,
             )
             self.console.print(Markdown(manager_message))
             return
@@ -148,9 +170,13 @@ Read the above conversation. Then select the next role from {participants} to pl
                 selected_topic_type = topic_type
                 self._previous_participant_topic_type = selected_topic_type
                 self.console.print(
-                    Markdown(f"\n{'-'*80}\n Manager ({id(self)}): Asking `{selected_topic_type}` to speak")
+                    Markdown(
+                        f"\n{'-'*80}\n Manager ({id(self)}): Asking `{selected_topic_type}` to speak"
+                    )
                 )
-                await self.publish_message(RequestToSpeak(), DefaultTopicId(type=selected_topic_type))
+                await self.publish_message(
+                    RequestToSpeak(), DefaultTopicId(type=selected_topic_type)
+                )
                 return
         raise ValueError(f"Invalid role selected: {completion.content}")
 
@@ -158,12 +184,16 @@ Read the above conversation. Then select the next role from {participants} to pl
 class UIAgent(RoutedAgent):
     """Handles UI-related tasks and message processing for the distributed group chat system."""
 
-    def __init__(self, on_message_chunk_func: Callable[[MessageChunk], Awaitable[None]]) -> None:
+    def __init__(
+        self, on_message_chunk_func: Callable[[MessageChunk], Awaitable[None]]
+    ) -> None:
         super().__init__("UI Agent")
         self._on_message_chunk_func = on_message_chunk_func
 
     @message_handler
-    async def handle_message_chunk(self, message: MessageChunk, ctx: MessageContext) -> None:
+    async def handle_message_chunk(
+        self, message: MessageChunk, ctx: MessageContext
+    ) -> None:
         await self._on_message_chunk_func(message)
 
 
@@ -176,7 +206,9 @@ async def publish_message_to_ui(
     message_id = str(uuid4())
     # Stream the message to UI
     message_chunks = (
-        MessageChunk(message_id=message_id, text=token + " ", author=source, finished=False)
+        MessageChunk(
+            message_id=message_id, text=token + " ", author=source, finished=False
+        )
         for token in user_message.split()
     )
     for chunk in message_chunks:

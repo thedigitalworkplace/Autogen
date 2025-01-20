@@ -48,8 +48,12 @@ class GreeterAgent(RoutedAgent):
 
     @message_handler
     async def on_ask(self, message: AskToGreet, ctx: MessageContext) -> None:
-        response = await self.send_message(Greeting(f"Hello, {message.content}!"), recipient=self._receive_agent_id)
-        await self.publish_message(Feedback(f"Feedback: {response.content}"), topic_id=DefaultTopicId())
+        response = await self.send_message(
+            Greeting(f"Hello, {message.content}!"), recipient=self._receive_agent_id
+        )
+        await self.publish_message(
+            Feedback(f"Feedback: {response.content}"), topic_id=DefaultTopicId()
+        )
 
 
 async def main() -> None:

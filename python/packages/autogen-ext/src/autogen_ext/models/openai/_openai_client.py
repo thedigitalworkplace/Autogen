@@ -85,9 +85,9 @@ trace_logger = logging.getLogger(TRACE_LOGGER_NAME)
 openai_init_kwargs = set(inspect.getfullargspec(AsyncOpenAI.__init__).kwonlyargs)
 aopenai_init_kwargs = set(inspect.getfullargspec(AsyncAzureOpenAI.__init__).kwonlyargs)
 
-create_kwargs = set(completion_create_params.CompletionCreateParamsBase.__annotations__.keys()) | set(
-    ("timeout", "stream")
-)
+create_kwargs = set(
+    completion_create_params.CompletionCreateParamsBase.__annotations__.keys()
+) | set(("timeout", "stream"))
 # Only single choice allowed
 disallowed_create_args = set(["stream", "messages", "function_call", "functions", "n"])
 required_create_args: Set[str] = set(["model"])
@@ -111,9 +111,13 @@ def _create_args_from_config(config: Mapping[str, Any]) -> Dict[str, Any]:
     create_args = {k: v for k, v in config.items() if k in create_kwargs}
     create_args_keys = set(create_args.keys())
     if not required_create_args.issubset(create_args_keys):
-        raise ValueError(f"Required create args are missing: {required_create_args - create_args_keys}")
+        raise ValueError(
+            f"Required create args are missing: {required_create_args - create_args_keys}"
+        )
     if disallowed_create_args.intersection(create_args_keys):
-        raise ValueError(f"Disallowed create args are present: {disallowed_create_args.intersection(create_args_keys)}")
+        raise ValueError(
+            f"Disallowed create args are present: {disallowed_create_args.intersection(create_args_keys)}"
+        )
     return create_args
 
 
@@ -155,7 +159,9 @@ def user_message_to_oai(message: UserMessage) -> ChatCompletionUserMessageParam:
             elif isinstance(part, Image):
                 # TODO: support url based images
                 # TODO: support specifying details
-                parts.append(cast(ChatCompletionContentPartImageParam, part.to_openai_format()))
+                parts.append(
+                    cast(ChatCompletionContentPartImageParam, part.to_openai_format())
+                )
             else:
                 raise ValueError(f"Unknown content type: {part}")
         return ChatCompletionUserMessageParam(
@@ -187,7 +193,10 @@ def tool_message_to_oai(
     message: FunctionExecutionResultMessage,
 ) -> Sequence[ChatCompletionToolMessageParam]:
     return [
-        ChatCompletionToolMessageParam(content=x.content, role="tool", tool_call_id=x.call_id) for x in message.content
+        ChatCompletionToolMessageParam(
+            content=x.content, role="tool", tool_call_id=x.call_id
+        )
+        for x in message.content
     ]
 
 
@@ -292,9 +301,15 @@ def convert_tools(
                 type="function",
                 function=FunctionDefinition(
                     name=tool_schema["name"],
-                    description=(tool_schema["description"] if "description" in tool_schema else ""),
+                    description=(
+                        tool_schema["description"]
+                        if "description" in tool_schema
+                        else ""
+                    ),
                     parameters=(
-                        cast(FunctionParameters, tool_schema["parameters"]) if "parameters" in tool_schema else {}
+                        cast(FunctionParameters, tool_schema["parameters"])
+                        if "parameters" in tool_schema
+                        else {}
                     ),
                 ),
             )
@@ -321,7 +336,9 @@ def assert_valid_name(name: str) -> str:
     For munging LLM responses use _normalize_name to ensure LLM specified names don't break the API.
     """
     if not re.match(r"^[a-zA-Z0-9_-]+$", name):
-        raise ValueError(f"Invalid name: {name}. Only letters, numbers, '_' and '-' are allowed.")
+        raise ValueError(
+            f"Invalid name: {name}. Only letters, numbers, '_' and '-' are allowed."
+        )
     if len(name) > 64:
         raise ValueError(f"Invalid name: {name}. Name must be less than 64 characters.")
     return name
@@ -341,11 +358,17 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
             try:
                 self._model_info = _model_info.get_info(create_args["model"])
             except KeyError as err:
-                raise ValueError("model_info is required when model name is not a valid OpenAI model") from err
+                raise ValueError(
+                    "model_info is required when model name is not a valid OpenAI model"
+                ) from err
         elif model_capabilities is not None and model_info is not None:
             raise ValueError("model_capabilities and model_info are mutually exclusive")
         elif model_capabilities is not None and model_info is None:
-            warnings.warn("model_capabilities is deprecated, use model_info instead", DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "model_capabilities is deprecated, use model_info instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             info = cast(ModelInfo, model_capabilities)
             info["family"] = ModelFamily.UNKNOWN
             self._model_info = info
@@ -383,7 +406,9 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
         # Make sure all extra_create_args are valid
         extra_create_args_keys = set(extra_create_args.keys())
         if not create_kwargs.issuperset(extra_create_args_keys):
-            raise ValueError(f"Extra create args are invalid: {extra_create_args_keys - create_kwargs}")
+            raise ValueError(
+                f"Extra create args are invalid: {extra_create_args_keys - create_kwargs}"
+            )
 
         # Copy the create args and overwrite anything in extra_create_args
         create_args = self._create_args.copy()
@@ -405,15 +430,21 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                 response_format_value = None
 
         # Remove 'response_format' from create_args to prevent passing it twice
-        create_args_no_response_format = {k: v for k, v in create_args.items() if k != "response_format"}
+        create_args_no_response_format = {
+            k: v for k, v in create_args.items() if k != "response_format"
+        }
 
         # TODO: allow custom handling.
         # For now we raise an error if images are present and vision is not supported
         if self.model_info["vision"] is False:
             for message in messages:
                 if isinstance(message, UserMessage):
-                    if isinstance(message.content, list) and any(isinstance(x, Image) for x in message.content):
-                        raise ValueError("Model does not support vision and image was provided")
+                    if isinstance(message.content, list) and any(
+                        isinstance(x, Image) for x in message.content
+                    ):
+                        raise ValueError(
+                            "Model does not support vision and image was provided"
+                        )
 
         if json_output is not None:
             if self.model_info["json_output"] is False and json_output is True:
@@ -498,7 +529,9 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
         usage = RequestUsage(
             # TODO backup token counting
             prompt_tokens=result.usage.prompt_tokens if result.usage is not None else 0,
-            completion_tokens=(result.usage.completion_tokens if result.usage is not None else 0),
+            completion_tokens=(
+                result.usage.completion_tokens if result.usage is not None else 0
+            ),
         )
 
         # If we are running in the context of a handler we can get the agent_id
@@ -525,7 +558,9 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                 )
 
         # Limited to a single choice currently.
-        choice: Union[ParsedChoice[Any], ParsedChoice[BaseModel], Choice] = result.choices[0]
+        choice: Union[ParsedChoice[Any], ParsedChoice[BaseModel], Choice] = (
+            result.choices[0]
+        )
         if choice.finish_reason == "function_call":
             raise ValueError("Function calls are not supported in this context")
 
@@ -553,7 +588,10 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                 ChatCompletionTokenLogprob(
                     token=x.token,
                     logprob=x.logprob,
-                    top_logprobs=[TopLogprob(logprob=y.logprob, bytes=y.bytes) for y in x.top_logprobs],
+                    top_logprobs=[
+                        TopLogprob(logprob=y.logprob, bytes=y.bytes)
+                        for y in x.top_logprobs
+                    ],
                     bytes=x.bytes,
                 )
                 for x in choice.logprobs.content
@@ -611,7 +649,9 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
         # Make sure all extra_create_args are valid
         extra_create_args_keys = set(extra_create_args.keys())
         if not create_kwargs.issuperset(extra_create_args_keys):
-            raise ValueError(f"Extra create args are invalid: {extra_create_args_keys - create_kwargs}")
+            raise ValueError(
+                f"Extra create args are invalid: {extra_create_args_keys - create_kwargs}"
+            )
 
         # Copy the create args and overwrite anything in extra_create_args
         create_args = self._create_args.copy()
@@ -625,8 +665,12 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
         if self.model_info["vision"] is False:
             for message in messages:
                 if isinstance(message, UserMessage):
-                    if isinstance(message.content, list) and any(isinstance(x, Image) for x in message.content):
-                        raise ValueError("Model does not support vision and image was provided")
+                    if isinstance(message.content, list) and any(
+                        isinstance(x, Image) for x in message.content
+                    ):
+                        raise ValueError(
+                            "Model does not support vision and image was provided"
+                        )
 
         if json_output is not None:
             if self.model_info["json_output"] is False and json_output is True:
@@ -649,12 +693,16 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
             )
         else:
             stream_future = asyncio.ensure_future(
-                self._client.chat.completions.create(messages=oai_messages, stream=True, **create_args)
+                self._client.chat.completions.create(
+                    messages=oai_messages, stream=True, **create_args
+                )
             )
         if cancellation_token is not None:
             cancellation_token.link_future(stream_future)
         stream = await stream_future
-        choice: Union[ParsedChoice[Any], ParsedChoice[BaseModel], ChunkChoice] = cast(ChunkChoice, None)
+        choice: Union[ParsedChoice[Any], ParsedChoice[BaseModel], ChunkChoice] = cast(
+            ChunkChoice, None
+        )
         chunk = None
         stop_reason = None
         maybe_model = None
@@ -680,7 +728,9 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                             "Consecutive empty chunks found. Change max_empty_consecutive_chunk_tolerance to increase empty chunk tolerance"
                         )
                     elif empty_chunk_count >= max_consecutive_empty_chunk_tolerance:
-                        raise ValueError("Exceeded the threshold of receiving consecutive empty chunks")
+                        raise ValueError(
+                            "Exceeded the threshold of receiving consecutive empty chunks"
+                        )
                     continue
                 else:
                     empty_chunk_count = 0
@@ -693,14 +743,20 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                 choice = (
                     chunk.choices[0]
                     if len(chunk.choices) > 0
-                    else choice
-                    if chunk.usage is not None and stop_reason is not None
-                    else cast(ChunkChoice, None)
+                    else (
+                        choice
+                        if chunk.usage is not None and stop_reason is not None
+                        else cast(ChunkChoice, None)
+                    )
                 )
 
                 # for liteLLM chunk usage, do the following hack keeping the pervious chunk.stop_reason (if set).
                 # set the stop_reason for the usage chunk to the prior stop_reason
-                stop_reason = choice.finish_reason if chunk.usage is None and stop_reason is None else stop_reason
+                stop_reason = (
+                    choice.finish_reason
+                    if chunk.usage is None and stop_reason is None
+                    else stop_reason
+                )
                 maybe_model = chunk.model
                 # First try get content
                 if choice.delta.content is not None:
@@ -715,22 +771,31 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                         idx = tool_call_chunk.index
                         if idx not in full_tool_calls:
                             # We ignore the type hint here because we want to fill in type when the delta provides it
-                            full_tool_calls[idx] = FunctionCall(id="", arguments="", name="")
+                            full_tool_calls[idx] = FunctionCall(
+                                id="", arguments="", name=""
+                            )
 
                         if tool_call_chunk.id is not None:
                             full_tool_calls[idx].id += tool_call_chunk.id
 
                         if tool_call_chunk.function is not None:
                             if tool_call_chunk.function.name is not None:
-                                full_tool_calls[idx].name += tool_call_chunk.function.name
+                                full_tool_calls[
+                                    idx
+                                ].name += tool_call_chunk.function.name
                             if tool_call_chunk.function.arguments is not None:
-                                full_tool_calls[idx].arguments += tool_call_chunk.function.arguments
+                                full_tool_calls[
+                                    idx
+                                ].arguments += tool_call_chunk.function.arguments
                 if choice.logprobs and choice.logprobs.content:
                     logprobs = [
                         ChatCompletionTokenLogprob(
                             token=x.token,
                             logprob=x.logprob,
-                            top_logprobs=[TopLogprob(logprob=y.logprob, bytes=y.bytes) for y in x.top_logprobs],
+                            top_logprobs=[
+                                TopLogprob(logprob=y.logprob, bytes=y.bytes)
+                                for y in x.top_logprobs
+                            ],
                             bytes=x.bytes,
                         )
                         for x in choice.logprobs.content
@@ -794,12 +859,16 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
     def total_usage(self) -> RequestUsage:
         return self._total_usage
 
-    def count_tokens(self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []) -> int:
+    def count_tokens(
+        self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []
+    ) -> int:
         model = self._create_args["model"]
         try:
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
-            trace_logger.warning(f"Model {model} not found. Using cl100k_base encoding.")
+            trace_logger.warning(
+                f"Model {model} not found. Using cl100k_base encoding."
+            )
             encoding = tiktoken.get_encoding("cl100k_base")
         tokens_per_message = 3
         tokens_per_name = 1
@@ -815,14 +884,18 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                         continue
 
                     if isinstance(message, UserMessage) and isinstance(value, list):
-                        typed_message_value = cast(List[ChatCompletionContentPartParam], value)
+                        typed_message_value = cast(
+                            List[ChatCompletionContentPartParam], value
+                        )
 
                         assert len(typed_message_value) == len(
                             message.content
                         ), "Mismatch in message content and typed message value"
 
                         # We need image properties that are only in the original message
-                        for part, content_part in zip(typed_message_value, message.content, strict=False):
+                        for part, content_part in zip(
+                            typed_message_value, message.content, strict=False
+                        ):
                             if isinstance(content_part, Image):
                                 # TODO: add detail parameter
                                 num_tokens += calculate_vision_tokens(content_part)
@@ -833,13 +906,17 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                                     serialized_part = json.dumps(part)
                                     num_tokens += len(encoding.encode(serialized_part))
                                 except TypeError:
-                                    trace_logger.warning(f"Could not convert {part} to string, skipping.")
+                                    trace_logger.warning(
+                                        f"Could not convert {part} to string, skipping."
+                                    )
                     else:
                         if not isinstance(value, str):
                             try:
                                 value = json.dumps(value)
                             except TypeError:
-                                trace_logger.warning(f"Could not convert {value} to string, skipping.")
+                                trace_logger.warning(
+                                    f"Could not convert {value} to string, skipping."
+                                )
                                 continue
                         num_tokens += len(encoding.encode(value))
                         if key == "name":
@@ -865,15 +942,21 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
                         for field in v:  # pyright: ignore
                             if field == "type":
                                 tool_tokens += 2
-                                tool_tokens += len(encoding.encode(v["type"]))  # pyright: ignore
+                                tool_tokens += len(
+                                    encoding.encode(v["type"])
+                                )  # pyright: ignore
                             elif field == "description":
                                 tool_tokens += 2
-                                tool_tokens += len(encoding.encode(v["description"]))  # pyright: ignore
+                                tool_tokens += len(
+                                    encoding.encode(v["description"])
+                                )  # pyright: ignore
                             elif field == "enum":
                                 tool_tokens -= 3
                                 for o in v["enum"]:  # pyright: ignore
                                     tool_tokens += 3
-                                    tool_tokens += len(encoding.encode(o))  # pyright: ignore
+                                    tool_tokens += len(
+                                        encoding.encode(o)
+                                    )  # pyright: ignore
                             else:
                                 trace_logger.warning(f"Not supported field {field}")
                     tool_tokens += 11
@@ -883,13 +966,19 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
         num_tokens += 12
         return num_tokens
 
-    def remaining_tokens(self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []) -> int:
+    def remaining_tokens(
+        self, messages: Sequence[LLMMessage], *, tools: Sequence[Tool | ToolSchema] = []
+    ) -> int:
         token_limit = _model_info.get_token_limit(self._create_args["model"])
         return token_limit - self.count_tokens(messages, tools=tools)
 
     @property
     def capabilities(self) -> ModelCapabilities:  # type: ignore
-        warnings.warn("capabilities is deprecated, use model_info instead", DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "capabilities is deprecated, use model_info instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self._model_info
 
     @property
@@ -897,7 +986,9 @@ class BaseOpenAIChatCompletionClient(ChatCompletionClient):
         return self._model_info
 
 
-class OpenAIChatCompletionClient(BaseOpenAIChatCompletionClient, Component[OpenAIClientConfigurationConfigModel]):
+class OpenAIChatCompletionClient(
+    BaseOpenAIChatCompletionClient, Component[OpenAIClientConfigurationConfigModel]
+):
     """Chat completion client for OpenAI hosted models.
 
     You can also use this client for OpenAI-compatible ChatCompletion endpoints.
@@ -1006,7 +1097,10 @@ class OpenAIChatCompletionClient(BaseOpenAIChatCompletionClient, Component[OpenA
         create_args = _create_args_from_config(copied_args)
         self._raw_config: Dict[str, Any] = copied_args
         super().__init__(
-            client=client, create_args=create_args, model_capabilities=model_capabilities, model_info=model_info
+            client=client,
+            create_args=create_args,
+            model_capabilities=model_capabilities,
+            model_info=model_info,
         )
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -1127,7 +1221,9 @@ class AzureOpenAIChatCompletionClient(
 
     component_type = "model"
     component_config_schema = AzureOpenAIClientConfigurationConfigModel
-    component_provider_override = "autogen_ext.models.openai.AzureOpenAIChatCompletionClient"
+    component_provider_override = (
+        "autogen_ext.models.openai.AzureOpenAIChatCompletionClient"
+    )
 
     def __init__(self, **kwargs: Unpack[AzureOpenAIClientConfiguration]):
         model_capabilities: Optional[ModelCapabilities] = None  # type: ignore
@@ -1145,7 +1241,10 @@ class AzureOpenAIChatCompletionClient(
         create_args = _create_args_from_config(copied_args)
         self._raw_config: Dict[str, Any] = copied_args
         super().__init__(
-            client=client, create_args=create_args, model_capabilities=model_capabilities, model_info=model_info
+            client=client,
+            create_args=create_args,
+            model_capabilities=model_capabilities,
+            model_info=model_info,
         )
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -1162,11 +1261,17 @@ class AzureOpenAIChatCompletionClient(
 
         copied_config = self._raw_config.copy()
         if "azure_ad_token_provider" in copied_config:
-            if not isinstance(copied_config["azure_ad_token_provider"], AzureTokenProvider):
-                raise ValueError("azure_ad_token_provider must be a AzureTokenProvider to be component serialized")
+            if not isinstance(
+                copied_config["azure_ad_token_provider"], AzureTokenProvider
+            ):
+                raise ValueError(
+                    "azure_ad_token_provider must be a AzureTokenProvider to be component serialized"
+                )
 
             copied_config["azure_ad_token_provider"] = (
-                copied_config["azure_ad_token_provider"].dump_component().model_dump(exclude_none=True)
+                copied_config["azure_ad_token_provider"]
+                .dump_component()
+                .model_dump(exclude_none=True)
             )
 
         return AzureOpenAIClientConfigurationConfigModel(**copied_config)
@@ -1177,8 +1282,10 @@ class AzureOpenAIChatCompletionClient(
 
         copied_config = config.model_copy().model_dump(exclude_none=True)
         if "azure_ad_token_provider" in copied_config:
-            copied_config["azure_ad_token_provider"] = AzureTokenProvider.load_component(
-                copied_config["azure_ad_token_provider"]
+            copied_config["azure_ad_token_provider"] = (
+                AzureTokenProvider.load_component(
+                    copied_config["azure_ad_token_provider"]
+                )
             )
 
         return cls(**copied_config)

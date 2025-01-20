@@ -8,11 +8,25 @@ import pathlib
 import re
 import time
 import traceback
-from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union, cast  # Any, Callable, Dict, List, Literal, Tuple
+from typing import (
+    Any,
+    BinaryIO,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)  # Any, Callable, Dict, List, Literal, Tuple
 from urllib.parse import quote_plus  # parse_qs, quote, unquote, urlparse, urlunparse
 
 import aiofiles
-from autogen_core import EVENT_LOGGER_NAME, CancellationToken, FunctionCall, default_subscription
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    CancellationToken,
+    FunctionCall,
+    default_subscription,
+)
 from autogen_core import Image as AGImage
 from autogen_core.models import (
     AssistantMessage,
@@ -26,7 +40,13 @@ from playwright._impl._errors import Error as PlaywrightError
 from playwright._impl._errors import TimeoutError
 
 # from playwright._impl._async_base.AsyncEventInfo
-from playwright.async_api import BrowserContext, Download, Page, Playwright, async_playwright
+from playwright.async_api import (
+    BrowserContext,
+    Download,
+    Page,
+    Playwright,
+    async_playwright,
+)
 
 # TODO: Fix mdconvert
 from ...markdown_browser import MarkdownConverter  # type: ignore
@@ -93,11 +113,16 @@ class MultimodalWebSurfer(BaseWorker):
         self._page: Page | None = None
         self._last_download: Download | None = None
         self._prior_metadata_hash: str | None = None
-        self.logger = logging.getLogger(EVENT_LOGGER_NAME + f".{self.id.key}.MultimodalWebSurfer")
+        self.logger = logging.getLogger(
+            EVENT_LOGGER_NAME + f".{self.id.key}.MultimodalWebSurfer"
+        )
 
         # Read page_script
         self._page_script: str = ""
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js"), "rt") as fh:
+        with open(
+            os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js"),
+            "rt",
+        ) as fh:
             self._page_script = fh.read()
 
         # Define the download handler
@@ -160,7 +185,9 @@ class MultimodalWebSurfer(BaseWorker):
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
             )
         else:
-            self._context = await self._playwright.chromium.launch_persistent_context(browser_data_dir, **launch_args)
+            self._context = await self._playwright.chromium.launch_persistent_context(
+                browser_data_dir, **launch_args
+            )
 
         # Create the page
         self._context.set_default_timeout(60000)  # One minute
@@ -168,9 +195,13 @@ class MultimodalWebSurfer(BaseWorker):
         assert self._page is not None
         # self._page.route(lambda x: True, self._route_handler)
         self._page.on("download", self._download_handler)
-        await self._page.set_viewport_size({"width": VIEWPORT_WIDTH, "height": VIEWPORT_HEIGHT})
+        await self._page.set_viewport_size(
+            {"width": VIEWPORT_WIDTH, "height": VIEWPORT_HEIGHT}
+        )
         await self._page.add_init_script(
-            path=os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js")
+            path=os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), "page_script.js"
+            )
         )
         await self._page.goto(self.start_page)
         await self._page.wait_for_load_state()
@@ -192,7 +223,9 @@ class MultimodalWebSurfer(BaseWorker):
             os.mkdir(self.debug_dir)
         current_timestamp = "_" + int(time.time()).__str__()
         screenshot_png_name = "screenshot" + current_timestamp + ".png"
-        debug_html = os.path.join(self.debug_dir, "screenshot" + current_timestamp + ".html")
+        debug_html = os.path.join(
+            self.debug_dir, "screenshot" + current_timestamp + ".html"
+        )
         if self.to_save_screenshots:
             async with aiofiles.open(debug_html, "wt") as file:
                 await file.write(
@@ -212,7 +245,9 @@ class MultimodalWebSurfer(BaseWorker):
     """.strip(),
                 )
         if self.to_save_screenshots:
-            await self._page.screenshot(path=os.path.join(self.debug_dir, screenshot_png_name))
+            await self._page.screenshot(
+                path=os.path.join(self.debug_dir, screenshot_png_name)
+            )
             self.logger.info(
                 WebSurferEvent(
                     source=self.metadata["type"],
@@ -249,13 +284,17 @@ class MultimodalWebSurfer(BaseWorker):
             )
         )
 
-    def _target_name(self, target: str, rects: Dict[str, InteractiveRegion]) -> str | None:
+    def _target_name(
+        self, target: str, rects: Dict[str, InteractiveRegion]
+    ) -> str | None:
         try:
             return rects[target]["aria_name"].strip()
         except KeyError:
             return None
 
-    def _format_target_list(self, ids: List[str], rects: Dict[str, InteractiveRegion]) -> List[str]:
+    def _format_target_list(
+        self, ids: List[str], rects: Dict[str, InteractiveRegion]
+    ) -> List[str]:
         targets: List[str] = []
         for r in list(set(ids)):
             if r in rects:
@@ -265,7 +304,9 @@ class MultimodalWebSurfer(BaseWorker):
                     aria_role = rects[r].get("tag_name", "").strip()
 
                 # Get the name
-                aria_name = re.sub(r"[\n\r]+", " ", rects[r].get("aria_name", "")).strip()
+                aria_name = re.sub(
+                    r"[\n\r]+", " ", rects[r].get("aria_name", "")
+                ).strip()
 
                 # What are the actions?
                 actions = ['"click"']
@@ -273,11 +314,15 @@ class MultimodalWebSurfer(BaseWorker):
                     actions = ['"input_text"']
                 actions_str = "[" + ",".join(actions) + "]"
 
-                targets.append(f'{{"id": {r}, "name": "{aria_name}", "role": "{aria_role}", "tools": {actions_str} }}')
+                targets.append(
+                    f'{{"id": {r}, "name": "{aria_name}", "role": "{aria_role}", "tools": {actions_str} }}'
+                )
 
         return targets
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, UserContent]:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, UserContent]:
         assert self._page is not None
         try:
             request_halt, content = await self.__generate_reply(cancellation_token)
@@ -315,7 +360,9 @@ class MultimodalWebSurfer(BaseWorker):
                 await self._visit_page(url)
             # If the argument contains a space, treat it as a search query
             elif " " in url:
-                await self._visit_page(f"https://www.bing.com/search?q={quote_plus(url)}&FORM=QBLH")
+                await self._visit_page(
+                    f"https://www.bing.com/search?q={quote_plus(url)}&FORM=QBLH"
+                )
             # Otherwise, prefix with https://
             else:
                 await self._visit_page("https://" + url)
@@ -327,7 +374,9 @@ class MultimodalWebSurfer(BaseWorker):
         elif name == "web_search":
             query = args.get("query")
             action_description = f"I typed '{query}' into the browser search bar."
-            await self._visit_page(f"https://www.bing.com/search?q={quote_plus(query)}&FORM=QBLH")
+            await self._visit_page(
+                f"https://www.bing.com/search?q={quote_plus(query)}&FORM=QBLH"
+            )
 
         elif name == "page_up":
             action_description = "I scrolled up one page in the browser."
@@ -351,7 +400,9 @@ class MultimodalWebSurfer(BaseWorker):
             text_value = str(args.get("text_value"))
             input_field_name = self._target_name(input_field_id, rects)
             if input_field_name:
-                action_description = f"I typed '{text_value}' into '{input_field_name}'."
+                action_description = (
+                    f"I typed '{text_value}' into '{input_field_name}'."
+                )
             else:
                 action_description = f"I input '{text_value}'."
             await self._fill_id(input_field_id, text_value)
@@ -381,30 +432,41 @@ class MultimodalWebSurfer(BaseWorker):
         elif name == "answer_question":
             question = str(args.get("question"))
             # Do Q&A on the DOM. No need to take further action. Browser state does not change.
-            return False, await self._summarize_page(question=question, cancellation_token=cancellation_token)
+            return False, await self._summarize_page(
+                question=question, cancellation_token=cancellation_token
+            )
 
         elif name == "summarize_page":
             # Summarize the DOM. No need to take further action. Browser state does not change.
-            return False, await self._summarize_page(cancellation_token=cancellation_token)
+            return False, await self._summarize_page(
+                cancellation_token=cancellation_token
+            )
 
         elif name == "sleep":
-            action_description = "I am waiting a short period of time before taking further action."
+            action_description = (
+                "I am waiting a short period of time before taking further action."
+            )
             await self._sleep(3)  # There's a 2s sleep below too
 
         else:
-            raise ValueError(f"Unknown tool '{name}'. Please choose from:\n\n{tool_names}")
+            raise ValueError(
+                f"Unknown tool '{name}'. Please choose from:\n\n{tool_names}"
+            )
 
         await self._page.wait_for_load_state()
         await self._sleep(3)
 
         # Handle downloads
         if self._last_download is not None and self.downloads_folder is not None:
-            fname = os.path.join(self.downloads_folder, self._last_download.suggested_filename)
+            fname = os.path.join(
+                self.downloads_folder, self._last_download.suggested_filename
+            )
             # TODO: Fix this type
             await self._last_download.save_as(fname)  # type: ignore
             page_body = f"<html><head><title>Download Successful</title></head><body style=\"margin: 20px;\"><h1>Successfully downloaded '{self._last_download.suggested_filename}' to local path:<br><br>{fname}</h1></body></html>"
             await self._page.goto(
-                "data:text/html;base64," + base64.b64encode(page_body.encode("utf-8")).decode("utf-8")
+                "data:text/html;base64,"
+                + base64.b64encode(page_body.encode("utf-8")).decode("utf-8")
             )
             await self._page.wait_for_load_state()
 
@@ -413,7 +475,9 @@ class MultimodalWebSurfer(BaseWorker):
         metadata_hash = hashlib.md5(page_metadata.encode("utf-8")).hexdigest()
         if metadata_hash != self._prior_metadata_hash:
             page_metadata = (
-                "\nThe following metadata was extracted from the webpage:\n\n" + page_metadata.strip() + "\n"
+                "\nThe following metadata was extracted from the webpage:\n\n"
+                + page_metadata.strip()
+                + "\n"
             )
         else:
             page_metadata = ""
@@ -445,7 +509,11 @@ class MultimodalWebSurfer(BaseWorker):
             )
 
         ocr_text = (
-            await self._get_ocr_text(new_screenshot, cancellation_token=cancellation_token) if use_ocr is True else ""
+            await self._get_ocr_text(
+                new_screenshot, cancellation_token=cancellation_token
+            )
+            if use_ocr is True
+            else ""
         )
 
         # Return the complete observation
@@ -457,7 +525,9 @@ class MultimodalWebSurfer(BaseWorker):
             AGImage.from_pil(Image.open(io.BytesIO(new_screenshot))),
         ]
 
-    async def __generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, UserContent]:
+    async def __generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, UserContent]:
         assert self._page is not None
         """Generates the actual reply. First calls the LLM to figure out which tool to use, then executes the tool."""
 
@@ -479,7 +549,9 @@ class MultimodalWebSurfer(BaseWorker):
         rects = await self._get_interactive_rects()
         viewport = await self._get_visual_viewport()
         screenshot = await self._page.screenshot()
-        som_screenshot, visible_rects, rects_above, rects_below = add_set_of_mark(screenshot, rects)
+        som_screenshot, visible_rects, rects_above, rects_below = add_set_of_mark(
+            screenshot, rects
+        )
 
         if self.to_save_screenshots:
             current_timestamp = "_" + int(time.time()).__str__()
@@ -532,7 +604,9 @@ class MultimodalWebSurfer(BaseWorker):
             focused_hint = f"\nThe {role} with ID {focused} {name}currently has the input focus.\n\n"
 
         # Everything visible
-        visible_targets = "\n".join(self._format_target_list(visible_rects, rects)) + "\n\n"
+        visible_targets = (
+            "\n".join(self._format_target_list(visible_rects, rects)) + "\n\n"
+        )
 
         # Everything else
         other_targets: List[str] = []
@@ -541,7 +615,9 @@ class MultimodalWebSurfer(BaseWorker):
 
         if len(other_targets) > 0:
             other_targets_str = (
-                "Additional valid interaction targets (not shown) include:\n" + "\n".join(other_targets) + "\n\n"
+                "Additional valid interaction targets (not shown) include:\n"
+                + "\n".join(other_targets)
+                + "\n\n"
             )
         else:
             other_targets_str = ""
@@ -575,10 +651,16 @@ When deciding between tools, consider if the request can be best addressed by:
 
         # Add the multimodal message and make the request
         history.append(
-            UserMessage(content=[text_prompt, AGImage.from_pil(scaled_screenshot)], source=self.metadata["type"])
+            UserMessage(
+                content=[text_prompt, AGImage.from_pil(scaled_screenshot)],
+                source=self.metadata["type"],
+            )
         )
         response = await self._model_client.create(
-            history, tools=tools, extra_create_args={"tool_choice": "auto"}, cancellation_token=cancellation_token
+            history,
+            tools=tools,
+            extra_create_args={"tool_choice": "auto"},
+            cancellation_token=cancellation_token,
         )  # , "parallel_tool_calls": False})
         message = response.content
 
@@ -589,7 +671,9 @@ When deciding between tools, consider if the request can be best addressed by:
             return False, message
         elif isinstance(message, list):
             # Take an action
-            return await self._execute_tool(message, rects, tool_names, cancellation_token=cancellation_token)
+            return await self._execute_tool(
+                message, rects, tool_names, cancellation_token=cancellation_token
+            )
         else:
             # Not sure what happened here
             raise AssertionError(f"Unknown response format '{message}'")
@@ -603,7 +687,8 @@ When deciding between tools, consider if the request can be best addressed by:
         except Exception:
             pass
         result = cast(
-            Dict[str, Dict[str, Any]], await self._page.evaluate("MultimodalWebSurfer.getInteractiveRects();")
+            Dict[str, Dict[str, Any]],
+            await self._page.evaluate("MultimodalWebSurfer.getInteractiveRects();"),
         )
 
         # Convert the results into appropriate types
@@ -621,7 +706,9 @@ When deciding between tools, consider if the request can be best addressed by:
             await self._page.evaluate(self._page_script)
         except Exception:
             pass
-        return visualviewport_from_dict(await self._page.evaluate("MultimodalWebSurfer.getVisualViewport();"))
+        return visualviewport_from_dict(
+            await self._page.evaluate("MultimodalWebSurfer.getVisualViewport();")
+        )
 
     async def _get_focused_rect_id(self) -> str:
         assert self._page is not None
@@ -654,11 +741,15 @@ When deciding between tools, consider if the request can be best addressed by:
         assert self._page is not None
         # self._page.route(lambda x: True, self._route_handler)
         self._page.on("download", self._download_handler)
-        await self._page.set_viewport_size({"width": VIEWPORT_WIDTH, "height": VIEWPORT_HEIGHT})
+        await self._page.set_viewport_size(
+            {"width": VIEWPORT_WIDTH, "height": VIEWPORT_HEIGHT}
+        )
         await self._sleep(0.2)
         self._prior_metadata_hash = None
         await self._page.add_init_script(
-            path=os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js")
+            path=os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), "page_script.js"
+            )
         )
         await self._page.wait_for_load_state()
 
@@ -685,11 +776,14 @@ When deciding between tools, consider if the request can be best addressed by:
                         else:
                             raise e_inner
                     download = await download_info.value
-                    fname = os.path.join(self.downloads_folder, download.suggested_filename)
+                    fname = os.path.join(
+                        self.downloads_folder, download.suggested_filename
+                    )
                     await download.save_as(fname)
                     message = f"<body style=\"margin: 20px;\"><h1>Successfully downloaded '{download.suggested_filename}' to local path:<br><br>{fname}</h1></body>"
                     await self._page.goto(
-                        "data:text/html;base64," + base64.b64encode(message.encode("utf-8")).decode("utf-8")
+                        "data:text/html;base64,"
+                        + base64.b64encode(message.encode("utf-8")).decode("utf-8")
                     )
                     self._last_download = None  # Since we already handled it
             else:
@@ -720,7 +814,9 @@ When deciding between tools, consider if the request can be best addressed by:
             # Give it a chance to open a new page
             # TODO: Having trouble with these types
             async with self._page.expect_event("popup", timeout=1000) as page_info:  # type: ignore
-                await self._page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, delay=10)
+                await self._page.mouse.click(
+                    box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, delay=10
+                )
                 # If we got this far without error, than a popup or new tab opened. Handle it.
 
                 new_page = await page_info.value  # type: ignore
@@ -801,7 +897,9 @@ When deciding between tools, consider if the request can be best addressed by:
         # Prepare the system prompt
         messages: List[LLMMessage] = []
         messages.append(
-            SystemMessage(content="You are a helpful assistant that can summarize long documents to answer question.")
+            SystemMessage(
+                content="You are a helpful assistant that can summarize long documents to answer question."
+            )
         )
 
         # Prepare the main prompt
@@ -845,13 +943,17 @@ When deciding between tools, consider if the request can be best addressed by:
         )
 
         # Generate the response
-        response = await self._model_client.create(messages, cancellation_token=cancellation_token)
+        response = await self._model_client.create(
+            messages, cancellation_token=cancellation_token
+        )
         scaled_screenshot.close()
         assert isinstance(response.content, str)
         return response.content
 
     async def _get_ocr_text(
-        self, image: bytes | io.BufferedIOBase | Image.Image, cancellation_token: Optional[CancellationToken] = None
+        self,
+        image: bytes | io.BufferedIOBase | Image.Image,
+        cancellation_token: Optional[CancellationToken] = None,
     ) -> str:
         scaled_screenshot = None
         if isinstance(image, Image.Image):
@@ -877,7 +979,9 @@ When deciding between tools, consider if the request can be best addressed by:
                 source=self.metadata["type"],
             )
         )
-        response = await self._model_client.create(messages, cancellation_token=cancellation_token)
+        response = await self._model_client.create(
+            messages, cancellation_token=cancellation_token
+        )
         scaled_screenshot.close()
         assert isinstance(response.content, str)
         return response.content

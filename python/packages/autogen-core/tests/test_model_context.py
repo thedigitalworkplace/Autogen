@@ -15,7 +15,9 @@ async def test_buffered_model_context() -> None:
     messages: List[LLMMessage] = [
         UserMessage(content="Hello!", source="user"),
         AssistantMessage(content="What can I do for you?", source="assistant"),
-        UserMessage(content="Tell what are some fun things to do in seattle.", source="user"),
+        UserMessage(
+            content="Tell what are some fun things to do in seattle.", source="user"
+        ),
     ]
     await model_context.add_message(messages[0])
     await model_context.add_message(messages[1])
@@ -48,8 +50,12 @@ async def test_head_and_tail_model_context() -> None:
     messages: List[LLMMessage] = [
         UserMessage(content="Hello!", source="user"),
         AssistantMessage(content="What can I do for you?", source="assistant"),
-        UserMessage(content="Tell what are some fun things to do in seattle.", source="user"),
-        AssistantMessage(content="Pike place, space needle, mt rainer", source="assistant"),
+        UserMessage(
+            content="Tell what are some fun things to do in seattle.", source="user"
+        ),
+        AssistantMessage(
+            content="Pike place, space needle, mt rainer", source="assistant"
+        ),
         UserMessage(content="More places?", source="user"),
     ]
     for msg in messages:
@@ -82,7 +88,9 @@ async def test_unbounded_model_context() -> None:
     messages: List[LLMMessage] = [
         UserMessage(content="Hello!", source="user"),
         AssistantMessage(content="What can I do for you?", source="assistant"),
-        UserMessage(content="Tell what are some fun things to do in seattle.", source="user"),
+        UserMessage(
+            content="Tell what are some fun things to do in seattle.", source="user"
+        ),
     ]
     for msg in messages:
         await model_context.add_message(msg)

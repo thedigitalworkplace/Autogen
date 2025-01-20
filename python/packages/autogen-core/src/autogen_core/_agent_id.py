@@ -21,7 +21,9 @@ class AgentId:
             type = type.type
 
         if not is_valid_agent_type(type):
-            raise ValueError(rf"Invalid agent type: {type}. Allowed values MUST match the regex: `^[\w\-\.]+\Z`")
+            raise ValueError(
+                rf"Invalid agent type: {type}. Allowed values MUST match the regex: `^[\w\-\.]+\Z`"
+            )
 
         self._type = type
         self._key = key

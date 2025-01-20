@@ -26,12 +26,12 @@ export interface AppContextType {
 const cookie_name = "coral_app_cookie_";
 
 export const appContext = React.createContext<AppContextType>(
-  {} as AppContextType
+  {} as AppContextType,
 );
 const Provider = ({ children }: any) => {
   const storedValue = getLocalStorage("darkmode", false);
   const [darkMode, setDarkMode] = useState(
-    storedValue === null ? "light" : storedValue === "dark" ? "dark" : "light"
+    storedValue === null ? "light" : storedValue === "dark" ? "dark" : "light",
   );
 
   const logout = () => {

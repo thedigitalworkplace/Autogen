@@ -1,7 +1,18 @@
 import json
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, Dict, Generic, Mapping, Protocol, Type, TypedDict, TypeVar, cast, runtime_checkable
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    Mapping,
+    Protocol,
+    Type,
+    TypedDict,
+    TypeVar,
+    cast,
+    runtime_checkable,
+)
 
 import jsonref
 from pydantic import BaseModel
@@ -44,7 +55,9 @@ class Tool(Protocol):
 
     def return_value_as_string(self, value: Any) -> str: ...
 
-    async def run_json(self, args: Mapping[str, Any], cancellation_token: CancellationToken) -> Any: ...
+    async def run_json(
+        self, args: Mapping[str, Any], cancellation_token: CancellationToken
+    ) -> Any: ...
 
     def save_state_json(self) -> Mapping[str, Any]: ...
 
@@ -119,10 +132,16 @@ class BaseTool(ABC, Tool, Generic[ArgsT, ReturnT]):
         return str(value)
 
     @abstractmethod
-    async def run(self, args: ArgsT, cancellation_token: CancellationToken) -> ReturnT: ...
+    async def run(
+        self, args: ArgsT, cancellation_token: CancellationToken
+    ) -> ReturnT: ...
 
-    async def run_json(self, args: Mapping[str, Any], cancellation_token: CancellationToken) -> Any:
-        return_value = await self.run(self._args_type.model_validate(args), cancellation_token)
+    async def run_json(
+        self, args: Mapping[str, Any], cancellation_token: CancellationToken
+    ) -> Any:
+        return_value = await self.run(
+            self._args_type.model_validate(args), cancellation_token
+        )
         return return_value
 
     def save_state_json(self) -> Mapping[str, Any]:

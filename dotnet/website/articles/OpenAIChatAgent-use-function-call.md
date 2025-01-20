@@ -1,6 +1,7 @@
 The following example shows how to create a `GetWeatherAsync` function and pass it to @AutoGen.OpenAI.OpenAIChatAgent.
 
 Firstly, you need to install the following packages:
+
 ```xml
 <ItemGroup>
     <PackageReference Include="AutoGen.OpenAI" Version="AUTOGEN_VERSION" />

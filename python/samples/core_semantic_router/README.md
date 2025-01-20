@@ -6,7 +6,6 @@ This repository is an example of how to run a distributed agent runtime. The sys
 2. The worker runtime, which is responsible for the lifecycle of the distributed agents, including the "semantic router".
 3. The user proxy, which is responsible for managing the user interface and the user interactions with the agents.
 
-
 ## Example Scenario
 
 In this example, we have a simple scenario where we have a set of distributed agents (an "HR", and a "Finance" agent) which an enterprise may use to manage their HR and Finance operations. Each of these agents are independent, and can be running on different machines. While many multi-agent systems are built to have the agents collaborate to solve a difficult task - the goal of this example is to show how an enterprise may manage a large set of agents that are suited to individual tasks, and how to route a user to the most relevant agent for the task at hand.
@@ -42,7 +41,7 @@ In the second terminal, you may enter a request related to finance or hr scenari
 In our simple example here, this means using one of the following keywords in your request:
 
 - For the finance agent: "finance", "money", "budget"
-- For the hr agent: "hr", "human resources", "employee"   
+- For the hr agent: "hr", "human resources", "employee"
 
 You will then see the host and worker runtimes send messages back and forth, routing to the correct
 agent, before the final response is printed.
@@ -75,6 +74,7 @@ sequenceDiagram
     User_Proxy_Agent->>Closure_Agent: Confirm session end
     Closure_Agent->>User: Display session end message
 ```
+
 ### Contributors
 
 - Diana Iftimie (@diftimieMSFT)

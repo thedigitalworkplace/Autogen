@@ -239,7 +239,7 @@ export const GallerySidebar: React.FC<GallerySidebarProps> = ({
                       <span>
                         {Object.values(gallery.items.components).reduce(
                           (sum, arr) => sum + arr.length,
-                          0
+                          0,
                         )}{" "}
                         components
                       </span>

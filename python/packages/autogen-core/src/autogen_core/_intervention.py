@@ -57,11 +57,15 @@ class InterventionHandler(Protocol):
         """Called when a message is submitted to the AgentRuntime using :meth:`autogen_core.base.AgentRuntime.send_message`."""
         ...
 
-    async def on_publish(self, message: Any, *, message_context: MessageContext) -> Any | type[DropMessage]:
+    async def on_publish(
+        self, message: Any, *, message_context: MessageContext
+    ) -> Any | type[DropMessage]:
         """Called when a message is published to the AgentRuntime using :meth:`autogen_core.base.AgentRuntime.publish_message`."""
         ...
 
-    async def on_response(self, message: Any, *, sender: AgentId, recipient: AgentId | None) -> Any | type[DropMessage]:
+    async def on_response(
+        self, message: Any, *, sender: AgentId, recipient: AgentId | None
+    ) -> Any | type[DropMessage]:
         """Called when a response is received by the AgentRuntime from an Agent's message handler returning a value."""
         ...
 
@@ -76,8 +80,12 @@ class DefaultInterventionHandler(InterventionHandler):
     ) -> Any | type[DropMessage]:
         return message
 
-    async def on_publish(self, message: Any, *, message_context: MessageContext) -> Any | type[DropMessage]:
+    async def on_publish(
+        self, message: Any, *, message_context: MessageContext
+    ) -> Any | type[DropMessage]:
         return message
 
-    async def on_response(self, message: Any, *, sender: AgentId, recipient: AgentId | None) -> Any | type[DropMessage]:
+    async def on_response(
+        self, message: Any, *, sender: AgentId, recipient: AgentId | None
+    ) -> Any | type[DropMessage]:
         return message

@@ -8,7 +8,7 @@ html[data-theme="light"] {
   --pst-color-secondary-bg: #007bff;
   --pst-color-accent: #007bff;
   --sd-color-secondary-highlight: #0062cc;
-  --pst-color-shadow: rgba(0, 0, 0, 0.0);
+  --pst-color-shadow: rgba(0, 0, 0, 0);
 }
 
 html[data-theme="dark"] {
@@ -17,7 +17,7 @@ html[data-theme="dark"] {
   --pst-color-secondary-bg: #007bff;
   --pst-color-accent: #007bff;
   --sd-color-secondary-highlight: #0062cc;
-  --pst-color-shadow: rgba(0, 0, 0, 0.0);
+  --pst-color-shadow: rgba(0, 0, 0, 0);
 }
 
 .bd-header-announcement {
@@ -33,7 +33,7 @@ html[data-theme="dark"] {
   text-shadow: 0.5px 0 0 currentColor;
 }
 
-nav.bd-links .current>a  {
+nav.bd-links .current > a {
   box-shadow: inset 1px 0 0 var(--pst-color-primary);
 }
 
@@ -41,7 +41,8 @@ html[data-theme="light"] .bd-header {
   border-bottom: 1px solid var(--pst-color-border);
 }
 
-.admonition, div.admonition {
+.admonition,
+div.admonition {
   border: 1px solid var(--pst-color-border);
 }
 
@@ -61,16 +62,14 @@ html[data-theme="light"] .bd-header {
 .bd-content .sd-tab-set .sd-tab-content {
   border: none;
   border-top: 3px solid var(--pst-color-border);
-
 }
-.bd-content .sd-tab-set>input:checked+label {
+.bd-content .sd-tab-set > input:checked + label {
   border: none;
   transform: translateY(0);
   font-weight: 600;
   border-bottom: 2px solid var(--pst-color-secondary);
-
 }
-.bd-content .sd-tab-set>label {
+.bd-content .sd-tab-set > label {
   background-color: transparent;
   border: none;
 }

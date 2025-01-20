@@ -107,7 +107,7 @@ const Sidebar = ({ link, meta, isMobile }: SidebarProps) => {
       className={classNames(
         "flex grow flex-col gap-y-5 overflow-y-auto border-r border-secondary bg-primary",
         "transition-all duration-300 ease-in-out",
-        showFull ? "w-72 px-6" : "w-16 px-2"
+        showFull ? "w-72 px-6" : "w-16 px-2",
       )}
     >
       {/* App Logo/Title */}
@@ -140,7 +140,7 @@ const Sidebar = ({ link, meta, isMobile }: SidebarProps) => {
               role="list"
               className={classNames(
                 "-mx-2 space-y-1",
-                !showFull && "items-center"
+                !showFull && "items-center",
               )}
             >
               {navigation.map((item) => {
@@ -164,7 +164,7 @@ const Sidebar = ({ link, meta, isMobile }: SidebarProps) => {
                         // Color states
                         isActive
                           ? "bg-secondary text-primary "
-                          : "text-secondary hover:bg-tertiary hover:text-accent"
+                          : "text-secondary hover:bg-tertiary hover:text-accent",
                       )}
                     >
                       {" "}
@@ -173,7 +173,7 @@ const Sidebar = ({ link, meta, isMobile }: SidebarProps) => {
                           "h-6 w-6 shrink-0",
                           isActive
                             ? "text-accent"
-                            : "text-secondary group-hover:text-accent"
+                            : "text-secondary group-hover:text-accent",
                         )}
                       />
                       {showFull && item.name}
@@ -200,7 +200,7 @@ const Sidebar = ({ link, meta, isMobile }: SidebarProps) => {
           <li
             className={classNames(
               "mt-auto -mx-2 mb-4",
-              !showFull && "flex flex-col items-center gap-1"
+              !showFull && "flex flex-col items-center gap-1",
             )}
           >
             {!showFull && !isMobile ? (

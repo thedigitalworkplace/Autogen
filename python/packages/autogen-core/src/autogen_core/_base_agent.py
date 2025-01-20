@@ -4,7 +4,18 @@ import inspect
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, Awaitable, Callable, ClassVar, List, Mapping, Tuple, Type, TypeVar, final
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    ClassVar,
+    List,
+    Mapping,
+    Tuple,
+    Type,
+    TypeVar,
+    final,
+)
 
 from typing_extensions import Self
 
@@ -28,7 +39,9 @@ BaseAgentType = TypeVar("BaseAgentType", bound="BaseAgent")
 
 
 # Decorator for adding an unbound subscription to an agent
-def subscription_factory(subscription: UnboundSubscription) -> Callable[[Type[BaseAgentType]], Type[BaseAgentType]]:
+def subscription_factory(
+    subscription: UnboundSubscription,
+) -> Callable[[Type[BaseAgentType]], Type[BaseAgentType]]:
     """:meta private:"""
 
     def decorator(cls: Type[BaseAgentType]) -> Type[BaseAgentType]:
@@ -39,16 +52,21 @@ def subscription_factory(subscription: UnboundSubscription) -> Callable[[Type[Ba
 
 
 def handles(
-    type: Type[Any], serializer: MessageSerializer[Any] | List[MessageSerializer[Any]] | None = None
+    type: Type[Any],
+    serializer: MessageSerializer[Any] | List[MessageSerializer[Any]] | None = None,
 ) -> Callable[[Type[BaseAgentType]], Type[BaseAgentType]]:
     def decorator(cls: Type[BaseAgentType]) -> Type[BaseAgentType]:
         if serializer is None:
             serializer_list = try_get_known_serializers_for_type(type)
         else:
-            serializer_list = [serializer] if not isinstance(serializer, Sequence) else serializer
+            serializer_list = (
+                [serializer] if not isinstance(serializer, Sequence) else serializer
+            )
 
         if len(serializer_list) == 0:
-            raise ValueError(f"No serializers found for type {type}. Please provide an explicit serializer.")
+            raise ValueError(
+                f"No serializers found for type {type}. Please provide an explicit serializer."
+            )
 
         cls.internal_extra_handles_types.append((type, serializer_list))
         return cls
@@ -59,7 +77,9 @@ def handles(
 class BaseAgent(ABC, Agent):
     internal_unbound_subscriptions_list: ClassVar[List[UnboundSubscription]] = []
     """:meta private:"""
-    internal_extra_handles_types: ClassVar[List[Tuple[Type[Any], List[MessageSerializer[Any]]]]] = []
+    internal_extra_handles_types: ClassVar[
+        List[Tuple[Type[Any], List[MessageSerializer[Any]]]]
+    ] = []
     """:meta private:"""
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
@@ -79,7 +99,9 @@ class BaseAgent(ABC, Agent):
     @property
     def metadata(self) -> AgentMetadata:
         assert self._id is not None
-        return AgentMetadata(key=self._id.key, type=self._id.type, description=self._description)
+        return AgentMetadata(
+            key=self._id.key, type=self._id.type, description=self._description
+        )
 
     def __init__(self, description: str) -> None:
         try:
@@ -142,7 +164,9 @@ class BaseAgent(ABC, Agent):
         *,
         cancellation_token: CancellationToken | None = None,
     ) -> None:
-        await self._runtime.publish_message(message, topic_id, sender=self.id, cancellation_token=cancellation_token)
+        await self._runtime.publish_message(
+            message, topic_id, sender=self.id, cancellation_token=cancellation_token
+        )
 
     async def save_state(self) -> Mapping[str, Any]:
         warnings.warn("save_state not implemented", stacklevel=2)
@@ -166,7 +190,9 @@ class BaseAgent(ABC, Agent):
         skip_direct_message_subscription: bool = False,
     ) -> AgentType:
         agent_type = AgentType(type)
-        agent_type = await runtime.register_factory(type=agent_type, agent_factory=factory, expected_class=cls)
+        agent_type = await runtime.register_factory(
+            type=agent_type, agent_factory=factory, expected_class=cls
+        )
         if not skip_class_subscriptions:
             with SubscriptionInstantiationContext.populate_context(agent_type):
                 subscriptions: List[Subscription] = []

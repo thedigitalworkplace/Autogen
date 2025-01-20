@@ -38,7 +38,7 @@ const RenderMultiModal: React.FC<{ content: (string | ImageContent)[] }> = ({
           alt={item.alt || "Image"}
           className="w-full h-auto rounded border border-secondary"
         />
-      )
+      ),
     )}
   </div>
 );
@@ -82,7 +82,7 @@ export const messageUtils = {
         item !== null &&
         "id" in item &&
         "arguments" in item &&
-        "name" in item
+        "name" in item,
     );
   },
 
@@ -93,12 +93,12 @@ export const messageUtils = {
         typeof item === "string" ||
         (typeof item === "object" &&
           item !== null &&
-          ("url" in item || "data" in item))
+          ("url" in item || "data" in item)),
     );
   },
 
   isFunctionExecutionResult(
-    content: unknown
+    content: unknown,
   ): content is FunctionExecutionResult[] {
     if (!Array.isArray(content)) return false;
     return content.every(
@@ -106,7 +106,7 @@ export const messageUtils = {
         typeof item === "object" &&
         item !== null &&
         "call_id" in item &&
-        "content" in item
+        "content" in item,
     );
   },
 

@@ -23,7 +23,12 @@ import aiofiles
 import PIL.Image
 from autogen_agentchat.agents import BaseChatAgent
 from autogen_agentchat.base import Response
-from autogen_agentchat.messages import AgentEvent, ChatMessage, MultiModalMessage, TextMessage
+from autogen_agentchat.messages import (
+    AgentEvent,
+    ChatMessage,
+    MultiModalMessage,
+    TextMessage,
+)
 from autogen_core import EVENT_LOGGER_NAME, CancellationToken, FunctionCall
 from autogen_core import Image as AGImage
 from autogen_core.models import (
@@ -35,10 +40,21 @@ from autogen_core.models import (
     UserMessage,
 )
 from PIL import Image
-from playwright.async_api import BrowserContext, Download, Page, Playwright, async_playwright
+from playwright.async_api import (
+    BrowserContext,
+    Download,
+    Page,
+    Playwright,
+    async_playwright,
+)
 
 from ._events import WebSurferEvent
-from ._prompts import WEB_SURFER_OCR_PROMPT, WEB_SURFER_QA_PROMPT, WEB_SURFER_QA_SYSTEM_MESSAGE, WEB_SURFER_TOOL_PROMPT
+from ._prompts import (
+    WEB_SURFER_OCR_PROMPT,
+    WEB_SURFER_QA_PROMPT,
+    WEB_SURFER_QA_SYSTEM_MESSAGE,
+    WEB_SURFER_TOOL_PROMPT,
+)
 from ._set_of_mark import add_set_of_mark
 from ._tool_definitions import (
     TOOL_CLICK,
@@ -194,7 +210,9 @@ class MultimodalWebSurfer(BaseChatAgent):
                 "The model does not support function calling. MultimodalWebSurfer requires a model that supports function calling."
             )
         if model_client.model_info["vision"] is False:
-            raise ValueError("The model is not multimodal. MultimodalWebSurfer requires a multimodal model.")
+            raise ValueError(
+                "The model is not multimodal. MultimodalWebSurfer requires a multimodal model."
+            )
         self._model_client = model_client
         self.headless = headless
         self.browser_channel = browser_channel
@@ -213,7 +231,9 @@ class MultimodalWebSurfer(BaseChatAgent):
         self._page: Page | None = None
         self._last_download: Download | None = None
         self._prior_metadata_hash: str | None = None
-        self.logger = logging.getLogger(EVENT_LOGGER_NAME + f".{self.name}.MultimodalWebSurfer")
+        self.logger = logging.getLogger(
+            EVENT_LOGGER_NAME + f".{self.name}.MultimodalWebSurfer"
+        )
         self._chat_history: List[LLMMessage] = []
 
         # Define the download handler
@@ -242,7 +262,9 @@ class MultimodalWebSurfer(BaseChatAgent):
             TOOL_SLEEP,
             TOOL_HOVER,
         ]
-        self.n_lines_page_text = 50  # Number of lines of text to extract from the page in the absence of OCR
+        self.n_lines_page_text = (
+            50  # Number of lines of text to extract from the page in the absence of OCR
+        )
         self.did_lazy_init = False  # flag to check if we have initialized the browser
 
     async def _lazy_init(
@@ -269,8 +291,10 @@ class MultimodalWebSurfer(BaseChatAgent):
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
                 )
             else:
-                self._context = await self._playwright.chromium.launch_persistent_context(
-                    self.browser_data_dir, **launch_args
+                self._context = (
+                    await self._playwright.chromium.launch_persistent_context(
+                        self.browser_data_dir, **launch_args
+                    )
                 )
 
         # Create the page
@@ -280,9 +304,13 @@ class MultimodalWebSurfer(BaseChatAgent):
         # self._page.route(lambda x: True, self._route_handler)
         self._page.on("download", self._download_handler)
         if self.to_resize_viewport:
-            await self._page.set_viewport_size({"width": self.VIEWPORT_WIDTH, "height": self.VIEWPORT_HEIGHT})
+            await self._page.set_viewport_size(
+                {"width": self.VIEWPORT_WIDTH, "height": self.VIEWPORT_HEIGHT}
+            )
         await self._page.add_init_script(
-            path=os.path.join(os.path.abspath(os.path.dirname(__file__)), "page_script.js")
+            path=os.path.join(
+                os.path.abspath(os.path.dirname(__file__)), "page_script.js"
+            )
         )
         await self._page.goto(self.start_page)
         await self._page.wait_for_load_state()
@@ -317,7 +345,9 @@ class MultimodalWebSurfer(BaseChatAgent):
         if self.to_save_screenshots:
             current_timestamp = "_" + int(time.time()).__str__()
             screenshot_png_name = "screenshot" + current_timestamp + ".png"
-            await self._page.screenshot(path=os.path.join(self.debug_dir, screenshot_png_name))
+            await self._page.screenshot(
+                path=os.path.join(self.debug_dir, screenshot_png_name)
+            )
             self.logger.info(
                 WebSurferEvent(
                     source=self.name,
@@ -336,8 +366,8 @@ class MultimodalWebSurfer(BaseChatAgent):
         assert self._page is not None
 
         self._chat_history.clear()
-        reset_prior_metadata, reset_last_download = await self._playwright_controller.visit_page(
-            self._page, self.start_page
+        reset_prior_metadata, reset_last_download = (
+            await self._playwright_controller.visit_page(self._page, self.start_page)
         )
         if reset_last_download and self._last_download is not None:
             self._last_download = None
@@ -363,7 +393,9 @@ class MultimodalWebSurfer(BaseChatAgent):
             )
         )
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         async for message in self.on_messages_stream(messages, cancellation_token):
             if isinstance(message, Response):
                 return message
@@ -374,35 +406,53 @@ class MultimodalWebSurfer(BaseChatAgent):
     ) -> AsyncGenerator[AgentEvent | ChatMessage | Response, None]:
         for chat_message in messages:
             if isinstance(chat_message, TextMessage | MultiModalMessage):
-                self._chat_history.append(UserMessage(content=chat_message.content, source=chat_message.source))
+                self._chat_history.append(
+                    UserMessage(
+                        content=chat_message.content, source=chat_message.source
+                    )
+                )
             else:
-                raise ValueError(f"Unexpected message in MultiModalWebSurfer: {chat_message}")
+                raise ValueError(
+                    f"Unexpected message in MultiModalWebSurfer: {chat_message}"
+                )
         self.inner_messages: List[AgentEvent | ChatMessage] = []
         self.model_usage: List[RequestUsage] = []
         try:
             content = await self._generate_reply(cancellation_token=cancellation_token)
-            self._chat_history.append(AssistantMessage(content=message_content_to_str(content), source=self.name))
+            self._chat_history.append(
+                AssistantMessage(
+                    content=message_content_to_str(content), source=self.name
+                )
+            )
             final_usage = RequestUsage(
                 prompt_tokens=sum([u.prompt_tokens for u in self.model_usage]),
                 completion_tokens=sum([u.completion_tokens for u in self.model_usage]),
             )
             if isinstance(content, str):
                 yield Response(
-                    chat_message=TextMessage(content=content, source=self.name, models_usage=final_usage),
+                    chat_message=TextMessage(
+                        content=content, source=self.name, models_usage=final_usage
+                    ),
                     inner_messages=self.inner_messages,
                 )
             else:
                 yield Response(
-                    chat_message=MultiModalMessage(content=content, source=self.name, models_usage=final_usage),
+                    chat_message=MultiModalMessage(
+                        content=content, source=self.name, models_usage=final_usage
+                    ),
                     inner_messages=self.inner_messages,
                 )
 
         except BaseException:
             content = f"Web surfing error:\n\n{traceback.format_exc()}"
-            self._chat_history.append(AssistantMessage(content=content, source=self.name))
+            self._chat_history.append(
+                AssistantMessage(content=content, source=self.name)
+            )
             yield Response(chat_message=TextMessage(content=content, source=self.name))
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> UserContent:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> UserContent:
         """Generates the actual reply. First calls the LLM to figure out which tool to use, then executes the tool."""
 
         # Lazy init, initialize the browser and the page on the first generate reply only
@@ -432,7 +482,9 @@ class MultimodalWebSurfer(BaseChatAgent):
         rects = await self._playwright_controller.get_interactive_rects(self._page)
         viewport = await self._playwright_controller.get_visual_viewport(self._page)
         screenshot = await self._page.screenshot()
-        som_screenshot, visible_rects, rects_above, rects_below = add_set_of_mark(screenshot, rects)
+        som_screenshot, visible_rects, rects_above, rects_below = add_set_of_mark(
+            screenshot, rects
+        )
 
         if self.to_save_screenshots:
             current_timestamp = "_" + int(time.time()).__str__()
@@ -473,7 +525,9 @@ class MultimodalWebSurfer(BaseChatAgent):
             focused_hint = f"\nThe {role} with ID {focused} {name}currently has the input focus.\n\n"
 
         # Everything visible
-        visible_targets = "\n".join(self._format_target_list(visible_rects, rects)) + "\n\n"
+        visible_targets = (
+            "\n".join(self._format_target_list(visible_rects, rects)) + "\n\n"
+        )
 
         # Everything else
         other_targets: List[str] = []
@@ -482,7 +536,9 @@ class MultimodalWebSurfer(BaseChatAgent):
 
         if len(other_targets) > 0:
             other_targets_str = (
-                "Additional valid interaction targets (not shown) include:\n" + "\n".join(other_targets) + "\n\n"
+                "Additional valid interaction targets (not shown) include:\n"
+                + "\n".join(other_targets)
+                + "\n\n"
             )
         else:
             other_targets_str = ""
@@ -504,10 +560,18 @@ class MultimodalWebSurfer(BaseChatAgent):
             scaled_screenshot.save(os.path.join(self.debug_dir, "screenshot_scaled.png"))  # type: ignore
 
         # Add the multimodal message and make the request
-        history.append(UserMessage(content=[text_prompt, AGImage.from_pil(scaled_screenshot)], source=self.name))
+        history.append(
+            UserMessage(
+                content=[text_prompt, AGImage.from_pil(scaled_screenshot)],
+                source=self.name,
+            )
+        )
 
         response = await self._model_client.create(
-            history, tools=tools, extra_create_args={"tool_choice": "auto"}, cancellation_token=cancellation_token
+            history,
+            tools=tools,
+            extra_create_args={"tool_choice": "auto"},
+            cancellation_token=cancellation_token,
         )  # , "parallel_tool_calls": False})
         self.model_usage.append(response.usage)
         message = response.content
@@ -518,7 +582,9 @@ class MultimodalWebSurfer(BaseChatAgent):
             return message
         elif isinstance(message, list):
             # Take an action
-            return await self._execute_tool(message, rects, tool_names, cancellation_token=cancellation_token)
+            return await self._execute_tool(
+                message, rects, tool_names, cancellation_token=cancellation_token
+            )
         else:
             # Not sure what happened here
             raise AssertionError(f"Unknown response format '{message}'")
@@ -544,25 +610,32 @@ class MultimodalWebSurfer(BaseChatAgent):
                 message=f"{name}( {json.dumps(args)} )",
             )
         )
-        self.inner_messages.append(TextMessage(content=f"{name}( {json.dumps(args)} )", source=self.name))
+        self.inner_messages.append(
+            TextMessage(content=f"{name}( {json.dumps(args)} )", source=self.name)
+        )
 
         if name == "visit_url":
             url = args.get("url")
             action_description = f"I typed '{url}' into the browser address bar."
             # Check if the argument starts with a known protocol
             if url.startswith(("https://", "http://", "file://", "about:")):
-                reset_prior_metadata, reset_last_download = await self._playwright_controller.visit_page(
-                    self._page, url
+                reset_prior_metadata, reset_last_download = (
+                    await self._playwright_controller.visit_page(self._page, url)
                 )
             # If the argument contains a space, treat it as a search query
             elif " " in url:
-                reset_prior_metadata, reset_last_download = await self._playwright_controller.visit_page(
-                    self._page, f"https://www.bing.com/search?q={quote_plus(url)}&FORM=QBLH"
+                reset_prior_metadata, reset_last_download = (
+                    await self._playwright_controller.visit_page(
+                        self._page,
+                        f"https://www.bing.com/search?q={quote_plus(url)}&FORM=QBLH",
+                    )
                 )
             # Otherwise, prefix with https://
             else:
-                reset_prior_metadata, reset_last_download = await self._playwright_controller.visit_page(
-                    self._page, "https://" + url
+                reset_prior_metadata, reset_last_download = (
+                    await self._playwright_controller.visit_page(
+                        self._page, "https://" + url
+                    )
                 )
             if reset_last_download and self._last_download is not None:
                 self._last_download = None
@@ -575,8 +648,11 @@ class MultimodalWebSurfer(BaseChatAgent):
         elif name == "web_search":
             query = args.get("query")
             action_description = f"I typed '{query}' into the browser search bar."
-            reset_prior_metadata, reset_last_download = await self._playwright_controller.visit_page(
-                self._page, f"https://www.bing.com/search?q={quote_plus(query)}&FORM=QBLH"
+            reset_prior_metadata, reset_last_download = (
+                await self._playwright_controller.visit_page(
+                    self._page,
+                    f"https://www.bing.com/search?q={quote_plus(query)}&FORM=QBLH",
+                )
             )
             if reset_last_download and self._last_download is not None:
                 self._last_download = None
@@ -596,7 +672,9 @@ class MultimodalWebSurfer(BaseChatAgent):
                 action_description = f"I clicked '{target_name}'."
             else:
                 action_description = "I clicked the control."
-            new_page_tentative = await self._playwright_controller.click_id(self._page, target_id)
+            new_page_tentative = await self._playwright_controller.click_id(
+                self._page, target_id
+            )
             if new_page_tentative is not None:
                 self._page = new_page_tentative
                 self._prior_metadata_hash = None
@@ -612,10 +690,14 @@ class MultimodalWebSurfer(BaseChatAgent):
             text_value = str(args.get("text_value"))
             input_field_name = self._target_name(input_field_id, rects)
             if input_field_name:
-                action_description = f"I typed '{text_value}' into '{input_field_name}'."
+                action_description = (
+                    f"I typed '{text_value}' into '{input_field_name}'."
+                )
             else:
                 action_description = f"I input '{text_value}'."
-            await self._playwright_controller.fill_id(self._page, input_field_id, text_value)
+            await self._playwright_controller.fill_id(
+                self._page, input_field_id, text_value
+            )
 
         elif name == "scroll_element_up":
             target_id = str(args.get("target_id"))
@@ -641,9 +723,13 @@ class MultimodalWebSurfer(BaseChatAgent):
 
         elif name == "answer_question":
             question = str(args.get("question"))
-            action_description = f"I answered the following question '{question}' based on the web page."
+            action_description = (
+                f"I answered the following question '{question}' based on the web page."
+            )
             # Do Q&A on the DOM. No need to take further action. Browser state does not change.
-            return await self._summarize_page(question=question, cancellation_token=cancellation_token)
+            return await self._summarize_page(
+                question=question, cancellation_token=cancellation_token
+            )
         elif name == "summarize_page":
             # Summarize the DOM. No need to take further action. Browser state does not change.
             action_description = "I summarized the current web page"
@@ -659,31 +745,42 @@ class MultimodalWebSurfer(BaseChatAgent):
             await self._playwright_controller.hover_id(self._page, target_id)
 
         elif name == "sleep":
-            action_description = "I am waiting a short period of time before taking further action."
+            action_description = (
+                "I am waiting a short period of time before taking further action."
+            )
             await self._playwright_controller.sleep(self._page, 3)
 
         else:
-            raise ValueError(f"Unknown tool '{name}'. Please choose from:\n\n{tool_names}")
+            raise ValueError(
+                f"Unknown tool '{name}'. Please choose from:\n\n{tool_names}"
+            )
 
         await self._page.wait_for_load_state()
         await self._playwright_controller.sleep(self._page, 3)
 
         # Handle downloads
         if self._last_download is not None and self.downloads_folder is not None:
-            fname = os.path.join(self.downloads_folder, self._last_download.suggested_filename)
+            fname = os.path.join(
+                self.downloads_folder, self._last_download.suggested_filename
+            )
             await self._last_download.save_as(fname)  # type: ignore
             page_body = f"<html><head><title>Download Successful</title></head><body style=\"margin: 20px;\"><h1>Successfully downloaded '{self._last_download.suggested_filename}' to local path:<br><br>{fname}</h1></body></html>"
             await self._page.goto(
-                "data:text/html;base64," + base64.b64encode(page_body.encode("utf-8")).decode("utf-8")
+                "data:text/html;base64,"
+                + base64.b64encode(page_body.encode("utf-8")).decode("utf-8")
             )
             await self._page.wait_for_load_state()
 
         # Handle metadata
-        page_metadata = json.dumps(await self._playwright_controller.get_page_metadata(self._page), indent=4)
+        page_metadata = json.dumps(
+            await self._playwright_controller.get_page_metadata(self._page), indent=4
+        )
         metadata_hash = hashlib.md5(page_metadata.encode("utf-8")).hexdigest()
         if metadata_hash != self._prior_metadata_hash:
             page_metadata = (
-                "\nThe following metadata was extracted from the webpage:\n\n" + page_metadata.strip() + "\n"
+                "\nThe following metadata was extracted from the webpage:\n\n"
+                + page_metadata.strip()
+                + "\n"
             )
         else:
             page_metadata = ""
@@ -715,9 +812,13 @@ class MultimodalWebSurfer(BaseChatAgent):
             )
 
         ocr_text = (
-            await self._get_ocr_text(new_screenshot, cancellation_token=cancellation_token)
+            await self._get_ocr_text(
+                new_screenshot, cancellation_token=cancellation_token
+            )
             if self.use_ocr is True
-            else await self._playwright_controller.get_webpage_text(self._page, n_lines=self.n_lines_page_text)
+            else await self._playwright_controller.get_webpage_text(
+                self._page, n_lines=self.n_lines_page_text
+            )
         )
 
         # Return the complete observation
@@ -733,13 +834,17 @@ class MultimodalWebSurfer(BaseChatAgent):
             AGImage.from_pil(PIL.Image.open(io.BytesIO(new_screenshot))),
         ]
 
-    def _target_name(self, target: str, rects: Dict[str, InteractiveRegion]) -> str | None:
+    def _target_name(
+        self, target: str, rects: Dict[str, InteractiveRegion]
+    ) -> str | None:
         try:
             return rects[target]["aria_name"].strip()
         except KeyError:
             return None
 
-    def _format_target_list(self, ids: List[str], rects: Dict[str, InteractiveRegion]) -> List[str]:
+    def _format_target_list(
+        self, ids: List[str], rects: Dict[str, InteractiveRegion]
+    ) -> List[str]:
         """
         Format the list of targets in the webpage as a string to be used in the agent's prompt.
         """
@@ -752,7 +857,9 @@ class MultimodalWebSurfer(BaseChatAgent):
                     aria_role = rects[r].get("tag_name", "").strip()
 
                 # Get the name
-                aria_name = re.sub(r"[\n\r]+", " ", rects[r].get("aria_name", "")).strip()
+                aria_name = re.sub(
+                    r"[\n\r]+", " ", rects[r].get("aria_name", "")
+                ).strip()
 
                 # What are the actions?
                 actions = ['"click", "hover"']
@@ -760,12 +867,16 @@ class MultimodalWebSurfer(BaseChatAgent):
                     actions = ['"input_text"']
                 actions_str = "[" + ",".join(actions) + "]"
 
-                targets.append(f'{{"id": {r}, "name": "{aria_name}", "role": "{aria_role}", "tools": {actions_str} }}')
+                targets.append(
+                    f'{{"id": {r}, "name": "{aria_name}", "role": "{aria_role}", "tools": {actions_str} }}'
+                )
 
         return targets
 
     async def _get_ocr_text(
-        self, image: bytes | io.BufferedIOBase | PIL.Image.Image, cancellation_token: Optional[CancellationToken] = None
+        self,
+        image: bytes | io.BufferedIOBase | PIL.Image.Image,
+        cancellation_token: Optional[CancellationToken] = None,
     ) -> str:
         scaled_screenshot = None
         if isinstance(image, PIL.Image.Image):
@@ -790,7 +901,9 @@ class MultimodalWebSurfer(BaseChatAgent):
                 source=self.name,
             )
         )
-        response = await self._model_client.create(messages, cancellation_token=cancellation_token)
+        response = await self._model_client.create(
+            messages, cancellation_token=cancellation_token
+        )
         self.model_usage.append(response.usage)
         scaled_screenshot.close()
         assert isinstance(response.content, str)
@@ -803,7 +916,9 @@ class MultimodalWebSurfer(BaseChatAgent):
     ) -> str:
         assert self._page is not None
 
-        page_markdown: str = await self._playwright_controller.get_page_markdown(self._page)
+        page_markdown: str = await self._playwright_controller.get_page_markdown(
+            self._page
+        )
 
         title: str = self._page.url
         try:
@@ -856,7 +971,9 @@ class MultimodalWebSurfer(BaseChatAgent):
         )
 
         # Generate the response
-        response = await self._model_client.create(messages, cancellation_token=cancellation_token)
+        response = await self._model_client.create(
+            messages, cancellation_token=cancellation_token
+        )
         self.model_usage.append(response.usage)
         scaled_screenshot.close()
         assert isinstance(response.content, str)

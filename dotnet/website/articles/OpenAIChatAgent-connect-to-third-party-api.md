@@ -3,6 +3,7 @@ The following example shows how to connect to third-party OpenAI API using @Auto
 [![](https://img.shields.io/badge/Open%20on%20Github-grey?logo=github)](https://github.com/microsoft/autogen/blob/main/dotnet/samples/AutoGen.OpenAI.Sample/Connect_To_Ollama.cs)
 
 ## Overview
+
 A lot of LLM applications/platforms support spinning up a chat server that is compatible with OpenAI API, such as LM Studio, Ollama, Mistral etc. This means that you can connect to these servers using the @AutoGen.OpenAI.OpenAIChatAgent.
 
 > [!NOTE]
@@ -11,20 +12,24 @@ A lot of LLM applications/platforms support spinning up a chat server that is co
 > Please refer to the platform's documentation for more information.
 
 ## Prerequisites
+
 - Install the following packages:
+
 ```bash
 dotnet add package AutoGen.OpenAI --version AUTOGEN_VERSION
 ```
 
 - Spin up a chat server that is compatible with OpenAI API.
-The following example uses Ollama as the chat server, and llama3 as the llm model.
+  The following example uses Ollama as the chat server, and llama3 as the llm model.
+
 ```bash
 ollama serve
 ```
 
 ## Steps
+
 - Import the required namespaces:
-[!code-csharp[](../../samples/AutoGen.OpenAI.Sample/Connect_To_Ollama.cs?name=using_statement)]
+  [!code-csharp[](../../samples/AutoGen.OpenAI.Sample/Connect_To_Ollama.cs?name=using_statement)]
 
 - Create a `CustomHttpClientHandler` class.
 
@@ -39,11 +44,12 @@ Then create an @AutoGen.OpenAI.OpenAIChatAgent instance and connect to the OpenA
 [!code-csharp[](../../samples/AutoGen.OpenAI.Sample/Connect_To_Ollama.cs?name=create_agent)]
 
 - Chat with the `OpenAIChatAgent`.
-Finally, you can start chatting with the agent. In this example, we send a coding question to the agent and get the response.
+  Finally, you can start chatting with the agent. In this example, we send a coding question to the agent and get the response.
 
 [!code-csharp[](../../samples/AutoGen.OpenAI.Sample/Connect_To_Ollama.cs?name=send_message)]
 
 ## Sample Output
+
 The following is the sample output of the code snippet above:
 
 ![output](../images/articles/ConnectTo3PartyOpenAI/output.gif)

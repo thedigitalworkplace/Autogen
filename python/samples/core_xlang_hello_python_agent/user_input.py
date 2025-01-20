@@ -20,7 +20,9 @@ class UserProxy(RoutedAgent):
         super().__init__(description)
 
     @message_handler
-    async def handle_user_chat_input(self, message: input_types, ctx: MessageContext) -> None:
+    async def handle_user_chat_input(
+        self, message: input_types, ctx: MessageContext
+    ) -> None:
         logger = logging.getLogger("autogen_core")
 
         if isinstance(message, Input):
@@ -28,7 +30,9 @@ class UserProxy(RoutedAgent):
             response = response.strip()
             logger.info(response)
 
-            await self.publish_message(NewMessageReceived(message=response), topic_id=DefaultTopicId())
+            await self.publish_message(
+                NewMessageReceived(message=response), topic_id=DefaultTopicId()
+            )
         elif isinstance(message, Output):
             logger.info(message.message)
         else:

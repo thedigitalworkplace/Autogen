@@ -3,6 +3,7 @@
 The following example shows how to enable tool support in @AutoGen.Mistral.MistralClientAgent by creating a `GetWeatherAsync` function and passing it to the agent.
 
 Firstly, you need to install the following packages:
+
 ```bash
 dotnet add package AutoGen.Mistral
 dotnet add package AutoGen.SourceGenerator
@@ -24,7 +25,7 @@ Then define a public partial `MistralAgentFunction` class and `GetWeather` metho
 
 [!code-csharp[](../../samples/AutoGen.BasicSamples/CodeSnippet/MistralAICodeSnippet.cs?name=weather_function)]
 
-Then create an @AutoGen.Mistral.MistralClientAgent and register it with @AutoGen.Mistral.Extension.MistralAgentExtension.RegisterMessageConnector* so it can support @AutoGen.Core.ToolCallMessage and @AutoGen.Core.ToolCallResultMessage. These message types are necessary to use @AutoGen.Core.FunctionCallMiddleware, which provides support for processing and invoking function calls.
+Then create an @AutoGen.Mistral.MistralClientAgent and register it with @AutoGen.Mistral.Extension.MistralAgentExtension.RegisterMessageConnector\* so it can support @AutoGen.Core.ToolCallMessage and @AutoGen.Core.ToolCallResultMessage. These message types are necessary to use @AutoGen.Core.FunctionCallMiddleware, which provides support for processing and invoking function calls.
 
 [!code-csharp[](../../samples/AutoGen.BasicSamples/CodeSnippet/MistralAICodeSnippet.cs?name=create_mistral_function_call_agent)]
 

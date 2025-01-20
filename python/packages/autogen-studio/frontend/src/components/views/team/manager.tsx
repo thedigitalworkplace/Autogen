@@ -147,7 +147,7 @@ export const TeamManager: React.FC = () => {
       const savedTeam = await teamAPI.createTeam(sanitizedTeamData, user.email);
 
       messageApi.success(
-        `Team ${teamData.id ? "updated" : "created"} successfully`
+        `Team ${teamData.id ? "updated" : "created"} successfully`,
       );
 
       // Update teams list

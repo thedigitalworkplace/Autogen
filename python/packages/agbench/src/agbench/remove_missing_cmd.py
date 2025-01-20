@@ -21,14 +21,21 @@ def default_scorer(instance_dir: str) -> bool:
             last_10_lines = content.splitlines()[-10:]
             last_10_lines_joined = "\n".join(last_10_lines)
             has_error_in_last_10_lines = "Error code" in last_10_lines_joined
-            has_all = has_final_answer and has_scenario_complete and has_run_complete and not has_error_in_last_10_lines
+            has_all = (
+                has_final_answer
+                and has_scenario_complete
+                and has_run_complete
+                and not has_error_in_last_10_lines
+            )
             if not has_all:
                 print(content)
             return has_all
     return False
 
 
-def delete_folders_with_missing_results(runlogs_path: str, noconfirm: bool = False) -> None:
+def delete_folders_with_missing_results(
+    runlogs_path: str, noconfirm: bool = False
+) -> None:
     deleted_folders = 0
 
     for task_id in os.listdir(runlogs_path):
@@ -118,6 +125,8 @@ if __name__ == "__main__":
     if not os.path.isdir(runlogs_path):
         print(f"Error: '{runlogs_path}' is not a valid directory.")
         sys.exit(1)
-    input("Did you modify the default_scorer function to match the expected ending pattern? Press Enter to continue...")
+    input(
+        "Did you modify the default_scorer function to match the expected ending pattern? Press Enter to continue..."
+    )
 
     delete_folders_with_missing_results(runlogs_path, noconfirm)

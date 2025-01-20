@@ -35,7 +35,9 @@ class AzureTokenProvider(Component[TokenProviderConfig]):
 
         if isinstance(self.credential, DefaultAzureCredential):
             # NOTE: we are not currently inspecting the chained credentials, so this could result in a loss of information
-            return TokenProviderConfig(provider_kind="DefaultAzureCredential", scopes=self.scopes)
+            return TokenProviderConfig(
+                provider_kind="DefaultAzureCredential", scopes=self.scopes
+            )
         else:
             raise ValueError("Only DefaultAzureCredential is supported")
 

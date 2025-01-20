@@ -6,7 +6,12 @@ import json
 import logging
 import os
 
-from autogen_core import EVENT_LOGGER_NAME, AgentId, AgentProxy, SingleThreadedAgentRuntime
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    AgentId,
+    AgentProxy,
+    SingleThreadedAgentRuntime,
+)
 from autogen_core.code_executor import CodeBlock
 from autogen_core.models._model_client import ChatCompletionClient
 from autogen_ext.code_executors.docker import DockerCommandLineCodeExecutor
@@ -34,8 +39,12 @@ async def main(logs_dir: str, hil_mode: bool, save_screenshots: bool) -> None:
     runtime = SingleThreadedAgentRuntime()
 
     # Create an appropriate client
-    client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
-    assert client.model_info["family"] == "gpt-4o", "This example requires the gpt-4o model"
+    client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
+    assert (
+        client.model_info["family"] == "gpt-4o"
+    ), "This example requires the gpt-4o model"
 
     async with DockerCommandLineCodeExecutor(work_dir=logs_dir) as code_executor:
         # Register agents.
@@ -45,7 +54,11 @@ async def main(logs_dir: str, hil_mode: bool, save_screenshots: bool) -> None:
         await Executor.register(
             runtime,
             "Executor",
-            lambda: Executor("A agent for executing code", executor=code_executor, confirm_execution=confirm_code),
+            lambda: Executor(
+                "A agent for executing code",
+                executor=code_executor,
+                confirm_execution=confirm_code,
+            ),
         )
         executor = AgentProxy(AgentId("Executor", "default"), runtime)
 
@@ -53,7 +66,9 @@ async def main(logs_dir: str, hil_mode: bool, save_screenshots: bool) -> None:
         await MultimodalWebSurfer.register(runtime, "WebSurfer", MultimodalWebSurfer)
         web_surfer = AgentProxy(AgentId("WebSurfer", "default"), runtime)
 
-        await FileSurfer.register(runtime, "file_surfer", lambda: FileSurfer(model_client=client))
+        await FileSurfer.register(
+            runtime, "file_surfer", lambda: FileSurfer(model_client=client)
+        )
         file_surfer = AgentProxy(AgentId("file_surfer", "default"), runtime)
 
         await UserProxy.register(
@@ -82,7 +97,9 @@ async def main(logs_dir: str, hil_mode: bool, save_screenshots: bool) -> None:
 
         runtime.start()
 
-        actual_surfer = await runtime.try_get_underlying_agent_instance(web_surfer.id, type=MultimodalWebSurfer)
+        actual_surfer = await runtime.try_get_underlying_agent_instance(
+            web_surfer.id, type=MultimodalWebSurfer
+        )
         await actual_surfer.init(
             model_client=client,
             downloads_folder=logs_dir,
@@ -98,11 +115,26 @@ async def main(logs_dir: str, hil_mode: bool, save_screenshots: bool) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run MagenticOne example with log directory.")
-    parser.add_argument("--logs_dir", type=str, required=True, help="Directory to store log files and downloads")
-    parser.add_argument("--hil_mode", action="store_true", default=False, help="Run in human-in-the-loop mode")
+    parser = argparse.ArgumentParser(
+        description="Run MagenticOne example with log directory."
+    )
     parser.add_argument(
-        "--save_screenshots", action="store_true", default=False, help="Save additional browser screenshots to file"
+        "--logs_dir",
+        type=str,
+        required=True,
+        help="Directory to store log files and downloads",
+    )
+    parser.add_argument(
+        "--hil_mode",
+        action="store_true",
+        default=False,
+        help="Run in human-in-the-loop mode",
+    )
+    parser.add_argument(
+        "--save_screenshots",
+        action="store_true",
+        default=False,
+        help="Save additional browser screenshots to file",
     )
 
     args = parser.parse_args()

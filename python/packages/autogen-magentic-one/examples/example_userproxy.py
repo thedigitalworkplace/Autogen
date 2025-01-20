@@ -9,7 +9,12 @@ import json
 import logging
 import os
 
-from autogen_core import EVENT_LOGGER_NAME, AgentId, AgentProxy, SingleThreadedAgentRuntime
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    AgentId,
+    AgentProxy,
+    SingleThreadedAgentRuntime,
+)
 
 # from typing import Any, Dict, List, Tuple, Union
 from autogen_core.models._model_client import ChatCompletionClient
@@ -25,7 +30,9 @@ async def main() -> None:
     runtime = SingleThreadedAgentRuntime()
 
     # Get an appropriate client
-    client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
+    client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
 
     # Register agents.
     await Coder.register(runtime, "Coder", lambda: Coder(model_client=client))
@@ -34,7 +41,9 @@ async def main() -> None:
     await UserProxy.register(runtime, "UserProxy", lambda: UserProxy())
     user_proxy = AgentProxy(AgentId("UserProxy", "default"), runtime)
 
-    await RoundRobinOrchestrator.register(runtime, "orchestrator", lambda: RoundRobinOrchestrator([coder, user_proxy]))
+    await RoundRobinOrchestrator.register(
+        runtime, "orchestrator", lambda: RoundRobinOrchestrator([coder, user_proxy])
+    )
 
     runtime.start()
     await runtime.send_message(RequestReplyMessage(), user_proxy.id)

@@ -58,7 +58,15 @@ def create_jsonl(name, tasks, template):
         os.mkdir(TASKS_DIR)
 
     # Create the jsonl file
-    prompt_fields = ["task_id", "intent_template_id", "sites", "require_login", "start_url", "geolocation", "intent"]
+    prompt_fields = [
+        "task_id",
+        "intent_template_id",
+        "sites",
+        "require_login",
+        "start_url",
+        "geolocation",
+        "intent",
+    ]
     with open(os.path.join(TASKS_DIR, name + ".jsonl"), "wt") as fh:
         for task in tasks:
             print(f"Converting: {name}, {task['task_id']}")
@@ -71,7 +79,9 @@ def create_jsonl(name, tasks, template):
                 "id": str(task["task_id"]),
                 "template": [os.path.join(TEMPLATES_DIR, "Common"), template],
                 "substitutions": {
-                    "task_prompt.json.txt": {"__TASK_PROMPT__": json.dumps(task_prompt, indent=4)},
+                    "task_prompt.json.txt": {
+                        "__TASK_PROMPT__": json.dumps(task_prompt, indent=4)
+                    },
                     "full_task.json.txt": {"__FULL_TASK__": json.dumps(task, indent=4)},
                 },
             }
@@ -88,7 +98,9 @@ def main():
     templates = {}
     for entry in os.scandir(TEMPLATES_DIR):
         if entry.is_dir():
-            if entry.name == "Common":  # Skip the common template, which will be included in all
+            if (
+                entry.name == "Common"
+            ):  # Skip the common template, which will be included in all
                 continue
             templates[re.sub(r"\s", "", entry.name)] = entry.path
 
@@ -97,7 +109,9 @@ def main():
     for task in tasks:
 
         # We don't know how the intent ids are distributed, so hash them to get a uniform distribution
-        template_hash = hashlib.md5(str(task["intent_template_id"]).encode("utf-8")).hexdigest()
+        template_hash = hashlib.md5(
+            str(task["intent_template_id"]).encode("utf-8")
+        ).hexdigest()
 
         # The full hash will consist of 32 hexadecimal digits. We can get a 50/50 split by checking if the first digit is in the range (0-7) vs (8-F)
         task_set = "validation" if template_hash[0] in "01234567" else "test"

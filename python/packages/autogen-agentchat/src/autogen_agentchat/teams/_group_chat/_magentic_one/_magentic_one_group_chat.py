@@ -92,7 +92,9 @@ class MagenticOneGroupChat(BaseGroupChat):
 
         # Validate the participants.
         if len(participants) == 0:
-            raise ValueError("At least one participant is required for MagenticOneGroupChat.")
+            raise ValueError(
+                "At least one participant is required for MagenticOneGroupChat."
+            )
         self._model_client = model_client
         self._max_stalls = max_stalls
         self._final_answer_prompt = final_answer_prompt

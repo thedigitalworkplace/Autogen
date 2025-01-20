@@ -6,6 +6,7 @@ In semantic kernel, a kernel plugin is a collection of kernel functions that can
 > You can find the complete sample code [here](https://github.com/microsoft/autogen/blob/main/dotnet/samples/AutoGen.SemanticKernel.Sample/Use_Kernel_Functions_With_Other_Agent.cs)
 
 ### Step 1: add using statement
+
 [!code-csharp[](../../../samples/AutoGen.SemanticKernel.Sample/Use_Kernel_Functions_With_Other_Agent.cs?name=Using)]
 
 ### Step 2: create plugin

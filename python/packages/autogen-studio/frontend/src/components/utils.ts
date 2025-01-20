@@ -27,7 +27,7 @@ export function getCookie(name: string) {
 export function setLocalStorage(
   name: string,
   value: any,
-  stringify: boolean = true
+  stringify: boolean = true,
 ) {
   if (stringify) {
     localStorage.setItem(name, JSON.stringify(value));
@@ -58,14 +58,14 @@ export function fetchJSON(
   payload: any = {},
   onSuccess: (data: any) => void,
   onError: (error: IStatus) => void,
-  onFinal: () => void = () => {}
+  onFinal: () => void = () => {},
 ) {
   return fetch(url, payload)
     .then(function (response) {
       if (response.status !== 200) {
         console.log(
           "Looks like there was a problem. Status Code: " + response.status,
-          response
+          response,
         );
         response.json().then(function (data) {
           console.log("Error data", data);

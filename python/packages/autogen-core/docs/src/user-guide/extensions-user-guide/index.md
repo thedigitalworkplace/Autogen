@@ -26,7 +26,6 @@ azure-container-code-executor
 
 AutoGen is designed to be extensible. The `autogen-ext` package contains many different component implementations maintained by the AutoGen project. However, we strongly encourage others to build their own components and publish them as part of the ecosytem.
 
-
 ::::{grid} 2 2 2 2
 :gutter: 3
 

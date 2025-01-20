@@ -19,11 +19,13 @@ After instrumenting your code with the Aspire Dashboard running, you should see 
 If you are using the Open AI package, you can observe the LLM calls by setting up the opentelemetry for that library. We use [opentelemetry-instrumentation-openai](https://pypi.org/project/opentelemetry-instrumentation-openai/) in this example.
 
 Install the package:
+
 ```bash
 pip install opentelemetry-instrumentation-openai
 ```
 
 Enable the instrumentation:
+
 ```python
 from opentelemetry.instrumentation.openai import OpenAIInstrumentor
 

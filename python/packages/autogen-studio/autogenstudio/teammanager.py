@@ -13,13 +13,17 @@ class TeamManager:
     def __init__(self) -> None:
         self.component_factory = ComponentFactory()
 
-    async def _create_team(self, team_config: ComponentConfigInput, input_func: Optional[Callable] = None) -> Component:
+    async def _create_team(
+        self, team_config: ComponentConfigInput, input_func: Optional[Callable] = None
+    ) -> Component:
         """Create team instance with common setup logic"""
         return await self.component_factory.load(team_config, input_func=input_func)
 
     def _create_result(self, task_result: TaskResult, start_time: float) -> TeamResult:
         """Create TeamResult with timing info"""
-        return TeamResult(task_result=task_result, usage="", duration=time.time() - start_time)
+        return TeamResult(
+            task_result=task_result, usage="", duration=time.time() - start_time
+        )
 
     async def run_stream(
         self,

@@ -7,7 +7,12 @@ import json
 import logging
 import os
 
-from autogen_core import EVENT_LOGGER_NAME, AgentId, AgentProxy, SingleThreadedAgentRuntime
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    AgentId,
+    AgentProxy,
+    SingleThreadedAgentRuntime,
+)
 from autogen_core.models._model_client import ChatCompletionClient
 from autogen_magentic_one.agents.file_surfer import FileSurfer
 from autogen_magentic_one.agents.orchestrator import RoundRobinOrchestrator
@@ -21,17 +26,23 @@ async def main() -> None:
     runtime = SingleThreadedAgentRuntime()
 
     # Get an appropriate client
-    client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
+    client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
 
     # Register agents.
-    await FileSurfer.register(runtime, "file_surfer", lambda: FileSurfer(model_client=client))
+    await FileSurfer.register(
+        runtime, "file_surfer", lambda: FileSurfer(model_client=client)
+    )
     file_surfer = AgentProxy(AgentId("file_surfer", "default"), runtime)
 
     await UserProxy.register(runtime, "UserProxy", lambda: UserProxy())
     user_proxy = AgentProxy(AgentId("UserProxy", "default"), runtime)
 
     await RoundRobinOrchestrator.register(
-        runtime, "orchestrator", lambda: RoundRobinOrchestrator([file_surfer, user_proxy])
+        runtime,
+        "orchestrator",
+        lambda: RoundRobinOrchestrator([file_surfer, user_proxy]),
     )
 
     runtime.start()

@@ -11,8 +11,12 @@ from autogenstudio.datamodel.types import (
     RoundRobinTeamConfig,
     StopMessageTerminationConfig,
     AssistantAgentConfig,
-    ModelTypes, AgentTypes, TeamTypes, ComponentTypes,
-    TerminationTypes,  ToolTypes
+    ModelTypes,
+    AgentTypes,
+    TeamTypes,
+    ComponentTypes,
+    TerminationTypes,
+    ToolTypes,
 )
 from autogenstudio.datamodel.db import Model, Tool, Agent, Team, LinkTypes
 
@@ -50,8 +54,8 @@ def sample_model(test_user: str) -> Model:
             model="gpt-4",
             model_type=ModelTypes.OPENAI,
             component_type=ComponentTypes.MODEL,
-            version="1.0.0"
-        ).model_dump()
+            version="1.0.0",
+        ).model_dump(),
     )
 
 
@@ -66,8 +70,8 @@ def sample_tool(test_user: str) -> Tool:
             content="async def test_func(x: str) -> str:\n    return f'Test {x}'",
             tool_type=ToolTypes.PYTHON_FUNCTION,
             component_type=ComponentTypes.TOOL,
-            version="1.0.0"
-        ).model_dump()
+            version="1.0.0",
+        ).model_dump(),
     )
 
 
@@ -82,8 +86,8 @@ def sample_agent(test_user: str, sample_model: Model, sample_tool: Tool) -> Agen
             model_client=OpenAIModelConfig.model_validate(sample_model.config),
             tools=[ToolConfig.model_validate(sample_tool.config)],
             component_type=ComponentTypes.AGENT,
-            version="1.0.0"
-        ).model_dump()
+            version="1.0.0",
+        ).model_dump(),
     )
 
 
@@ -94,17 +98,16 @@ def sample_team(test_user: str, sample_agent: Agent) -> Team:
         user_id=test_user,
         config=RoundRobinTeamConfig(
             name="test_team",
-            participants=[AssistantAgentConfig.model_validate(
-                sample_agent.config)],
+            participants=[AssistantAgentConfig.model_validate(sample_agent.config)],
             termination_condition=StopMessageTerminationConfig(
                 termination_type=TerminationTypes.STOP_MESSAGE,
                 component_type=ComponentTypes.TERMINATION,
-                version="1.0.0"
+                version="1.0.0",
             ).model_dump(),
             team_type=TeamTypes.ROUND_ROBIN,
             component_type=ComponentTypes.TEAM,
-            version="1.0.0"
-        ).model_dump()
+            version="1.0.0",
+        ).model_dump(),
     )
 
 
@@ -117,8 +120,14 @@ class TestDatabaseOperations:
             result = session.exec(select(1)).first()
             assert result == 1
 
-    def test_basic_entity_creation(self, test_db: DatabaseManager, sample_model: Model,
-                                   sample_tool: Tool, sample_agent: Agent, sample_team: Team):
+    def test_basic_entity_creation(
+        self,
+        test_db: DatabaseManager,
+        sample_model: Model,
+        sample_tool: Tool,
+        sample_agent: Agent,
+        sample_team: Team,
+    ):
         """Test creating all entity types with proper configs"""
         with Session(test_db.engine) as session:
             # Add all entities
@@ -151,8 +160,8 @@ class TestDatabaseOperations:
                     model="gpt-4",
                     model_type=ModelTypes.OPENAI,
                     component_type=ComponentTypes.MODEL,
-                    version="1.0.0"
-                ).model_dump()
+                    version="1.0.0",
+                ).model_dump(),
             )
             model2 = Model(
                 user_id="test_user",
@@ -160,8 +169,8 @@ class TestDatabaseOperations:
                     model="gpt-3.5",
                     model_type=ModelTypes.OPENAI,
                     component_type=ComponentTypes.MODEL,
-                    version="1.0.0"
-                ).model_dump()
+                    version="1.0.0",
+                ).model_dump(),
             )
 
             # Add and commit all entities
@@ -179,8 +188,7 @@ class TestDatabaseOperations:
         test_db.link(LinkTypes.AGENT_MODEL, agent_id, model2_id)
 
         # Verify links
-        linked_models = test_db.get_linked_entities(
-            LinkTypes.AGENT_MODEL, agent_id)
+        linked_models = test_db.get_linked_entities(LinkTypes.AGENT_MODEL, agent_id)
         assert len(linked_models.data) == 2
 
         # Verify model names

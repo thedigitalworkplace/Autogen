@@ -21,7 +21,9 @@ SHOPPING_PASSWORD = os.environ.get("SHOPPING_PASSWORD", "")
 SHOPPING_ADMIN_USERNAME = os.environ.get("SHOPPING_ADMIN_USERNAME", "")
 SHOPPING_ADMIN_PASSWORD = os.environ.get("SHOPPING_ADMIN_PASSWORD", "")
 
-assert REDDIT and SHOPPING and SHOPPING_ADMIN and GITLAB and WIKIPEDIA and MAP and HOMEPAGE, (
+assert (
+    REDDIT and SHOPPING and SHOPPING_ADMIN and GITLAB and WIKIPEDIA and MAP and HOMEPAGE
+), (
     "Please setup the URLs to each site. Current: \n"
     + f"Reddit: {REDDIT}\n"
     + f"Shopping: {SHOPPING}\n"
@@ -36,8 +38,14 @@ ACCOUNTS = {
     "reddit": {"username": REDDIT_USERNAME, "password": REDDIT_PASSWORD},
     "gitlab": {"username": GITLAB_USERNAME, "password": GITLAB_PASSWORD},
     "shopping": {"username": SHOPPING_USERNAME, "password": SHOPPING_PASSWORD},
-    "shopping_admin": {"username": SHOPPING_ADMIN_USERNAME, "password": SHOPPING_ADMIN_PASSWORD},
-    "shopping_site_admin": {"username": SHOPPING_ADMIN_USERNAME, "password": SHOPPING_ADMIN_PASSWORD},
+    "shopping_admin": {
+        "username": SHOPPING_ADMIN_USERNAME,
+        "password": SHOPPING_ADMIN_PASSWORD,
+    },
+    "shopping_site_admin": {
+        "username": SHOPPING_ADMIN_USERNAME,
+        "password": SHOPPING_ADMIN_PASSWORD,
+    },
 }
 
 URL_MAPPINGS = {
@@ -54,7 +62,7 @@ URL_MAPPINGS = {
 #########################
 SITE_URLS = {
     "reddit": REDDIT,
-    "gitlab": GITLAB, 
+    "gitlab": GITLAB,
     "shopping": SHOPPING,
     "shopping_admin": SHOPPING_ADMIN,
     "shopping_site_admin": SHOPPING_ADMIN,

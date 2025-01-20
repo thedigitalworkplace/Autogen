@@ -413,7 +413,7 @@ const TerminationEditor: React.FC<EditorProps<TerminationConfig>> = ({
 
   const handleUpdateCondition = (
     index: number,
-    newCondition: TerminationConfig
+    newCondition: TerminationConfig,
   ) => {
     if (value.termination_type === "CombinationTermination") {
       const newConditions = [...value.conditions];
@@ -531,7 +531,7 @@ const TerminationEditor: React.FC<EditorProps<TerminationConfig>> = ({
                       </Button>
                     </Space>
                   </div>
-                )
+                ),
               )}
               <Button
                 type="dashed"

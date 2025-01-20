@@ -121,7 +121,9 @@ class MultimodalWebSurferAgentConfig(BaseAgentConfig):
     tools: Optional[List[ToolConfig]] = None
 
 
-AgentConfig = AssistantAgentConfig | UserProxyAgentConfig | MultimodalWebSurferAgentConfig
+AgentConfig = (
+    AssistantAgentConfig | UserProxyAgentConfig | MultimodalWebSurferAgentConfig
+)
 
 
 class BaseTerminationConfig(BaseConfig):
@@ -217,6 +219,8 @@ class SocketMessage(BaseModel):
     type: str
 
 
-ComponentConfig = Union[TeamConfig, AgentConfig, ModelConfig, ToolConfig, TerminationConfig]
+ComponentConfig = Union[
+    TeamConfig, AgentConfig, ModelConfig, ToolConfig, TerminationConfig
+]
 
 ComponentConfigInput = Union[str, Path, dict, ComponentConfig]

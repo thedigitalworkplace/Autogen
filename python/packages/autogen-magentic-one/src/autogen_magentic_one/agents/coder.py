@@ -48,12 +48,15 @@ Reply "TERMINATE" in the end when everything is done."""
         self._system_messages = system_messages
         self._request_terminate = request_terminate
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, UserContent]:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, UserContent]:
         """Respond to a reply request."""
 
         # Make an inference to the model.
         response = await self._model_client.create(
-            self._system_messages + self._chat_history, cancellation_token=cancellation_token
+            self._system_messages + self._chat_history,
+            cancellation_token=cancellation_token,
         )
         assert isinstance(response.content, str)
         if self._request_terminate:
@@ -83,7 +86,9 @@ class Executor(BaseWorker):
         self._check_last_n_message = check_last_n_message
         self._confirm_execution = confirm_execution
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, UserContent]:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, UserContent]:
         """Respond to a reply request."""
 
         n_messages_checked = 0
@@ -94,7 +99,9 @@ class Executor(BaseWorker):
                 continue
 
             # Extract code block from the message.
-            code = self._extract_execution_request(message_content_to_str(message.content))
+            code = self._extract_execution_request(
+                message_content_to_str(message.content)
+            )
 
             if code is not None:
                 code_lang = code[0]
@@ -103,7 +110,9 @@ class Executor(BaseWorker):
                     code_lang = "python"
                 execution_requests = [CodeBlock(code=code_block, language=code_lang)]
                 if self._confirm_execution == "ACCEPT_ALL" or await self._confirm_execution(execution_requests[0]):  # type: ignore
-                    result = await self._executor.execute_code_blocks(execution_requests, cancellation_token)
+                    result = await self._executor.execute_code_blocks(
+                        execution_requests, cancellation_token
+                    )
 
                     if result.output.strip() == "":
                         # Sometimes agents forget to print(). Remind the to print something
@@ -131,7 +140,9 @@ class Executor(BaseWorker):
             "No code block detected in the messages. Please provide a markdown-encoded code block to execute for the original task.",
         )
 
-    def _extract_execution_request(self, markdown_text: str) -> Union[Tuple[str, str], None]:
+    def _extract_execution_request(
+        self, markdown_text: str
+    ) -> Union[Tuple[str, str], None]:
         pattern = r"```(\w+)\n(.*?)\n```"
         # Search for the pattern in the markdown text
         match = re.search(pattern, markdown_text, re.DOTALL)

@@ -24,7 +24,10 @@ class TextMessage(google.protobuf.message.Message):
         textMessage: builtins.str = ...,
         source: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["source", b"source", "textMessage", b"textMessage"]) -> None: ...
+    def ClearField(
+        self,
+        field_name: typing.Literal["source", b"source", "textMessage", b"textMessage"],
+    ) -> None: ...
 
 global___TextMessage = TextMessage
 
@@ -129,7 +132,9 @@ class ResponseGenerated(google.protobuf.message.Message):
         *,
         response: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["response", b"response"]) -> None: ...
+    def ClearField(
+        self, field_name: typing.Literal["response", b"response"]
+    ) -> None: ...
 
 global___ResponseGenerated = ResponseGenerated
 
@@ -177,7 +182,12 @@ class ConversationClosed(google.protobuf.message.Message):
         user_id: builtins.str = ...,
         user_message: builtins.str = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["user_id", b"user_id", "user_message", b"user_message"]) -> None: ...
+    def ClearField(
+        self,
+        field_name: typing.Literal[
+            "user_id", b"user_id", "user_message", b"user_message"
+        ],
+    ) -> None: ...
 
 global___ConversationClosed = ConversationClosed
 

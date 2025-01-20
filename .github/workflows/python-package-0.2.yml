@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy the package'
+        description: "Branch to deploy the package"
         required: true
-        default: '0.2'
+        default: "0.2"
 permissions: {}
 jobs:
   deploy:

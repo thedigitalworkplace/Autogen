@@ -5,7 +5,9 @@ from pydantic import BaseModel, Field, model_serializer
 
 
 class CodeExecutionInput(BaseModel):
-    code: str = Field(description="The contents of the Python code block that should be executed")
+    code: str = Field(
+        description="The contents of the Python code block that should be executed"
+    )
 
 
 class CodeExecutionResult(BaseModel):
@@ -62,10 +64,17 @@ class PythonCodeExecutionTool(BaseTool[CodeExecutionInput, CodeExecutionResult])
     """
 
     def __init__(self, executor: CodeExecutor):
-        super().__init__(CodeExecutionInput, CodeExecutionResult, "CodeExecutor", "Execute Python code blocks.")
+        super().__init__(
+            CodeExecutionInput,
+            CodeExecutionResult,
+            "CodeExecutor",
+            "Execute Python code blocks.",
+        )
         self._executor = executor
 
-    async def run(self, args: CodeExecutionInput, cancellation_token: CancellationToken) -> CodeExecutionResult:
+    async def run(
+        self, args: CodeExecutionInput, cancellation_token: CancellationToken
+    ) -> CodeExecutionResult:
         code_blocks = [CodeBlock(code=args.code, language="python")]
         result = await self._executor.execute_code_blocks(
             code_blocks=code_blocks, cancellation_token=cancellation_token

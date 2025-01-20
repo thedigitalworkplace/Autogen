@@ -15,9 +15,7 @@ def _load_tool(tooldef: Dict[str, Any]) -> ToolSchema:
     )
 
 
-REASONING_TOOL_PROMPT = (
-    "A short description of the action to be performed and reason for doing so, do not mention the user."
-)
+REASONING_TOOL_PROMPT = "A short description of the action to be performed and reason for doing so, do not mention the user."
 
 TOOL_VISIT_URL: ToolSchema = _load_tool(
     {

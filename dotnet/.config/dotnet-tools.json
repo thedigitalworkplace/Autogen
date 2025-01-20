@@ -4,15 +4,11 @@
   "tools": {
     "dotnet-repl": {
       "version": "0.1.205",
-      "commands": [
-        "dotnet-repl"
-      ]
+      "commands": ["dotnet-repl"]
     },
     "docfx": {
       "version": "2.67.5",
-      "commands": [
-        "docfx"
-      ]
+      "commands": ["docfx"]
     }
   }
 }

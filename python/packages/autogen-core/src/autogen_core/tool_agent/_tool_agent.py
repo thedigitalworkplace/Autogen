@@ -59,7 +59,9 @@ class ToolAgent(RoutedAgent):
         return self._tools
 
     @message_handler
-    async def handle_function_call(self, message: FunctionCall, ctx: MessageContext) -> FunctionExecutionResult:
+    async def handle_function_call(
+        self, message: FunctionCall, ctx: MessageContext
+    ) -> FunctionExecutionResult:
         """Handles a `FunctionCall` message by executing the requested tool with the provided arguments.
 
         Args:
@@ -76,16 +78,23 @@ class ToolAgent(RoutedAgent):
         """
         tool = next((tool for tool in self._tools if tool.name == message.name), None)
         if tool is None:
-            raise ToolNotFoundException(call_id=message.id, content=f"Error: Tool not found: {message.name}")
+            raise ToolNotFoundException(
+                call_id=message.id, content=f"Error: Tool not found: {message.name}"
+            )
         else:
             try:
                 arguments = json.loads(message.arguments)
-                result = await tool.run_json(args=arguments, cancellation_token=ctx.cancellation_token)
+                result = await tool.run_json(
+                    args=arguments, cancellation_token=ctx.cancellation_token
+                )
                 result_as_str = tool.return_value_as_string(result)
             except json.JSONDecodeError as e:
                 raise InvalidToolArgumentsException(
-                    call_id=message.id, content=f"Error: Invalid arguments: {message.arguments}"
+                    call_id=message.id,
+                    content=f"Error: Invalid arguments: {message.arguments}",
                 ) from e
             except Exception as e:
-                raise ToolExecutionException(call_id=message.id, content=f"Error: {e}") from e
+                raise ToolExecutionException(
+                    call_id=message.id, content=f"Error: {e}"
+                ) from e
         return FunctionExecutionResult(content=result_as_str, call_id=message.id)

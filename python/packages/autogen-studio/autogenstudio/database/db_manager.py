@@ -33,7 +33,9 @@ class DatabaseManager:
             base_dir=base_dir,
         )
 
-    def initialize_database(self, auto_upgrade: bool = False, force_init_alembic: bool = True) -> Response:
+    def initialize_database(
+        self, auto_upgrade: bool = False, force_init_alembic: bool = True
+    ) -> Response:
         """
         Initialize database and migrations in the correct order.
 
@@ -42,7 +44,9 @@ class DatabaseManager:
             force_init_alembic: If True, reinitialize alembic configuration even if it exists
         """
         if not self._init_lock.acquire(blocking=False):
-            return Response(message="Database initialization already in progress", status=False)
+            return Response(
+                message="Database initialization already in progress", status=False
+            )
 
         try:
             inspector = inspect(self.engine)
@@ -54,14 +58,20 @@ class DatabaseManager:
                 SQLModel.metadata.create_all(self.engine)
 
                 if self.schema_manager.initialize_migrations(force=force_init_alembic):
-                    return Response(message="Database initialized successfully", status=True)
+                    return Response(
+                        message="Database initialized successfully", status=True
+                    )
                 return Response(message="Failed to initialize migrations", status=False)
 
             # Handle existing database
             if auto_upgrade:
                 logger.info("Checking database schema...")
-                if self.schema_manager.ensure_schema_up_to_date():  # <-- Use this instead
-                    return Response(message="Database schema is up to date", status=True)
+                if (
+                    self.schema_manager.ensure_schema_up_to_date()
+                ):  # <-- Use this instead
+                    return Response(
+                        message="Database schema is up to date", status=True
+                    )
                 return Response(message="Database upgrade failed", status=False)
 
             return Response(message="Database is ready", status=True)
@@ -83,7 +93,9 @@ class DatabaseManager:
         """
         if not self._init_lock.acquire(blocking=False):
             logger.warning("Database reset already in progress")
-            return Response(message="Database reset already in progress", status=False, data=None)
+            return Response(
+                message="Database reset already in progress", status=False, data=None
+            )
 
         try:
             # Dispose existing connections
@@ -116,7 +128,11 @@ class DatabaseManager:
                 self.initialize_database(auto_upgrade=False, force_init_alembic=True)
 
             return Response(
-                message="Database reset successfully" if recreate_tables else "Database tables dropped successfully",
+                message=(
+                    "Database reset successfully"
+                    if recreate_tables
+                    else "Database tables dropped successfully"
+                ),
                 status=True,
                 data=None,
             )
@@ -147,7 +163,9 @@ class DatabaseManager:
 
         with Session(self.engine) as session:
             try:
-                existing_model = session.exec(select(model_class).where(model_class.id == model.id)).first()
+                existing_model = session.exec(
+                    select(model_class).where(model_class.id == model.id)
+                ).first()
                 if existing_model:
                     model.updated_at = datetime.now()
                     for key, value in model.model_dump().items():
@@ -160,7 +178,12 @@ class DatabaseManager:
                 session.refresh(model)
             except Exception as e:
                 session.rollback()
-                logger.error("Error while updating/creating " + str(model_class.__name__) + ": " + str(e))
+                logger.error(
+                    "Error while updating/creating "
+                    + str(model_class.__name__)
+                    + ": "
+                    + str(e)
+                )
                 status = False
 
         return Response(
@@ -174,7 +197,10 @@ class DatabaseManager:
         )
 
     def _model_to_dict(self, model_obj):
-        return {col.name: getattr(model_obj, col.name) for col in model_obj.__table__.columns}
+        return {
+            col.name: getattr(model_obj, col.name)
+            for col in model_obj.__table__.columns
+        }
 
     def get(
         self,
@@ -192,21 +218,33 @@ class DatabaseManager:
             try:
                 statement = select(model_class)
                 if filters:
-                    conditions = [getattr(model_class, col) == value for col, value in filters.items()]
+                    conditions = [
+                        getattr(model_class, col) == value
+                        for col, value in filters.items()
+                    ]
                     statement = statement.where(and_(*conditions))
 
                 if hasattr(model_class, "created_at") and order:
-                    order_by_clause = getattr(model_class.created_at, order)()  # Dynamically apply asc/desc
+                    order_by_clause = getattr(
+                        model_class.created_at, order
+                    )()  # Dynamically apply asc/desc
                     statement = statement.order_by(order_by_clause)
 
                 items = session.exec(statement).all()
-                result = [self._model_to_dict(item) if return_json else item for item in items]
+                result = [
+                    self._model_to_dict(item) if return_json else item for item in items
+                ]
                 status_message = f"{model_class.__name__} Retrieved Successfully"
             except Exception as e:
                 session.rollback()
                 status = False
                 status_message = f"Error while fetching {model_class.__name__}"
-                logger.error("Error while getting items: " + str(model_class.__name__) + " " + str(e))
+                logger.error(
+                    "Error while getting items: "
+                    + str(model_class.__name__)
+                    + " "
+                    + str(e)
+                )
 
             return Response(message=status_message, status=status, data=result)
 
@@ -219,7 +257,10 @@ class DatabaseManager:
             try:
                 statement = select(model_class)
                 if filters:
-                    conditions = [getattr(model_class, col) == value for col, value in filters.items()]
+                    conditions = [
+                        getattr(model_class, col) == value
+                        for col, value in filters.items()
+                    ]
                     statement = statement.where(and_(*conditions))
 
                 rows = session.exec(statement).all()
@@ -267,7 +308,9 @@ class DatabaseManager:
                 secondary_entity = session.get(secondary_class, secondary_id)
 
                 if not primary_entity or not secondary_entity:
-                    return Response(message="One or both entities do not exist", status=False)
+                    return Response(
+                        message="One or both entities do not exist", status=False
+                    )
 
                 # Get field names
                 primary_id_field = f"{primary_class.__name__.lower()}_id"
@@ -289,24 +332,41 @@ class DatabaseManager:
                 # Get the next sequence number if not provided
                 if sequence is None:
                     max_seq_result = session.exec(
-                        select(func.max(link_table.sequence)).where(getattr(link_table, primary_id_field) == primary_id)
+                        select(func.max(link_table.sequence)).where(
+                            getattr(link_table, primary_id_field) == primary_id
+                        )
                     ).first()
                     sequence = 0 if max_seq_result is None else max_seq_result + 1
 
                 # Create new link
                 new_link = link_table(
-                    **{primary_id_field: primary_id, secondary_id_field: secondary_id, "sequence": sequence}
+                    **{
+                        primary_id_field: primary_id,
+                        secondary_id_field: secondary_id,
+                        "sequence": sequence,
+                    }
                 )
                 session.add(new_link)
                 session.commit()
 
-                return Response(message=f"Entities linked successfully with sequence {sequence}", status=True)
+                return Response(
+                    message=f"Entities linked successfully with sequence {sequence}",
+                    status=True,
+                )
 
             except Exception as e:
                 session.rollback()
-                return Response(message=f"Error linking entities: {str(e)}", status=False)
+                return Response(
+                    message=f"Error linking entities: {str(e)}", status=False
+                )
 
-    def unlink(self, link_type: LinkTypes, primary_id: int, secondary_id: int, sequence: Optional[int] = None):
+    def unlink(
+        self,
+        link_type: LinkTypes,
+        primary_id: int,
+        secondary_id: int,
+        sequence: Optional[int] = None,
+    ):
         """Unlink two entities and reorder sequences if needed."""
         with Session(self.engine) as session:
             try:
@@ -352,11 +412,16 @@ class DatabaseManager:
 
                 session.commit()
 
-                return Response(message="Entities unlinked successfully and sequences reordered", status=True)
+                return Response(
+                    message="Entities unlinked successfully and sequences reordered",
+                    status=True,
+                )
 
             except Exception as e:
                 session.rollback()
-                return Response(message=f"Error unlinking entities: {str(e)}", status=False)
+                return Response(
+                    message=f"Error unlinking entities: {str(e)}", status=False
+                )
 
     def get_linked_entities(
         self,
@@ -379,18 +444,29 @@ class DatabaseManager:
                 # Query both link and entity, ordered by sequence
                 items = session.exec(
                     select(secondary_class)
-                    .join(link_table, getattr(link_table, secondary_id_field) == secondary_class.id)
+                    .join(
+                        link_table,
+                        getattr(link_table, secondary_id_field) == secondary_class.id,
+                    )
                     .where(getattr(link_table, primary_id_field) == primary_id)
                     .order_by(link_table.sequence)
                 ).all()
 
                 result = [item.model_dump() if return_json else item for item in items]
 
-                return Response(message="Linked entities retrieved successfully", status=True, data=result)
+                return Response(
+                    message="Linked entities retrieved successfully",
+                    status=True,
+                    data=result,
+                )
 
             except Exception as e:
                 logger.error(f"Error getting linked entities: {str(e)}")
-                return Response(message=f"Error getting linked entities: {str(e)}", status=False, data=[])
+                return Response(
+                    message=f"Error getting linked entities: {str(e)}",
+                    status=False,
+                    data=[],
+                )
 
     # Add new close method
 

@@ -31,7 +31,13 @@ from _semantic_router_components import (
     UserProxyMessage,
     WorkerAgentMessage,
 )
-from autogen_core import ClosureAgent, ClosureContext, DefaultSubscription, DefaultTopicId, MessageContext
+from autogen_core import (
+    ClosureAgent,
+    ClosureContext,
+    DefaultSubscription,
+    DefaultTopicId,
+    MessageContext,
+)
 from autogen_ext.runtimes.grpc import GrpcWorkerAgentRuntime
 
 
@@ -59,7 +65,9 @@ class MockAgentRegistry(AgentRegistryBase):
 
 
 async def output_result(
-    closure_ctx: ClosureContext, message: WorkerAgentMessage | FinalResult, ctx: MessageContext
+    closure_ctx: ClosureContext,
+    message: WorkerAgentMessage | FinalResult,
+    ctx: MessageContext,
 ) -> None:
     if isinstance(message, WorkerAgentMessage):
         print(f"{message.source} Agent: {message.content}")
@@ -73,7 +81,8 @@ async def output_result(
         print("Conversation ended")
         new_message = input("Enter a new conversation start: ")
         await closure_ctx.publish_message(
-            UserProxyMessage(content=new_message, source="user"), topic_id=DefaultTopicId(type="default", source="user")
+            UserProxyMessage(content=new_message, source="user"),
+            topic_id=DefaultTopicId(type="default", source="user"),
         )
 
 
@@ -83,22 +92,34 @@ async def run_workers():
     agent_runtime.start()
 
     # Create the agents
-    await WorkerAgent.register(agent_runtime, "finance", lambda: WorkerAgent("finance_agent"))
-    await agent_runtime.add_subscription(DefaultSubscription(topic_type="finance", agent_type="finance"))
+    await WorkerAgent.register(
+        agent_runtime, "finance", lambda: WorkerAgent("finance_agent")
+    )
+    await agent_runtime.add_subscription(
+        DefaultSubscription(topic_type="finance", agent_type="finance")
+    )
 
     await WorkerAgent.register(agent_runtime, "hr", lambda: WorkerAgent("hr_agent"))
-    await agent_runtime.add_subscription(DefaultSubscription(topic_type="hr", agent_type="hr"))
+    await agent_runtime.add_subscription(
+        DefaultSubscription(topic_type="hr", agent_type="hr")
+    )
 
     # Create the User Proxy Agent
-    await UserProxyAgent.register(agent_runtime, "user_proxy", lambda: UserProxyAgent("user_proxy"))
-    await agent_runtime.add_subscription(DefaultSubscription(topic_type="user_proxy", agent_type="user_proxy"))
+    await UserProxyAgent.register(
+        agent_runtime, "user_proxy", lambda: UserProxyAgent("user_proxy")
+    )
+    await agent_runtime.add_subscription(
+        DefaultSubscription(topic_type="user_proxy", agent_type="user_proxy")
+    )
 
     # A closure agent surfaces the final result to external systems (e.g. an API) so that the system can interact with the user
     await ClosureAgent.register_closure(
         agent_runtime,
         "closure_agent",
         output_result,
-        subscriptions=lambda: [DefaultSubscription(topic_type="response", agent_type="closure_agent")],
+        subscriptions=lambda: [
+            DefaultSubscription(topic_type="response", agent_type="closure_agent")
+        ],
     )
 
     # Create the Semantic Router
@@ -107,14 +128,19 @@ async def run_workers():
     await SemanticRouterAgent.register(
         agent_runtime,
         "router",
-        lambda: SemanticRouterAgent(name="router", agent_registry=agent_registry, intent_classifier=intent_classifier),
+        lambda: SemanticRouterAgent(
+            name="router",
+            agent_registry=agent_registry,
+            intent_classifier=intent_classifier,
+        ),
     )
 
     print("Agents registered, starting conversation")
     # Start the conversation
     message = input("Enter a message: ")
     await agent_runtime.publish_message(
-        UserProxyMessage(content=message, source="user"), topic_id=DefaultTopicId(type="default", source="user")
+        UserProxyMessage(content=message, source="user"),
+        topic_id=DefaultTopicId(type="default", source="user"),
     )
 
     if platform.system() == "Windows":

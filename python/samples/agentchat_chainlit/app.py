@@ -17,11 +17,15 @@ async def start_chat():
 
 async def run_team(query: str):
     assistant_agent = AssistantAgent(
-        name="assistant_agent", tools=[get_weather], model_client=OpenAIChatCompletionClient(model="gpt-4o-2024-08-06")
+        name="assistant_agent",
+        tools=[get_weather],
+        model_client=OpenAIChatCompletionClient(model="gpt-4o-2024-08-06"),
     )
 
     termination = TextMentionTermination("TERMINATE") | MaxMessageTermination(10)
-    team = RoundRobinGroupChat(participants=[assistant_agent], termination_condition=termination)
+    team = RoundRobinGroupChat(
+        participants=[assistant_agent], termination_condition=termination
+    )
 
     response_stream = team.run_stream(task=query)
     async for msg in response_stream:
@@ -29,7 +33,10 @@ async def run_team(query: str):
             cl_msg = cl.Message(content=msg.content, author="Agent Team")  # type: ignore
             await cl_msg.send()
         if isinstance(msg, TaskResult):
-            cl_msg = cl.Message(content="Termination condition met. Team and Agents are reset.", author="Agent Team")
+            cl_msg = cl.Message(
+                content="Termination condition met. Team and Agents are reset.",
+                author="Agent Team",
+            )
             await cl_msg.send()
 
 

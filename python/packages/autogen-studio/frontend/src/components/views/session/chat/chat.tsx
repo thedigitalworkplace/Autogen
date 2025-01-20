@@ -44,7 +44,7 @@ export default function ChatView({ session }: ChatViewProps) {
   const { user } = React.useContext(appContext);
   // const { session, sessions } = useConfigStore();
   const [activeSocket, setActiveSocket] = React.useState<WebSocket | null>(
-    null
+    null,
   );
   const [teamConfig, setTeamConfig] = React.useState<TeamConfig | null>(null);
 
@@ -55,7 +55,7 @@ export default function ChatView({ session }: ChatViewProps) {
   const createMessage = (
     config: AgentMessageConfig,
     runId: string,
-    sessionId: number
+    sessionId: number,
   ): Message => ({
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -168,7 +168,7 @@ export default function ChatView({ session }: ChatViewProps) {
           const newMessage = createMessage(
             message.data as AgentMessageConfig,
             current.id,
-            session.id
+            session.id,
           );
 
           return {
@@ -191,7 +191,7 @@ export default function ChatView({ session }: ChatViewProps) {
                   type: "stop",
                   reason: TIMEOUT_CONFIG.DEFAULT_MESSAGE,
                   code: TIMEOUT_CONFIG.WEBSOCKET_CODE,
-                })
+                }),
               );
               setCurrentRun((prev) =>
                 prev
@@ -200,7 +200,7 @@ export default function ChatView({ session }: ChatViewProps) {
                       status: "stopped",
                       error_message: TIMEOUT_CONFIG.DEFAULT_MESSAGE,
                     }
-                  : null
+                  : null,
               );
             }
           }, TIMEOUT_CONFIG.DURATION_MS);
@@ -216,8 +216,8 @@ export default function ChatView({ session }: ChatViewProps) {
             message.status === "complete"
               ? "complete"
               : message.status === "error"
-              ? "error"
-              : "stopped";
+                ? "error"
+                : "stopped";
 
           const isTeamResult = (data: any): data is TeamResult => {
             return (
@@ -290,7 +290,7 @@ export default function ChatView({ session }: ChatViewProps) {
     if (activeSocketRef.current.readyState !== WebSocket.OPEN) {
       console.error(
         "Socket not in OPEN state:",
-        activeSocketRef.current.readyState
+        activeSocketRef.current.readyState,
       );
       handleError(new Error("WebSocket connection not available"));
       return;
@@ -308,7 +308,7 @@ export default function ChatView({ session }: ChatViewProps) {
         JSON.stringify({
           type: "input_response",
           response: response,
-        })
+        }),
       );
 
       setCurrentRun((current) => {
@@ -336,7 +336,7 @@ export default function ChatView({ session }: ChatViewProps) {
         JSON.stringify({
           type: "stop",
           reason: "Cancelled by user",
-        })
+        }),
       );
 
       setCurrentRun((current) => {
@@ -423,7 +423,7 @@ export default function ChatView({ session }: ChatViewProps) {
       task: createMessage(
         { content: query, source: "user" },
         runId,
-        session.id || 0
+        session.id || 0,
       ).config,
       team_result: null,
       messages: [],
@@ -437,7 +437,7 @@ export default function ChatView({ session }: ChatViewProps) {
           type: "start",
           task: query,
           team_config: teamConfig,
-        })
+        }),
       );
     };
 

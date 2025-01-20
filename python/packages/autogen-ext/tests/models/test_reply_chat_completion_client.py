@@ -12,7 +12,12 @@ from autogen_core import (
     default_subscription,
     message_handler,
 )
-from autogen_core.models import ChatCompletionClient, CreateResult, SystemMessage, UserMessage
+from autogen_core.models import (
+    ChatCompletionClient,
+    CreateResult,
+    SystemMessage,
+    UserMessage,
+)
 from autogen_ext.models.replay import ReplayChatCompletionClient
 
 
@@ -29,14 +34,22 @@ class LLMAgent(RoutedAgent):
         self.num_calls = 0
 
     @message_handler
-    async def on_new_message(self, message: ContentMessage, ctx: MessageContext) -> None:
+    async def on_new_message(
+        self, message: ContentMessage, ctx: MessageContext
+    ) -> None:
         self._chat_history.append(message)
         self.num_calls += 1
-        completion = await self._model_client.create(messages=self._fixed_message_history_type)
+        completion = await self._model_client.create(
+            messages=self._fixed_message_history_type
+        )
         if isinstance(completion.content, str):
-            await self.publish_message(ContentMessage(content=completion.content), DefaultTopicId())
+            await self.publish_message(
+                ContentMessage(content=completion.content), DefaultTopicId()
+            )
         else:
-            raise TypeError(f"Completion content of type {type(completion.content)} is not supported")
+            raise TypeError(
+                f"Completion content of type {type(completion.content)} is not supported"
+            )
 
     @property
     def _fixed_message_history_type(self) -> List[SystemMessage]:
@@ -54,7 +67,9 @@ async def test_replay_chat_completion_client() -> None:
     reply_model_client = ReplayChatCompletionClient(messages)
 
     for i in range(num_messages):
-        completion: CreateResult = await reply_model_client.create([UserMessage(content="dummy", source="_")])
+        completion: CreateResult = await reply_model_client.create(
+            [UserMessage(content="dummy", source="_")]
+        )
         assert completion.content == messages[i]
     with pytest.raises(ValueError, match="No more mock responses available"):
         await reply_model_client.create([UserMessage(content="dummy", source="_")])
@@ -68,8 +83,14 @@ async def test_replay_chat_completion_client_create_stream() -> None:
 
     for i in range(num_messages):
         result: List[str] = []
-        async for completion in reply_model_client.create_stream([UserMessage(content="dummy", source="_")]):
-            text = completion.content if isinstance(completion, CreateResult) else completion
+        async for completion in reply_model_client.create_stream(
+            [UserMessage(content="dummy", source="_")]
+        ):
+            text = (
+                completion.content
+                if isinstance(completion, CreateResult)
+                else completion
+            )
             assert isinstance(text, str)
             result.append(text)
         assert "".join(result) == messages[i]
@@ -83,21 +104,34 @@ async def test_register_receives_publish_llm() -> None:
     runtime = SingleThreadedAgentRuntime()
     runtime.start()
 
-    reply_model_client_1 = ReplayChatCompletionClient(["Hi!", "Doing Good, you?", "Bye!"])
-    reply_model_client_2 = ReplayChatCompletionClient(["Hi! How are you doing?", "Good, nice to meet you, bye!"])
+    reply_model_client_1 = ReplayChatCompletionClient(
+        ["Hi!", "Doing Good, you?", "Bye!"]
+    )
+    reply_model_client_2 = ReplayChatCompletionClient(
+        ["Hi! How are you doing?", "Good, nice to meet you, bye!"]
+    )
 
     # First registered models gets the first message
-    assert reply_model_client_1.provided_message_count == 1 + reply_model_client_2.provided_message_count
-
-    await LLMAgentWithDefaultSubscription.register(
-        runtime, "LLMAgent1", lambda: LLMAgentWithDefaultSubscription(reply_model_client_1)
+    assert (
+        reply_model_client_1.provided_message_count
+        == 1 + reply_model_client_2.provided_message_count
     )
 
     await LLMAgentWithDefaultSubscription.register(
-        runtime, "LLMAgent2", lambda: LLMAgentWithDefaultSubscription(reply_model_client_2)
+        runtime,
+        "LLMAgent1",
+        lambda: LLMAgentWithDefaultSubscription(reply_model_client_1),
     )
 
-    await runtime.publish_message(ContentMessage(content="Let's get started!"), DefaultTopicId())
+    await LLMAgentWithDefaultSubscription.register(
+        runtime,
+        "LLMAgent2",
+        lambda: LLMAgentWithDefaultSubscription(reply_model_client_2),
+    )
+
+    await runtime.publish_message(
+        ContentMessage(content="Let's get started!"), DefaultTopicId()
+    )
     await runtime.stop_when_idle()
 
     agent_1 = await runtime.try_get_underlying_agent_instance(
@@ -131,7 +165,9 @@ async def test_token_count_logics() -> None:
     remaining_tokens = reply_model_client.remaining_tokens(messages)
     assert remaining_tokens == 9988
 
-    multiple_messages = [UserMessage(content="This is another test message.", source="_")]
+    multiple_messages = [
+        UserMessage(content="This is another test message.", source="_")
+    ]
     total_token_count = reply_model_client.count_tokens(messages + multiple_messages)
     assert total_token_count == 12
 
@@ -150,8 +186,14 @@ async def test_token_count_logics() -> None:
     async for _ in reply_model_client.create_stream(messages):
         pass
     after_create_stream_usage = reply_model_client.total_usage()
-    assert after_create_stream_usage.completion_tokens > before_cteate_stream_usage.completion_tokens
-    assert after_create_stream_usage.prompt_tokens > before_cteate_stream_usage.prompt_tokens
+    assert (
+        after_create_stream_usage.completion_tokens
+        > before_cteate_stream_usage.completion_tokens
+    )
+    assert (
+        after_create_stream_usage.prompt_tokens
+        > before_cteate_stream_usage.prompt_tokens
+    )
 
 
 @pytest.mark.asyncio

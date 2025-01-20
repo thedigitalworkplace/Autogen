@@ -49,10 +49,14 @@ def test_pydantic() -> None:
 
     message = PydanticMessage(message="hello")
     name = serde.type_name(message)
-    json = serde.serialize(message, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE)
+    json = serde.serialize(
+        message, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE
+    )
     assert name == "PydanticMessage"
     assert json == b'{"message":"hello"}'
-    deserialized = serde.deserialize(json, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE)
+    deserialized = serde.deserialize(
+        json, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE
+    )
     assert deserialized == message
 
 
@@ -60,11 +64,17 @@ def test_nested_pydantic() -> None:
     serde = SerializationRegistry()
     serde.add_serializer(try_get_known_serializers_for_type(NestingPydanticMessage))
 
-    message = NestingPydanticMessage(message="hello", nested=PydanticMessage(message="world"))
+    message = NestingPydanticMessage(
+        message="hello", nested=PydanticMessage(message="world")
+    )
     name = serde.type_name(message)
-    json = serde.serialize(message, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE)
+    json = serde.serialize(
+        message, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE
+    )
     assert json == b'{"message":"hello","nested":{"message":"world"}}'
-    deserialized = serde.deserialize(json, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE)
+    deserialized = serde.deserialize(
+        json, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE
+    )
     assert deserialized == message
 
 
@@ -74,16 +84,22 @@ def test_dataclass() -> None:
 
     message = DataclassMessage(message="hello")
     name = serde.type_name(message)
-    json = serde.serialize(message, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE)
+    json = serde.serialize(
+        message, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE
+    )
     assert json == b'{"message": "hello"}'
-    deserialized = serde.deserialize(json, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE)
+    deserialized = serde.deserialize(
+        json, type_name=name, data_content_type=JSON_DATA_CONTENT_TYPE
+    )
     assert deserialized == message
 
 
 def test_nesting_dataclass_dataclass() -> None:
     serde = SerializationRegistry()
     with pytest.raises(ValueError):
-        serde.add_serializer(try_get_known_serializers_for_type(NestingDataclassMessage))
+        serde.add_serializer(
+            try_get_known_serializers_for_type(NestingDataclassMessage)
+        )
 
 
 def test_proto() -> None:
@@ -92,9 +108,13 @@ def test_proto() -> None:
 
     message = ProtoMessage(message="hello")
     name = serde.type_name(message)
-    data = serde.serialize(message, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE)
+    data = serde.serialize(
+        message, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE
+    )
     assert name == "ProtoMessage"
-    deserialized = serde.deserialize(data, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE)
+    deserialized = serde.deserialize(
+        data, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE
+    )
     assert deserialized.message == message.message
 
 
@@ -104,8 +124,12 @@ def test_nested_proto() -> None:
 
     message = NestingProtoMessage(message="hello", nested=ProtoMessage(message="world"))
     name = serde.type_name(message)
-    data = serde.serialize(message, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE)
-    deserialized = serde.deserialize(data, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE)
+    data = serde.serialize(
+        message, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE
+    )
+    deserialized = serde.deserialize(
+        data, type_name=name, data_content_type=PROTOBUF_DATA_CONTENT_TYPE
+    )
     assert deserialized.message == message.message
     assert deserialized.nested.message == message.nested.message
 
@@ -120,9 +144,13 @@ class DataclassNestedUnionSyntaxNewMessage:
     message: str | int
 
 
-@pytest.mark.parametrize("cls", [DataclassNestedUnionSyntaxOldMessage, DataclassNestedUnionSyntaxNewMessage])
+@pytest.mark.parametrize(
+    "cls", [DataclassNestedUnionSyntaxOldMessage, DataclassNestedUnionSyntaxNewMessage]
+)
 def test_nesting_union_old_syntax_dataclass(
-    cls: type[DataclassNestedUnionSyntaxOldMessage | DataclassNestedUnionSyntaxNewMessage],
+    cls: type[
+        DataclassNestedUnionSyntaxOldMessage | DataclassNestedUnionSyntaxNewMessage
+    ],
 ) -> None:
     with pytest.raises(ValueError):
         _serializer = DataclassJsonMessageSerializer(cls)
@@ -131,7 +159,9 @@ def test_nesting_union_old_syntax_dataclass(
 def test_nesting_dataclass_pydantic() -> None:
     serde = SerializationRegistry()
     with pytest.raises(ValueError):
-        serde.add_serializer(try_get_known_serializers_for_type(NestingPydanticDataclassMessage))
+        serde.add_serializer(
+            try_get_known_serializers_for_type(NestingPydanticDataclassMessage)
+        )
 
 
 def test_invalid_type() -> None:
@@ -165,7 +195,9 @@ def test_custom_type() -> None:
     message = "hello"
     json = serde.serialize(message, type_name="custom_str", data_content_type="str")
     assert json == b'"hello"'
-    deserialized = serde.deserialize(json, type_name="custom_str", data_content_type="str")
+    deserialized = serde.deserialize(
+        json, type_name="custom_str", data_content_type="str"
+    )
     assert deserialized == message
 
 

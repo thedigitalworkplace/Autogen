@@ -42,7 +42,8 @@ class FunctionExecutionResultMessage(BaseModel):
 
 
 LLMMessage = Annotated[
-    Union[SystemMessage, UserMessage, AssistantMessage, FunctionExecutionResultMessage], Field(discriminator="type")
+    Union[SystemMessage, UserMessage, AssistantMessage, FunctionExecutionResultMessage],
+    Field(discriminator="type"),
 ]
 
 

@@ -43,7 +43,9 @@ async def Console(
         last_processed: A :class:`~autogen_agentchat.base.TaskResult` if the stream is from :meth:`~autogen_agentchat.base.TaskRunner.run_stream`
             or a :class:`~autogen_agentchat.base.Response` if the stream is from :meth:`~autogen_agentchat.base.ChatAgent.on_messages_stream`.
     """
-    render_image_iterm = _is_running_in_iterm() and _is_output_a_tty() and not no_inline_images
+    render_image_iterm = (
+        _is_running_in_iterm() and _is_output_a_tty() and not no_inline_images
+    )
     start_time = time.time()
     total_usage = RequestUsage(prompt_tokens=0, completion_tokens=0)
 
@@ -73,8 +75,12 @@ async def Console(
             if message.chat_message.models_usage:
                 if output_stats:
                     output += f"[Prompt tokens: {message.chat_message.models_usage.prompt_tokens}, Completion tokens: {message.chat_message.models_usage.completion_tokens}]\n"
-                total_usage.completion_tokens += message.chat_message.models_usage.completion_tokens
-                total_usage.prompt_tokens += message.chat_message.models_usage.prompt_tokens
+                total_usage.completion_tokens += (
+                    message.chat_message.models_usage.completion_tokens
+                )
+                total_usage.prompt_tokens += (
+                    message.chat_message.models_usage.prompt_tokens
+                )
             await aprint(output, end="")
 
             # Print summary.
@@ -117,7 +123,9 @@ def _image_to_iterm(image: Image) -> str:
     return f"\033]1337;File=inline=1:{image_data}\a\n"
 
 
-def _message_to_str(message: AgentEvent | ChatMessage, *, render_image_iterm: bool = False) -> str:
+def _message_to_str(
+    message: AgentEvent | ChatMessage, *, render_image_iterm: bool = False
+) -> str:
     if isinstance(message, MultiModalMessage):
         result: List[str] = []
         for c in message.content:

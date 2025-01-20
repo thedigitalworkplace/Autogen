@@ -45,7 +45,9 @@ class OrchestrationEvent:
     message: str
 
 
-MagenticOneMessages = RequestReplyMessage | BroadcastMessage | ResetMessage | DeactivateMessage
+MagenticOneMessages = (
+    RequestReplyMessage | BroadcastMessage | ResetMessage | DeactivateMessage
+)
 
 
 @dataclass

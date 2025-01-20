@@ -71,21 +71,33 @@ class FileSurfer(BaseChatAgent):
     def produced_message_types(self) -> Sequence[type[ChatMessage]]:
         return (TextMessage,)
 
-    async def on_messages(self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken) -> Response:
+    async def on_messages(
+        self, messages: Sequence[ChatMessage], cancellation_token: CancellationToken
+    ) -> Response:
         for chat_message in messages:
             if isinstance(chat_message, TextMessage | MultiModalMessage):
-                self._chat_history.append(UserMessage(content=chat_message.content, source=chat_message.source))
+                self._chat_history.append(
+                    UserMessage(
+                        content=chat_message.content, source=chat_message.source
+                    )
+                )
             else:
                 raise ValueError(f"Unexpected message in FileSurfer: {chat_message}")
 
         try:
-            _, content = await self._generate_reply(cancellation_token=cancellation_token)
-            self._chat_history.append(AssistantMessage(content=content, source=self.name))
+            _, content = await self._generate_reply(
+                cancellation_token=cancellation_token
+            )
+            self._chat_history.append(
+                AssistantMessage(content=content, source=self.name)
+            )
             return Response(chat_message=TextMessage(content=content, source=self.name))
 
         except BaseException:
             content = f"File surfing error:\n\n{traceback.format_exc()}"
-            self._chat_history.append(AssistantMessage(content=content, source=self.name))
+            self._chat_history.append(
+                AssistantMessage(content=content, source=self.name)
+            )
             return Response(chat_message=TextMessage(content=content, source=self.name))
 
     async def on_reset(self, cancellation_token: CancellationToken) -> None:
@@ -102,16 +114,22 @@ class FileSurfer(BaseChatAgent):
 
         current_page = self._browser.viewport_current_page
         total_pages = len(self._browser.viewport_pages)
-        header += f"Viewport position: Showing page {current_page+1} of {total_pages}.\n"
+        header += (
+            f"Viewport position: Showing page {current_page+1} of {total_pages}.\n"
+        )
 
         return (header, self._browser.viewport)
 
-    async def _generate_reply(self, cancellation_token: CancellationToken) -> Tuple[bool, str]:
+    async def _generate_reply(
+        self, cancellation_token: CancellationToken
+    ) -> Tuple[bool, str]:
         history = self._chat_history[0:-1]
         last_message = self._chat_history[-1]
         assert isinstance(last_message, UserMessage)
 
-        task_content = last_message.content  # the last message from the sender is the task
+        task_content = (
+            last_message.content
+        )  # the last message from the sender is the task
 
         assert self._browser is not None
 
@@ -143,7 +161,9 @@ class FileSurfer(BaseChatAgent):
             # Answer directly.
             return False, response
 
-        elif isinstance(response, list) and all(isinstance(item, FunctionCall) for item in response):
+        elif isinstance(response, list) and all(
+            isinstance(item, FunctionCall) for item in response
+        ):
             function_calls = response
             for function_call in function_calls:
                 tool_name = function_call.name
@@ -151,7 +171,9 @@ class FileSurfer(BaseChatAgent):
                 try:
                     arguments = json.loads(function_call.arguments)
                 except json.JSONDecodeError as e:
-                    error_str = f"File surfer encountered an error decoding JSON arguments: {e}"
+                    error_str = (
+                        f"File surfer encountered an error decoding JSON arguments: {e}"
+                    )
                     return False, error_str
 
                 if tool_name == "open_path":

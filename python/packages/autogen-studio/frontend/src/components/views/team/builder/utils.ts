@@ -23,7 +23,7 @@ interface Position {
 // Calculate positions for participants in a grid layout
 const calculateParticipantPosition = (
   index: number,
-  totalParticipants: number
+  totalParticipants: number,
 ): Position => {
   const GRID_SPACING = 250;
   const PARTICIPANTS_PER_ROW = 3;
@@ -47,7 +47,7 @@ const createNode = (
     | AgentConfig
     | ToolConfig
     | TerminationConfig,
-  label?: string
+  label?: string,
 ): CustomNode => ({
   id: nanoid(),
   type,
@@ -74,7 +74,7 @@ const createEdge = (
     | "tool-connection"
     | "agent-connection"
     | "team-connection"
-    | "termination-connection"
+    | "termination-connection",
 ): CustomEdge => ({
   id: `e${source}-${target}`,
   source,
@@ -83,7 +83,7 @@ const createEdge = (
 });
 
 export const convertTeamConfigToGraph = (
-  config: TeamConfig
+  config: TeamConfig,
 ): ConversionResult => {
   const nodes: CustomNode[] = [];
   const edges: CustomEdge[] = [];
@@ -95,7 +95,7 @@ export const convertTeamConfigToGraph = (
     {
       ...config,
       // participants: [], // Clear participants as we'll rebuild from edges
-    }
+    },
   );
   nodes.push(teamNode);
 
@@ -105,7 +105,7 @@ export const convertTeamConfigToGraph = (
       "model",
       { x: 200, y: 50 },
       config.model_client,
-      config.model_client.model
+      config.model_client.model,
     );
     nodes.push(modelNode);
     edges.push({
@@ -122,7 +122,7 @@ export const convertTeamConfigToGraph = (
   config.participants.forEach((participant, index) => {
     const position = calculateParticipantPosition(
       index,
-      config.participants.length
+      config.participants.length,
     );
     const agentNode = createNode("agent", position, {
       ...participant,
@@ -149,7 +149,7 @@ export const convertTeamConfigToGraph = (
           y: position.y,
         },
         participant.model_client,
-        participant.model_client.model
+        participant.model_client.model,
       );
       nodes.push(agentModelNode);
       edges.push({
@@ -170,7 +170,7 @@ export const convertTeamConfigToGraph = (
           x: position.x + 150,
           y: position.y + toolIndex * 100,
         },
-        tool
+        tool,
       );
       nodes.push(toolNode);
       edges.push({
@@ -189,7 +189,7 @@ export const convertTeamConfigToGraph = (
     const terminationNode = createNode(
       "termination",
       { x: 600, y: 50 },
-      config.termination_condition
+      config.termination_condition,
     );
     nodes.push(terminationNode);
     edges.push({
@@ -210,7 +210,7 @@ const NODE_HEIGHT = 200;
 
 export const getLayoutedElements = (
   nodes: CustomNode[],
-  edges: CustomEdge[]
+  edges: CustomEdge[],
 ) => {
   const g = new dagre.graphlib.Graph();
   const calculateRank = (node: CustomNode) => {
@@ -219,7 +219,7 @@ export const getLayoutedElements = (
       const isTeamModel = edges.some(
         (e) =>
           e.source === node.id &&
-          nodes.find((n) => n.id === e.target)?.data.type === "team"
+          nodes.find((n) => n.id === e.target)?.data.type === "team",
       );
       return isTeamModel ? 0 : 2;
     }

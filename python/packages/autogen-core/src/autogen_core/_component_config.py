@@ -2,7 +2,19 @@ from __future__ import annotations
 
 import importlib
 import warnings
-from typing import Any, ClassVar, Dict, Generic, List, Literal, Protocol, Type, cast, overload, runtime_checkable
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Protocol,
+    Type,
+    cast,
+    overload,
+    runtime_checkable,
+)
 
 from pydantic import BaseModel
 from typing_extensions import Self, TypeVar
@@ -113,15 +125,21 @@ ExpectedType = TypeVar("ExpectedType")
 class ComponentLoader:
     @overload
     @classmethod
-    def load_component(cls, model: ComponentModel | Dict[str, Any], expected: None = None) -> Self: ...
+    def load_component(
+        cls, model: ComponentModel | Dict[str, Any], expected: None = None
+    ) -> Self: ...
 
     @overload
     @classmethod
-    def load_component(cls, model: ComponentModel | Dict[str, Any], expected: Type[ExpectedType]) -> ExpectedType: ...
+    def load_component(
+        cls, model: ComponentModel | Dict[str, Any], expected: Type[ExpectedType]
+    ) -> ExpectedType: ...
 
     @classmethod
     def load_component(
-        cls, model: ComponentModel | Dict[str, Any], expected: Type[ExpectedType] | None = None
+        cls,
+        model: ComponentModel | Dict[str, Any],
+        expected: Type[ExpectedType] | None = None,
     ) -> Self | ExpectedType:
         """Load a component from a model. Intended to be used with the return type of :py:meth:`autogen_core.ComponentConfig.dump_component`.
 
@@ -171,7 +189,9 @@ class ComponentLoader:
 
         module_path, class_name = output
         module = importlib.import_module(module_path)
-        component_class = cast(ComponentConfigImpl[BaseModel], module.__getattribute__(class_name))
+        component_class = cast(
+            ComponentConfigImpl[BaseModel], module.__getattribute__(class_name)
+        )
 
         if not isinstance(component_class, ComponentConfigImpl):
             raise TypeError("Invalid component class")
@@ -183,7 +203,9 @@ class ComponentLoader:
         if not hasattr(component_class, "component_type"):
             raise AttributeError("component_type not defined")
 
-        loaded_config_version = loaded_model.component_version or component_class.component_version
+        loaded_config_version = (
+            loaded_model.component_version or component_class.component_version
+        )
         if loaded_config_version < component_class.component_version:
             try:
                 instance = component_class._from_config_past_version(loaded_model.config, loaded_config_version)  # type: ignore
@@ -243,7 +265,10 @@ class Component(ComponentConfigImpl[ConfigT], ComponentLoader, Generic[ConfigT])
                 return cls(value=config.value)
     """
 
-    required_class_vars: ClassVar[List[str]] = ["component_config_schema", "component_type"]
+    required_class_vars: ClassVar[List[str]] = [
+        "component_config_schema",
+        "component_type",
+    ]
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -252,7 +277,8 @@ class Component(ComponentConfigImpl[ConfigT], ComponentLoader, Generic[ConfigT])
         for var in cls.required_class_vars:
             if not hasattr(cls, var):
                 warnings.warn(
-                    f"Class variable '{var}' must be defined in {cls.__name__} to be a valid component", stacklevel=2
+                    f"Class variable '{var}' must be defined in {cls.__name__} to be a valid component",
+                    stacklevel=2,
                 )
 
     def dump_component(self) -> ComponentModel:

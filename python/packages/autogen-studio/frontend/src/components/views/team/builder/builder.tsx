@@ -69,7 +69,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
   } = useTeamBuilderStore();
 
   const currentHistoryIndex = useTeamBuilderStore(
-    (state) => state.currentHistoryIndex
+    (state) => state.currentHistoryIndex,
   );
 
   // Compute isDirty based on the store value
@@ -82,7 +82,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
   const onConnect = useCallback(
     (params: Connection) =>
       setEdges((eds: CustomEdge[]) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   const sensors = useSensors(
@@ -90,7 +90,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   // Need to notify parent whenever isDirty changes
@@ -115,7 +115,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
   React.useEffect(() => {
     if (team?.config) {
       const { nodes: initialNodes, edges: initialEdges } = loadFromJson(
-        team.config
+        team.config,
       );
       setNodes(initialNodes);
       setEdges(initialEdges);
@@ -133,7 +133,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
         console.error("Invalid JSON:", error);
       }
     },
-    [loadFromJson]
+    [loadFromJson],
   );
 
   // Handle save
@@ -161,7 +161,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
       messageApi.error(
         error instanceof Error
           ? error.message
-          : "Failed to save team configuration"
+          : "Failed to save team configuration",
       );
     }
   }, [syncToJson, onChange, resetHistory]);
@@ -192,7 +192,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
 
   const validateDropTarget = (
     draggedType: ComponentTypes,
-    targetType: ComponentTypes
+    targetType: ComponentTypes,
   ): boolean => {
     const validTargets: Record<ComponentTypes, ComponentTypes[]> = {
       model: ["team", "agent"],
@@ -248,7 +248,7 @@ export const TeamBuilder: React.FC<TeamBuilderProps> = ({
       draggedItem.type as ComponentTypes,
       position,
       draggedItem.config,
-      nodeId
+      nodeId,
     );
   };
 

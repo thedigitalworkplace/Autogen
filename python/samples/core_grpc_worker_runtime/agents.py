@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 
-from autogen_core import DefaultTopicId, MessageContext, RoutedAgent, default_subscription, message_handler
+from autogen_core import (
+    DefaultTopicId,
+    MessageContext,
+    RoutedAgent,
+    default_subscription,
+    message_handler,
+)
 
 
 @dataclass
@@ -22,14 +28,20 @@ class CascadingAgent(RoutedAgent):
         self.max_rounds = max_rounds
 
     @message_handler
-    async def on_new_message(self, message: CascadingMessage, ctx: MessageContext) -> None:
+    async def on_new_message(
+        self, message: CascadingMessage, ctx: MessageContext
+    ) -> None:
         await self.publish_message(
-            ReceiveMessageEvent(round=message.round, sender=str(ctx.sender), recipient=str(self.id)),
+            ReceiveMessageEvent(
+                round=message.round, sender=str(ctx.sender), recipient=str(self.id)
+            ),
             topic_id=DefaultTopicId(),
         )
         if message.round == self.max_rounds:
             return
-        await self.publish_message(CascadingMessage(round=message.round + 1), topic_id=DefaultTopicId())
+        await self.publish_message(
+            CascadingMessage(round=message.round + 1), topic_id=DefaultTopicId()
+        )
 
 
 @default_subscription
@@ -38,5 +50,9 @@ class ObserverAgent(RoutedAgent):
         super().__init__("An observer agent.")
 
     @message_handler
-    async def on_receive_message(self, message: ReceiveMessageEvent, ctx: MessageContext) -> None:
-        print(f"[Round {message.round}]: Message from {message.sender} to {message.recipient}.")
+    async def on_receive_message(
+        self, message: ReceiveMessageEvent, ctx: MessageContext
+    ) -> None:
+        print(
+            f"[Round {message.round}]: Message from {message.sender} to {message.recipient}."
+        )

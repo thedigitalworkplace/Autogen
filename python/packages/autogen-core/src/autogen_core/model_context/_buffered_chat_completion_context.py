@@ -13,7 +13,9 @@ class BufferedChatCompletionContext(ChatCompletionContext):
         initial_messages (List[LLMMessage] | None): The initial messages.
     """
 
-    def __init__(self, buffer_size: int, initial_messages: List[LLMMessage] | None = None) -> None:
+    def __init__(
+        self, buffer_size: int, initial_messages: List[LLMMessage] | None = None
+    ) -> None:
         super().__init__(initial_messages)
         if buffer_size <= 0:
             raise ValueError("buffer_size must be greater than 0.")

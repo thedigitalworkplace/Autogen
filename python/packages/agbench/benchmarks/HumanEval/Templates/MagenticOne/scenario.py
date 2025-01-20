@@ -20,8 +20,9 @@ async def main() -> None:
     runtime = SingleThreadedAgentRuntime()
 
     # Create the AzureOpenAI client
-    client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
-
+    client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
 
     # Register agents.
     await runtime.register(
@@ -34,7 +35,9 @@ async def main() -> None:
     await runtime.register(
         "Executor",
         lambda: Executor(
-            "A agent for executing code", executor=LocalCommandLineCodeExecutor(), confirm_execution="ACCEPT_ALL"
+            "A agent for executing code",
+            executor=LocalCommandLineCodeExecutor(),
+            confirm_execution="ACCEPT_ALL",
         ),
         subscriptions=lambda: [DefaultSubscription()],
     )
@@ -88,10 +91,13 @@ class MyHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         try:
             if isinstance(record.msg, OrchestrationEvent):
-                print(f"""---------------------------------------------------------------------------
+                print(
+                    f"""---------------------------------------------------------------------------
 \033[91m{record.msg.source}:\033[0m
 
-{record.msg.message}""", flush=True)
+{record.msg.message}""",
+                    flush=True,
+                )
         except Exception:
             self.handleError(record)
 

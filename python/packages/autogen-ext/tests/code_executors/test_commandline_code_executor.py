@@ -36,9 +36,15 @@ async def test_execute_code(executor_and_temp_dir: ExecutorFixture) -> None:
     cancellation_token = CancellationToken()
 
     # Test single code block.
-    code_blocks = [CodeBlock(code="import sys; print('hello world!')", language="python")]
+    code_blocks = [
+        CodeBlock(code="import sys; print('hello world!')", language="python")
+    ]
     code_result = await executor.execute_code_blocks(code_blocks, cancellation_token)
-    assert code_result.exit_code == 0 and "hello world!" in code_result.output and code_result.code_file is not None
+    assert (
+        code_result.exit_code == 0
+        and "hello world!" in code_result.output
+        and code_result.code_file is not None
+    )
 
     # Test multiple code blocks.
     code_blocks = [
@@ -56,8 +62,14 @@ async def test_execute_code(executor_and_temp_dir: ExecutorFixture) -> None:
     # Test bash script.
     if sys.platform not in ["win32"]:
         code_blocks = [CodeBlock(code="echo 'hello world!'", language="bash")]
-        code_result = await executor.execute_code_blocks(code_blocks, cancellation_token)
-        assert code_result.exit_code == 0 and "hello world!" in code_result.output and code_result.code_file is not None
+        code_result = await executor.execute_code_blocks(
+            code_blocks, cancellation_token
+        )
+        assert (
+            code_result.exit_code == 0
+            and "hello world!" in code_result.output
+            and code_result.code_file is not None
+        )
 
     # Test running code.
     file_lines = ["import sys", "print('hello world!')", "a = 100 + 100", "print(a)"]
@@ -79,11 +91,17 @@ async def test_execute_code(executor_and_temp_dir: ExecutorFixture) -> None:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("executor_and_temp_dir", ["local"], indirect=True)
-async def test_commandline_code_executor_timeout(executor_and_temp_dir: ExecutorFixture) -> None:
+async def test_commandline_code_executor_timeout(
+    executor_and_temp_dir: ExecutorFixture,
+) -> None:
     executor, temp_dir = executor_and_temp_dir
     cancellation_token = CancellationToken()
     executor = LocalCommandLineCodeExecutor(timeout=1, work_dir=temp_dir)
-    code_blocks = [CodeBlock(code="import time; time.sleep(10); print('hello world!')", language="python")]
+    code_blocks = [
+        CodeBlock(
+            code="import time; time.sleep(10); print('hello world!')", language="python"
+        )
+    ]
     code_result = await executor.execute_code_blocks(code_blocks, cancellation_token)
     assert code_result.exit_code and "Timeout" in code_result.output
 
@@ -93,7 +111,12 @@ async def test_commandline_code_executor_cancellation() -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         cancellation_token = CancellationToken()
         executor = LocalCommandLineCodeExecutor(work_dir=temp_dir)
-        code_blocks = [CodeBlock(code="import time; time.sleep(10); print('hello world!')", language="python")]
+        code_blocks = [
+            CodeBlock(
+                code="import time; time.sleep(10); print('hello world!')",
+                language="python",
+            )
+        ]
 
         coro = executor.execute_code_blocks(code_blocks, cancellation_token)
 
@@ -156,13 +179,20 @@ async def test_local_executor_with_custom_venv() -> None:
         env_builder.create(temp_dir)
         env_builder_context = env_builder.ensure_directories(temp_dir)
 
-        executor = LocalCommandLineCodeExecutor(work_dir=temp_dir, virtual_env_context=env_builder_context)
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=temp_dir, virtual_env_context=env_builder_context
+        )
         code_blocks = [
             # https://stackoverflow.com/questions/1871549/how-to-determine-if-python-is-running-inside-a-virtualenv
-            CodeBlock(code="import sys; print(sys.prefix != sys.base_prefix)", language="python"),
+            CodeBlock(
+                code="import sys; print(sys.prefix != sys.base_prefix)",
+                language="python",
+            ),
         ]
         cancellation_token = CancellationToken()
-        result = await executor.execute_code_blocks(code_blocks, cancellation_token=cancellation_token)
+        result = await executor.execute_code_blocks(
+            code_blocks, cancellation_token=cancellation_token
+        )
 
         assert result.exit_code == 0
         assert result.output.strip() == "True"
@@ -180,12 +210,16 @@ async def test_local_executor_with_custom_venv_in_local_relative_path() -> None:
         env_builder.create(env_path)
         env_builder_context = env_builder.ensure_directories(env_path)
 
-        executor = LocalCommandLineCodeExecutor(work_dir=relative_folder_path, virtual_env_context=env_builder_context)
+        executor = LocalCommandLineCodeExecutor(
+            work_dir=relative_folder_path, virtual_env_context=env_builder_context
+        )
         code_blocks = [
             CodeBlock(code="import sys; print(sys.executable)", language="python"),
         ]
         cancellation_token = CancellationToken()
-        result = await executor.execute_code_blocks(code_blocks, cancellation_token=cancellation_token)
+        result = await executor.execute_code_blocks(
+            code_blocks, cancellation_token=cancellation_token
+        )
 
         assert result.exit_code == 0
 

@@ -34,7 +34,9 @@ class SelectorGroupChatManager(BaseGroupChatManager):
         model_client: ChatCompletionClient,
         selector_prompt: str,
         allow_repeated_speaker: bool,
-        selector_func: Callable[[Sequence[AgentEvent | ChatMessage]], str | None] | None,
+        selector_func: (
+            Callable[[Sequence[AgentEvent | ChatMessage]], str | None] | None
+        ),
     ) -> None:
         super().__init__(
             group_topic_type,
@@ -114,14 +116,18 @@ class SelectorGroupChatManager(BaseGroupChatManager):
             [
                 f"{topic_type}: {description}".strip()
                 for topic_type, description in zip(
-                    self._participant_topic_types, self._participant_descriptions, strict=True
+                    self._participant_topic_types,
+                    self._participant_descriptions,
+                    strict=True,
                 )
             ]
         )
 
         # Construct agent list to be selected, skip the previous speaker if not allowed.
         if self._previous_speaker is not None and not self._allow_repeated_speaker:
-            participants = [p for p in self._participant_topic_types if p != self._previous_speaker]
+            participants = [
+                p for p in self._participant_topic_types if p != self._previous_speaker
+            ]
         else:
             participants = self._participant_topic_types
         assert len(participants) > 0
@@ -134,23 +140,31 @@ class SelectorGroupChatManager(BaseGroupChatManager):
             select_speaker_messages = [SystemMessage(content=select_speaker_prompt)]
             response = await self._model_client.create(messages=select_speaker_messages)
             assert isinstance(response.content, str)
-            mentions = self._mentioned_agents(response.content, self._participant_topic_types)
+            mentions = self._mentioned_agents(
+                response.content, self._participant_topic_types
+            )
             if len(mentions) != 1:
-                raise ValueError(f"Expected exactly one agent to be mentioned, but got {mentions}")
+                raise ValueError(
+                    f"Expected exactly one agent to be mentioned, but got {mentions}"
+                )
             agent_name = list(mentions.keys())[0]
             if (
                 not self._allow_repeated_speaker
                 and self._previous_speaker is not None
                 and agent_name == self._previous_speaker
             ):
-                trace_logger.warning(f"Selector selected the previous speaker: {agent_name}")
+                trace_logger.warning(
+                    f"Selector selected the previous speaker: {agent_name}"
+                )
         else:
             agent_name = participants[0]
         self._previous_speaker = agent_name
         trace_logger.debug(f"Selected speaker: {agent_name}")
         return agent_name
 
-    def _mentioned_agents(self, message_content: str, agent_names: List[str]) -> Dict[str, int]:
+    def _mentioned_agents(
+        self, message_content: str, agent_names: List[str]
+    ) -> Dict[str, int]:
         """Counts the number of times each agent is mentioned in the provided message content.
         Agent names will match under any of the following conditions (all case-sensitive):
         - Exact name match
@@ -337,7 +351,9 @@ Read the following conversation. Then select the next role from {participants} t
 Read the above conversation. Then select the next role from {participants} to play. Only return the role.
 """,
         allow_repeated_speaker: bool = False,
-        selector_func: Callable[[Sequence[AgentEvent | ChatMessage]], str | None] | None = None,
+        selector_func: (
+            Callable[[Sequence[AgentEvent | ChatMessage]], str | None] | None
+        ) = None,
     ):
         super().__init__(
             participants,
@@ -347,7 +363,9 @@ Read the above conversation. Then select the next role from {participants} to pl
         )
         # Validate the participants.
         if len(participants) < 2:
-            raise ValueError("At least two participants are required for SelectorGroupChat.")
+            raise ValueError(
+                "At least two participants are required for SelectorGroupChat."
+            )
         # Validate the selector prompt.
         if "{roles}" not in selector_prompt:
             raise ValueError("The selector prompt must contain '{roles}'")

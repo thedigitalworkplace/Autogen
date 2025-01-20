@@ -57,11 +57,15 @@ class CascadingAgent(RoutedAgent):
         self.max_rounds = max_rounds
 
     @message_handler
-    async def on_new_message(self, message: CascadingMessageType, ctx: MessageContext) -> None:
+    async def on_new_message(
+        self, message: CascadingMessageType, ctx: MessageContext
+    ) -> None:
         self.num_calls += 1
         if message.round == self.max_rounds:
             return
-        await self.publish_message(CascadingMessageType(round=message.round + 1), topic_id=DefaultTopicId())
+        await self.publish_message(
+            CascadingMessageType(round=message.round + 1), topic_id=DefaultTopicId()
+        )
 
 
 class NoopAgent(BaseAgent):
@@ -106,7 +110,9 @@ class MyOuterComponent(Component[MyOuterConfig]):
 
     def _to_config(self) -> MyOuterConfig:
         inner_component_config = self.inner_class.dump_component()
-        return MyOuterConfig(outer_message=self.outer_message, inner_class=inner_component_config)
+        return MyOuterConfig(
+            outer_message=self.outer_message, inner_class=inner_component_config
+        )
 
     @classmethod
     def _from_config(cls, config: MyOuterConfig) -> MyOuterComponent:

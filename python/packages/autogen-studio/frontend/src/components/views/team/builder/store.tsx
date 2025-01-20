@@ -51,7 +51,7 @@ export interface TeamBuilderState {
     type: ComponentTypes,
     position: Position,
     config: ComponentConfigTypes,
-    targetNodeId?: string
+    targetNodeId?: string,
   ) => void;
 
   updateNode: (nodeId: string, updates: Partial<NodeData>) => void;
@@ -75,7 +75,7 @@ export interface TeamBuilderState {
 const buildTeamConfig = (
   teamNode: CustomNode,
   nodes: CustomNode[],
-  edges: CustomEdge[]
+  edges: CustomEdge[],
 ): TeamConfig | null => {
   if (!isTeamConfig(teamNode.data.config)) return null;
 
@@ -83,7 +83,7 @@ const buildTeamConfig = (
 
   // Use edge queries instead of connections
   const modelEdge = edges.find(
-    (e) => e.target === teamNode.id && e.type === "model-connection"
+    (e) => e.target === teamNode.id && e.type === "model-connection",
   );
   if (modelEdge) {
     const modelNode = nodes.find((n) => n.id === modelEdge.source);
@@ -98,7 +98,7 @@ const buildTeamConfig = (
 
   // Add termination connection handling
   const terminationEdge = edges.find(
-    (e) => e.target === teamNode.id && e.type === "termination-connection"
+    (e) => e.target === teamNode.id && e.type === "termination-connection",
   );
   if (terminationEdge) {
     const terminationNode = nodes.find((n) => n.id === terminationEdge.source);
@@ -109,7 +109,7 @@ const buildTeamConfig = (
 
   // Get participants using edges
   const participantEdges = edges.filter(
-    (e) => e.source === teamNode.id && e.type === "agent-connection"
+    (e) => e.source === teamNode.id && e.type === "agent-connection",
   );
   config.participants = participantEdges
     .map((edge) => {
@@ -120,7 +120,7 @@ const buildTeamConfig = (
 
       // Get agent's model using edges
       const agentModelEdge = edges.find(
-        (e) => e.target === edge.target && e.type === "model-connection"
+        (e) => e.target === edge.target && e.type === "model-connection",
       );
       if (agentModelEdge) {
         const modelNode = nodes.find((n) => n.id === agentModelEdge.source);
@@ -131,7 +131,7 @@ const buildTeamConfig = (
 
       // Get agent's tools using edges
       const toolEdges = edges.filter(
-        (e) => e.target === edge.target && e.type === "tool-connection"
+        (e) => e.target === edge.target && e.type === "tool-connection",
       );
       agentConfig.tools = toolEdges
         .map((toolEdge) => {
@@ -159,7 +159,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
     type: ComponentTypes,
     position: Position,
     config: ComponentConfigTypes,
-    targetNodeId?: string
+    targetNodeId?: string,
   ) => {
     set((state) => {
       // Determine label based on config type
@@ -202,21 +202,22 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
             // Find existing model connection and node
             const existingModelEdge = newEdges.find(
               (edge) =>
-                edge.target === targetNodeId && edge.type === "model-connection"
+                edge.target === targetNodeId &&
+                edge.type === "model-connection",
             );
 
             if (existingModelEdge) {
               // Remove the existing model node
               const existingModelNodeId = existingModelEdge.source;
               newNodes = newNodes.filter(
-                (node) => node.id !== existingModelNodeId
+                (node) => node.id !== existingModelNodeId,
               );
 
               // Remove all edges connected to the old model node
               newEdges = newEdges.filter(
                 (edge) =>
                   edge.source !== existingModelNodeId &&
-                  edge.target !== existingModelNodeId
+                  edge.target !== existingModelNodeId,
               );
             }
 
@@ -254,21 +255,21 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
             const existingTerminationEdge = newEdges.find(
               (edge) =>
                 edge.target === targetNodeId &&
-                edge.type === "termination-connection"
+                edge.type === "termination-connection",
             );
 
             if (existingTerminationEdge) {
               // Remove the existing termination node
               const existingTerminationNodeId = existingTerminationEdge.source;
               newNodes = newNodes.filter(
-                (node) => node.id !== existingTerminationNodeId
+                (node) => node.id !== existingTerminationNodeId,
               );
 
               // Remove all edges connected to the old termination node
               newEdges = newEdges.filter(
                 (edge) =>
                   edge.source !== existingTerminationNodeId &&
-                  edge.target !== existingTerminationNodeId
+                  edge.target !== existingTerminationNodeId,
               );
             }
 
@@ -390,14 +391,14 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
       // If an agent was updated, update its parent team's participants
       if (updatedNode.data.type === "agent") {
         const teamEdge = state.edges.find(
-          (e) => e.type === "agent-connection" && e.target === nodeId
+          (e) => e.type === "agent-connection" && e.target === nodeId,
         );
         if (teamEdge) {
           newNodes.forEach((node) => {
             if (node.id === teamEdge.source && isTeamConfig(node.data.config)) {
               const agentConfig = updatedNode.data.config as AgentConfig;
               node.data.config.participants = node.data.config.participants.map(
-                (p) => (p.name === agentConfig.name ? agentConfig : p)
+                (p) => (p.name === agentConfig.name ? agentConfig : p),
               );
             }
           });
@@ -407,7 +408,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
       // If a tool was updated, update its parent agent's tools
       if (updatedNode.data.type === "tool") {
         const agentEdge = state.edges.find(
-          (e) => e.type === "tool-connection" && e.source === nodeId
+          (e) => e.type === "tool-connection" && e.source === nodeId,
         );
         if (agentEdge) {
           newNodes.forEach((node) => {
@@ -417,7 +418,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
             ) {
               const toolConfig = updatedNode.data.config as ToolConfig;
               node.data.config.tools = node.data.config.tools?.map((t) =>
-                t.name === toolConfig.name ? toolConfig : t
+                t.name === toolConfig.name ? toolConfig : t,
               );
             }
           });
@@ -447,7 +448,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
 
         // Find all edges connected to this node
         const connectedEdges = state.edges.filter(
-          (edge) => edge.source === id || edge.target === id
+          (edge) => edge.source === id || edge.target === id,
         );
 
         // Handle cascading deletes based on node type
@@ -479,7 +480,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
 
           // Also need to remove agent from team's config
           const teamEdge = connectedEdges.find(
-            (e) => e.type === "agent-connection"
+            (e) => e.type === "agent-connection",
           );
           if (teamEdge) {
             const teamNode = state.nodes.find((n) => n.id === teamEdge.source);
@@ -487,30 +488,30 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
               const agentConfig = node.data.config as AgentConfig;
               teamNode.data.config.participants =
                 teamNode.data.config.participants.filter(
-                  (p) => p.name !== agentConfig.name
+                  (p) => p.name !== agentConfig.name,
                 );
             }
           }
         } else if (node.data.type === "tool") {
           // Update agent's tools array when removing a tool
           const agentEdge = connectedEdges.find(
-            (e) => e.type === "tool-connection"
+            (e) => e.type === "tool-connection",
           );
           if (agentEdge) {
             const agentNode = state.nodes.find(
-              (n) => n.id === agentEdge.target
+              (n) => n.id === agentEdge.target,
             );
             if (agentNode && isAgentConfig(agentNode.data.config)) {
               const toolConfig = node.data.config as ToolConfig;
               agentNode.data.config.tools = agentNode.data.config.tools?.filter(
-                (t) => t.name !== toolConfig.name
+                (t) => t.name !== toolConfig.name,
               );
             }
           }
         } else if (node.data.type === "termination") {
           // Update team's termination condition when removing it
           const teamEdge = connectedEdges.find(
-            (e) => e.type === "termination-connection"
+            (e) => e.type === "termination-connection",
           );
           if (teamEdge) {
             const teamNode = state.nodes.find((n) => n.id === teamEdge.target);
@@ -526,13 +527,13 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
 
       // Remove all collected nodes
       const newNodes = state.nodes.filter(
-        (node) => !nodesToRemove.has(node.id)
+        (node) => !nodesToRemove.has(node.id),
       );
 
       // Remove all affected edges
       const newEdges = state.edges.filter(
         (edge) =>
-          !nodesToRemove.has(edge.source) && !nodesToRemove.has(edge.target)
+          !nodesToRemove.has(edge.source) && !nodesToRemove.has(edge.target),
       );
 
       return {
@@ -553,7 +554,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
 
       if (edge.type === "model-connection") {
         newEdges = newEdges.filter(
-          (e) => !(e.target === edge.target && e.type === "model-connection")
+          (e) => !(e.target === edge.target && e.type === "model-connection"),
         );
       }
 
@@ -630,7 +631,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
     const { nodes, edges } = get();
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       nodes,
-      edges
+      edges,
     );
 
     set({
@@ -648,7 +649,7 @@ export const useTeamBuilderStore = create<TeamBuilderState>((set, get) => ({
     const { nodes, edges } = convertTeamConfigToGraph(config);
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       nodes,
-      edges
+      edges,
     );
 
     set((state) => {

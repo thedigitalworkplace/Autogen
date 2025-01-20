@@ -20,13 +20,20 @@ class ConfigurationManager:
         ComponentTypes.TEAM: ["team_type", "name"],
     }
 
-    def __init__(self, db_manager: DatabaseManager, uniqueness_fields: Dict[ComponentTypes, List[str]] = None):
+    def __init__(
+        self,
+        db_manager: DatabaseManager,
+        uniqueness_fields: Dict[ComponentTypes, List[str]] = None,
+    ):
         self.db_manager = db_manager
         self.component_factory = ComponentFactory()
         self.uniqueness_fields = uniqueness_fields or self.DEFAULT_UNIQUENESS_FIELDS
 
     async def import_component(
-        self, component_config: ComponentConfigInput, user_id: str, check_exists: bool = False
+        self,
+        component_config: ComponentConfigInput,
+        user_id: str,
+        check_exists: bool = False,
     ) -> Response:
         """
         Import a component configuration, validate it, and store the resulting component.
@@ -41,7 +48,9 @@ class ConfigurationManager:
         """
         try:
             # Get validated config as dict
-            config = await self.component_factory.load(component_config, return_type="dict")
+            config = await self.component_factory.load(
+                component_config, return_type="dict"
+            )
 
             # Get component type
             component_type = self._determine_component_type(config)
@@ -74,7 +83,9 @@ class ConfigurationManager:
             logger.error(f"Failed to import component: {str(e)}")
             return Response(message=str(e), status=False)
 
-    async def import_directory(self, directory: Union[str, Path], user_id: str, check_exists: bool = False) -> Response:
+    async def import_directory(
+        self, directory: Union[str, Path], user_id: str, check_exists: bool = False
+    ) -> Response:
         """
         Import all component configurations from a directory.
 
@@ -87,7 +98,9 @@ class ConfigurationManager:
             Response containing import results for all files
         """
         try:
-            configs = await self.component_factory.load_directory(directory, return_type="dict")
+            configs = await self.component_factory.load_directory(
+                directory, return_type="dict"
+            )
 
             results = []
             for config in configs:
@@ -101,13 +114,17 @@ class ConfigurationManager:
                     }
                 )
 
-            return Response(message="Directory import complete", status=True, data=results)
+            return Response(
+                message="Directory import complete", status=True, data=results
+            )
 
         except Exception as e:
             logger.error(f"Failed to import directory: {str(e)}")
             return Response(message=str(e), status=False)
 
-    async def _store_team(self, config: dict, user_id: str, check_exists: bool = False) -> Response:
+    async def _store_team(
+        self, config: dict, user_id: str, check_exists: bool = False
+    ) -> Response:
         """Store team component and manage its relationships with agents"""
         try:
             # Store the team
@@ -123,17 +140,25 @@ class ConfigurationManager:
                 if check_exists:
                     # Check for existing agent
                     agent_type = self._determine_component_type(participant)
-                    existing_agent = self._check_exists(agent_type, participant, user_id)
+                    existing_agent = self._check_exists(
+                        agent_type, participant, user_id
+                    )
                     if existing_agent:
                         # Link existing agent
-                        self.db_manager.link(LinkTypes.TEAM_AGENT, team_id, existing_agent.id)
+                        self.db_manager.link(
+                            LinkTypes.TEAM_AGENT, team_id, existing_agent.id
+                        )
                         logger.info(f"Linked existing agent to team: {existing_agent}")
                         continue
 
                 # Store and link new agent
-                agent_result = await self._store_agent(participant, user_id, check_exists)
+                agent_result = await self._store_agent(
+                    participant, user_id, check_exists
+                )
                 if agent_result.status:
-                    self.db_manager.link(LinkTypes.TEAM_AGENT, team_id, agent_result.data["id"])
+                    self.db_manager.link(
+                        LinkTypes.TEAM_AGENT, team_id, agent_result.data["id"]
+                    )
 
             return team_result
 
@@ -141,7 +166,9 @@ class ConfigurationManager:
             logger.error(f"Failed to store team: {str(e)}")
             return Response(message=str(e), status=False)
 
-    async def _store_agent(self, config: dict, user_id: str, check_exists: bool = False) -> Response:
+    async def _store_agent(
+        self, config: dict, user_id: str, check_exists: bool = False
+    ) -> Response:
         """Store agent component and manage its relationships with tools and model"""
         try:
             # Store the agent
@@ -157,21 +184,35 @@ class ConfigurationManager:
                 if check_exists:
                     # Check for existing model
                     model_type = self._determine_component_type(config["model_client"])
-                    existing_model = self._check_exists(model_type, config["model_client"], user_id)
+                    existing_model = self._check_exists(
+                        model_type, config["model_client"], user_id
+                    )
                     if existing_model:
                         # Link existing model
-                        self.db_manager.link(LinkTypes.AGENT_MODEL, agent_id, existing_model.id)
-                        logger.info(f"Linked existing model to agent: {existing_model.config.model_type}")
+                        self.db_manager.link(
+                            LinkTypes.AGENT_MODEL, agent_id, existing_model.id
+                        )
+                        logger.info(
+                            f"Linked existing model to agent: {existing_model.config.model_type}"
+                        )
                     else:
                         # Store and link new model
-                        model_result = await self._store_model(config["model_client"], user_id)
+                        model_result = await self._store_model(
+                            config["model_client"], user_id
+                        )
                         if model_result.status:
-                            self.db_manager.link(LinkTypes.AGENT_MODEL, agent_id, model_result.data["id"])
+                            self.db_manager.link(
+                                LinkTypes.AGENT_MODEL, agent_id, model_result.data["id"]
+                            )
                 else:
                     # Store and link new model without checking
-                    model_result = await self._store_model(config["model_client"], user_id)
+                    model_result = await self._store_model(
+                        config["model_client"], user_id
+                    )
                     if model_result.status:
-                        self.db_manager.link(LinkTypes.AGENT_MODEL, agent_id, model_result.data["id"])
+                        self.db_manager.link(
+                            LinkTypes.AGENT_MODEL, agent_id, model_result.data["id"]
+                        )
 
             # Handle tools
             for tool_config in config.get("tools", []):
@@ -181,14 +222,20 @@ class ConfigurationManager:
                     existing_tool = self._check_exists(tool_type, tool_config, user_id)
                     if existing_tool:
                         # Link existing tool
-                        self.db_manager.link(LinkTypes.AGENT_TOOL, agent_id, existing_tool.id)
-                        logger.info(f"Linked existing tool to agent: {existing_tool.config.name}")
+                        self.db_manager.link(
+                            LinkTypes.AGENT_TOOL, agent_id, existing_tool.id
+                        )
+                        logger.info(
+                            f"Linked existing tool to agent: {existing_tool.config.name}"
+                        )
                         continue
 
                 # Store and link new tool
                 tool_result = await self._store_tool(tool_config, user_id)
                 if tool_result.status:
-                    self.db_manager.link(LinkTypes.AGENT_TOOL, agent_id, tool_result.data["id"])
+                    self.db_manager.link(
+                        LinkTypes.AGENT_TOOL, agent_id, tool_result.data["id"]
+                    )
 
             return agent_result
 
@@ -234,17 +281,23 @@ class ConfigurationManager:
         components = self.db_manager.get(component_class, {"user_id": user_id}).data
 
         for component in components:
-            matches = all(component.config.get(field) == config.get(field) for field in fields)
+            matches = all(
+                component.config.get(field) == config.get(field) for field in fields
+            )
             if matches:
                 return component
 
         return None
 
-    def _format_exists_message(self, component_type: ComponentTypes, config: dict) -> str:
+    def _format_exists_message(
+        self, component_type: ComponentTypes, config: dict
+    ) -> str:
         """Format existence message with identifying fields."""
         fields = self.uniqueness_fields.get(component_type, [])
         field_values = [f"{field}='{config.get(field)}'" for field in fields]
-        return f"{component_type.value} with {' and '.join(field_values)} already exists"
+        return (
+            f"{component_type.value} with {' and '.join(field_values)} already exists"
+        )
 
     def _determine_component_type(self, config: dict) -> Optional[ComponentTypes]:
         """Determine component type from configuration dictionary"""

@@ -23,6 +23,7 @@ from .auth_helpers import get_user_session
 app_file_path = os.path.dirname(os.path.abspath(__file__))
 initializer = AppInitializer(settings, app_file_path)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
@@ -33,7 +34,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Initializing application...")
     try:
         # Initialize managers (DB, Connection, Team)
-        await init_managers(initializer.database_uri, initializer.config_dir, initializer.app_root)
+        await init_managers(
+            initializer.database_uri, initializer.config_dir, initializer.app_root
+        )
         logger.info("Managers initialized successfully")
 
         # Any other initialization code
@@ -52,6 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("Application shutdown complete")
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
+
 
 # Create FastAPI application
 app = FastAPI(lifespan=lifespan, debug=True)
@@ -129,6 +133,7 @@ api.include_router(
     responses={404: {"description": "Not found"}},
 )
 
+
 # Version endpoint
 @api.get("/version")
 async def get_version():
@@ -139,6 +144,7 @@ async def get_version():
         "data": {"version": VERSION},
     }
 
+
 # Health check endpoint
 @api.get("/health")
 async def health_check():
@@ -148,6 +154,7 @@ async def health_check():
         "message": "Service is healthy",
     }
 
+
 # User-specific endpoints
 @api.get("/dashboard")
 async def dashboard(request: Request):
@@ -155,12 +162,14 @@ async def dashboard(request: Request):
     user = get_user_session(request)
     return {"message": f"Welcome, {user['name']} from {user['company']}!"}
 
+
 @api.post("/tasks")
 async def manage_tasks(request: Request, task_data: dict):
     """Example of a user-specific task endpoint."""
     user = get_user_session(request)
     # Process tasks based on user
     return {"task": "Processed", "user": user}
+
 
 # Mount static file directories
 app.mount("/api", api)
@@ -170,6 +179,7 @@ app.mount(
     name="files",
 )
 app.mount("/", StaticFiles(directory=initializer.ui_root, html=True), name="ui")
+
 
 # Error handlers
 @app.exception_handler(500)
@@ -181,12 +191,14 @@ async def internal_error_handler(request, exc):
         "detail": str(exc) if settings.API_DOCS else "Internal server error",
     }
 
+
 def create_app() -> FastAPI:
     """
     Factory function to create and configure the FastAPI application.
     Useful for testing and different deployment scenarios.
     """
     return app
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

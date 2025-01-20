@@ -104,10 +104,15 @@ class SlowUserProxyAgent(RoutedAgent):
         self._name = name
 
     @message_handler
-    async def handle_message(self, message: AssistantTextMessage, ctx: MessageContext) -> None:
-        await self._model_context.add_message(AssistantMessage(content=message.content, source=message.source))
+    async def handle_message(
+        self, message: AssistantTextMessage, ctx: MessageContext
+    ) -> None:
+        await self._model_context.add_message(
+            AssistantMessage(content=message.content, source=message.source)
+        )
         await self.publish_message(
-            GetSlowUserMessage(content=message.content), topic_id=DefaultTopicId("scheduling_assistant_conversation")
+            GetSlowUserMessage(content=message.content),
+            topic_id=DefaultTopicId("scheduling_assistant_conversation"),
         )
 
     async def save_state(self) -> Mapping[str, Any]:
@@ -139,7 +144,9 @@ class ScheduleMeetingTool(BaseTool[ScheduleMeetingInput, ScheduleMeetingOutput])
             "Schedule a meeting with a recipient at a specific date and time",
         )
 
-    async def run(self, args: ScheduleMeetingInput, cancellation_token: CancellationToken) -> ScheduleMeetingOutput:
+    async def run(
+        self, args: ScheduleMeetingInput, cancellation_token: CancellationToken
+    ) -> ScheduleMeetingOutput:
         print(f"Meeting scheduled with {args.recipient} on {args.date} at {args.time}")
         return ScheduleMeetingOutput()
 
@@ -156,9 +163,15 @@ class SchedulingAssistantAgent(RoutedAgent):
         super().__init__(description)
         self._model_context = BufferedChatCompletionContext(
             buffer_size=5,
-            initial_messages=[UserMessage(content=initial_message.content, source=initial_message.source)]
-            if initial_message
-            else None,
+            initial_messages=(
+                [
+                    UserMessage(
+                        content=initial_message.content, source=initial_message.source
+                    )
+                ]
+                if initial_message
+                else None
+            ),
         )
         self._name = name
         self._model_client = model_client
@@ -174,15 +187,22 @@ Today's date is {datetime.datetime.now().strftime("%Y-%m-%d")}
         ]
 
     @message_handler
-    async def handle_message(self, message: UserTextMessage, ctx: MessageContext) -> None:
-        await self._model_context.add_message(UserMessage(content=message.content, source=message.source))
+    async def handle_message(
+        self, message: UserTextMessage, ctx: MessageContext
+    ) -> None:
+        await self._model_context.add_message(
+            UserMessage(content=message.content, source=message.source)
+        )
 
         tools = [ScheduleMeetingTool()]
         response = await self._model_client.create(
-            self._system_messages + (await self._model_context.get_messages()), tools=tools
+            self._system_messages + (await self._model_context.get_messages()),
+            tools=tools,
         )
 
-        if isinstance(response.content, list) and all(isinstance(item, FunctionCall) for item in response.content):
+        if isinstance(response.content, list) and all(
+            isinstance(item, FunctionCall) for item in response.content
+        ):
             for call in response.content:
                 tool = next((tool for tool in tools if tool.name == call.name), None)
                 if tool is None:
@@ -196,10 +216,16 @@ Today's date is {datetime.datetime.now().strftime("%Y-%m-%d")}
             return
 
         assert isinstance(response.content, str)
-        speech = AssistantTextMessage(content=response.content, source=self.metadata["type"])
-        await self._model_context.add_message(AssistantMessage(content=response.content, source=self.metadata["type"]))
+        speech = AssistantTextMessage(
+            content=response.content, source=self.metadata["type"]
+        )
+        await self._model_context.add_message(
+            AssistantMessage(content=response.content, source=self.metadata["type"])
+        )
 
-        await self.publish_message(speech, topic_id=DefaultTopicId("scheduling_assistant_conversation"))
+        await self.publish_message(
+            speech, topic_id=DefaultTopicId("scheduling_assistant_conversation")
+        )
 
     async def save_state(self) -> Mapping[str, Any]:
         return {
@@ -250,7 +276,9 @@ class TerminationHandler(DefaultInterventionHandler):
         return self.terminateMessage.content
 
 
-async def main(model_config: Dict[str, Any], latest_user_input: Optional[str] = None) -> None | str:
+async def main(
+    model_config: Dict[str, Any], latest_user_input: Optional[str] = None
+) -> None | str:
     """
     Asynchronous function that serves as the entry point of the program.
     This function initializes the necessary components for the program and registers the user and scheduling assistant agents.
@@ -271,9 +299,13 @@ async def main(model_config: Dict[str, Any], latest_user_input: Optional[str] = 
 
     termination_handler = TerminationHandler()
     needs_user_input_handler = NeedsUserInputHandler()
-    runtime = SingleThreadedAgentRuntime(intervention_handlers=[needs_user_input_handler, termination_handler])
+    runtime = SingleThreadedAgentRuntime(
+        intervention_handlers=[needs_user_input_handler, termination_handler]
+    )
 
-    await SlowUserProxyAgent.register(runtime, "User", lambda: SlowUserProxyAgent("User", "I am a user"))
+    await SlowUserProxyAgent.register(
+        runtime, "User", lambda: SlowUserProxyAgent("User", "I am a user")
+    )
 
     initial_schedule_assistant_message = AssistantTextMessage(
         content="Hi! How can I help you? I can help schedule meetings", source="User"
@@ -291,7 +323,9 @@ async def main(model_config: Dict[str, Any], latest_user_input: Optional[str] = 
 
     runtime_initiation_message: UserTextMessage | AssistantTextMessage
     if latest_user_input is not None:
-        runtime_initiation_message = UserTextMessage(content=latest_user_input, source="User")
+        runtime_initiation_message = UserTextMessage(
+            content=latest_user_input, source="User"
+        )
     else:
         runtime_initiation_message = initial_schedule_assistant_message
     state = state_persister.load_content()
@@ -304,7 +338,10 @@ async def main(model_config: Dict[str, Any], latest_user_input: Optional[str] = 
     )
 
     runtime.start()
-    await runtime.stop_when(lambda: termination_handler.is_terminated or needs_user_input_handler.needs_user_input)
+    await runtime.stop_when(
+        lambda: termination_handler.is_terminated
+        or needs_user_input_handler.needs_user_input
+    )
 
     user_input_needed = None
     if needs_user_input_handler.user_input_content is not None:

@@ -19,7 +19,10 @@ from autogen_core import (
     default_subscription,
     message_handler,
 )
-from autogen_core.model_context import BufferedChatCompletionContext, ChatCompletionContext
+from autogen_core.model_context import (
+    BufferedChatCompletionContext,
+    ChatCompletionContext,
+)
 from autogen_core.models import (
     ChatCompletionClient,
     LLMMessage,
@@ -59,13 +62,16 @@ class PlayerAgent(RoutedAgent):
     @message_handler
     async def handle_message(self, message: TextMessage, ctx: MessageContext) -> None:
         # Add the user message to the model context.
-        await self._model_context.add_message(UserMessage(content=message.content, source=message.source))
+        await self._model_context.add_message(
+            UserMessage(content=message.content, source=message.source)
+        )
         # Run the caller loop to handle tool calls.
         messages = await tool_agent_caller_loop(
             self,
             tool_agent_id=self._tool_agent_id,
             model_client=self._model_client,
-            input_messages=self._system_messages + (await self._model_context.get_messages()),
+            input_messages=self._system_messages
+            + (await self._model_context.get_messages()),
             tool_schema=self._tool_schema,
             cancellation_token=ctx.cancellation_token,
         )
@@ -74,7 +80,10 @@ class PlayerAgent(RoutedAgent):
             await self._model_context.add_message(msg)
         # Publish the final response.
         assert isinstance(messages[-1].content, str)
-        await self.publish_message(TextMessage(content=messages[-1].content, source=self.id.type), DefaultTopicId())
+        await self.publish_message(
+            TextMessage(content=messages[-1].content, source=self.id.type),
+            DefaultTopicId(),
+        )
 
 
 def validate_turn(board: Board, player: Literal["white", "black"]) -> None:
@@ -96,9 +105,13 @@ def get_legal_moves(
     validate_turn(board, player)
     legal_moves = list(board.legal_moves)
     if player == "black":
-        legal_moves = [move for move in legal_moves if board.color_at(move.from_square) == BLACK]
+        legal_moves = [
+            move for move in legal_moves if board.color_at(move.from_square) == BLACK
+        ]
     elif player == "white":
-        legal_moves = [move for move in legal_moves if board.color_at(move.from_square) == WHITE]
+        legal_moves = [
+            move for move in legal_moves if board.color_at(move.from_square) == WHITE
+        ]
     else:
         raise ValueError("Invalid player, must be either 'black' or 'white'.")
     if not legal_moves:
@@ -264,9 +277,14 @@ async def main(model_config: Dict[str, Any]) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a chess game between two agents.")
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging.")
     parser.add_argument(
-        "--model-config", type=str, help="Path to the model configuration file.", default="model_config.json"
+        "--verbose", action="store_true", help="Enable verbose logging."
+    )
+    parser.add_argument(
+        "--model-config",
+        type=str,
+        help="Path to the model configuration file.",
+        default="model_config.json",
     )
     args = parser.parse_args()
     if args.verbose:

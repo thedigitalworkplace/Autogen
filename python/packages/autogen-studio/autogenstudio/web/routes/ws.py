@@ -55,7 +55,9 @@ async def run_websocket(
                     team_config = message.get("team_config")
                     if task and team_config:
                         # await ws_manager.start_stream(run_id, task, team_config)
-                        asyncio.create_task(ws_manager.start_stream(run_id, task, team_config))
+                        asyncio.create_task(
+                            ws_manager.start_stream(run_id, task, team_config)
+                        )
                     else:
                         logger.warning(f"Invalid start message format for run {run_id}")
                         await websocket.send_json(
@@ -73,7 +75,9 @@ async def run_websocket(
                     break
 
                 elif message.get("type") == "ping":
-                    await websocket.send_json({"type": "pong", "timestamp": datetime.utcnow().isoformat()})
+                    await websocket.send_json(
+                        {"type": "pong", "timestamp": datetime.utcnow().isoformat()}
+                    )
 
                 elif message.get("type") == "input_response":
                     # Handle input response from client
@@ -81,12 +85,18 @@ async def run_websocket(
                     if response is not None:
                         await ws_manager.handle_input_response(run_id, response)
                     else:
-                        logger.warning(f"Invalid input response format for run {run_id}")
+                        logger.warning(
+                            f"Invalid input response format for run {run_id}"
+                        )
 
             except json.JSONDecodeError:
                 logger.warning(f"Invalid JSON received: {raw_message}")
                 await websocket.send_json(
-                    {"type": "error", "error": "Invalid message format", "timestamp": datetime.utcnow().isoformat()}
+                    {
+                        "type": "error",
+                        "error": "Invalid message format",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
                 )
 
     except WebSocketDisconnect:

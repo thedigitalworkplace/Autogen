@@ -9,7 +9,12 @@ import json
 import logging
 import os
 
-from autogen_core import EVENT_LOGGER_NAME, AgentId, AgentProxy, SingleThreadedAgentRuntime
+from autogen_core import (
+    EVENT_LOGGER_NAME,
+    AgentId,
+    AgentProxy,
+    SingleThreadedAgentRuntime,
+)
 from autogen_core.code_executor import CodeBlock
 from autogen_core.models._model_client import ChatCompletionClient
 from autogen_ext.code_executors.docker import DockerCommandLineCodeExecutor
@@ -32,7 +37,9 @@ async def main() -> None:
     # Create the runtime.
     runtime = SingleThreadedAgentRuntime()
 
-    model_client = ChatCompletionClient.load_component(json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"]))
+    model_client = ChatCompletionClient.load_component(
+        json.loads(os.environ["CHAT_COMPLETION_CLIENT_CONFIG"])
+    )
     async with DockerCommandLineCodeExecutor() as code_executor:
         # Register agents.
         await Coder.register(runtime, "Coder", lambda: Coder(model_client=model_client))
@@ -41,7 +48,11 @@ async def main() -> None:
         await Executor.register(
             runtime,
             "Executor",
-            lambda: Executor("A agent for executing code", executor=code_executor, confirm_execution=confirm_code),
+            lambda: Executor(
+                "A agent for executing code",
+                executor=code_executor,
+                confirm_execution=confirm_code,
+            ),
         )
         executor = AgentProxy(AgentId("Executor", "default"), runtime)
 

@@ -45,7 +45,9 @@ class MessageHandler(Protocol[AgentT, ReceivesT, ProducesT]):  # type: ignore
 
     # agent_instance binds to self in the method
     @staticmethod
-    async def __call__(agent_instance: AgentT, message: ReceivesT, ctx: MessageContext) -> ProducesT: ...
+    async def __call__(
+        agent_instance: AgentT, message: ReceivesT, ctx: MessageContext
+    ) -> ProducesT: ...
 
 
 # NOTE: this works on concrete types and not inheritance
@@ -83,7 +85,10 @@ def message_handler(
 
 
 def message_handler(
-    func: None | Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]] = None,
+    func: (
+        None
+        | Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]]
+    ) = None,
     *,
     strict: bool = True,
     match: None | Callable[[ReceivesT, MessageContext], bool] = None,
@@ -116,7 +121,9 @@ def message_handler(
     """
 
     def decorator(
-        func: Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]],
+        func: Callable[
+            [AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]
+        ],
     ) -> MessageHandler[AgentT, ReceivesT, ProducesT]:
         type_hints = get_type_hints(func)
         if "message" not in type_hints:
@@ -139,20 +146,30 @@ def message_handler(
         # Convert target_types to list and stash
 
         @wraps(func)
-        async def wrapper(self: AgentT, message: ReceivesT, ctx: MessageContext) -> ProducesT:
+        async def wrapper(
+            self: AgentT, message: ReceivesT, ctx: MessageContext
+        ) -> ProducesT:
             if type(message) not in target_types:
                 if strict:
-                    raise CantHandleException(f"Message type {type(message)} not in target types {target_types}")
+                    raise CantHandleException(
+                        f"Message type {type(message)} not in target types {target_types}"
+                    )
                 else:
-                    logger.warning(f"Message type {type(message)} not in target types {target_types}")
+                    logger.warning(
+                        f"Message type {type(message)} not in target types {target_types}"
+                    )
 
             return_value = await func(self, message, ctx)
 
             if AnyType not in return_types and type(return_value) not in return_types:
                 if strict:
-                    raise ValueError(f"Return type {type(return_value)} not in return types {return_types}")
+                    raise ValueError(
+                        f"Return type {type(return_value)} not in return types {return_types}"
+                    )
                 else:
-                    logger.warning(f"Return type {type(return_value)} not in return types {return_types}")
+                    logger.warning(
+                        f"Return type {type(return_value)} not in return types {return_types}"
+                    )
 
             return return_value
 
@@ -203,7 +220,9 @@ def event(
 
 
 def event(
-    func: None | Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, None]] = None,
+    func: (
+        None | Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, None]]
+    ) = None,
     *,
     strict: bool = True,
     match: None | Callable[[ReceivesT, MessageContext], bool] = None,
@@ -248,22 +267,32 @@ def event(
         # Get the type of the message parameter
         target_types = get_types(type_hints["message"])
         if target_types is None:
-            raise AssertionError("Message type not found. Please provide a type hint for the message parameter.")
+            raise AssertionError(
+                "Message type not found. Please provide a type hint for the message parameter."
+            )
 
         return_types = get_types(type_hints["return"])
 
         if return_types is None:
-            raise AssertionError("Return type not found. Please use `None` as the type hint of the return type.")
+            raise AssertionError(
+                "Return type not found. Please use `None` as the type hint of the return type."
+            )
 
         # Convert target_types to list and stash
 
         @wraps(func)
-        async def wrapper(self: AgentT, message: ReceivesT, ctx: MessageContext) -> None:
+        async def wrapper(
+            self: AgentT, message: ReceivesT, ctx: MessageContext
+        ) -> None:
             if type(message) not in target_types:
                 if strict:
-                    raise CantHandleException(f"Message type {type(message)} not in target types {target_types}")
+                    raise CantHandleException(
+                        f"Message type {type(message)} not in target types {target_types}"
+                    )
                 else:
-                    logger.warning(f"Message type {type(message)} not in target types {target_types}")
+                    logger.warning(
+                        f"Message type {type(message)} not in target types {target_types}"
+                    )
 
             return_value = await func(self, message, ctx)  # type: ignore
 
@@ -271,7 +300,9 @@ def event(
                 if strict:
                     raise ValueError(f"Return type {type(return_value)} is not None.")
                 else:
-                    logger.warning(f"Return type {type(return_value)} is not None. It will be ignored.")
+                    logger.warning(
+                        f"Return type {type(return_value)} is not None. It will be ignored."
+                    )
 
             return None
 
@@ -280,7 +311,9 @@ def event(
         wrapper_handler.produces_types = list(return_types)
         wrapper_handler.is_message_handler = True
         # Wrap the match function with a check on the is_rpc flag.
-        wrapper_handler.router = lambda _message, _ctx: (not _ctx.is_rpc) and (match(_message, _ctx) if match else True)
+        wrapper_handler.router = lambda _message, _ctx: (not _ctx.is_rpc) and (
+            match(_message, _ctx) if match else True
+        )
 
         return wrapper_handler
 
@@ -323,7 +356,10 @@ def rpc(
 
 
 def rpc(
-    func: None | Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]] = None,
+    func: (
+        None
+        | Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]]
+    ) = None,
     *,
     strict: bool = True,
     match: None | Callable[[ReceivesT, MessageContext], bool] = None,
@@ -356,7 +392,9 @@ def rpc(
     """
 
     def decorator(
-        func: Callable[[AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]],
+        func: Callable[
+            [AgentT, ReceivesT, MessageContext], Coroutine[Any, Any, ProducesT]
+        ],
     ) -> MessageHandler[AgentT, ReceivesT, ProducesT]:
         type_hints = get_type_hints(func)
         if "message" not in type_hints:
@@ -379,20 +417,30 @@ def rpc(
         # Convert target_types to list and stash
 
         @wraps(func)
-        async def wrapper(self: AgentT, message: ReceivesT, ctx: MessageContext) -> ProducesT:
+        async def wrapper(
+            self: AgentT, message: ReceivesT, ctx: MessageContext
+        ) -> ProducesT:
             if type(message) not in target_types:
                 if strict:
-                    raise CantHandleException(f"Message type {type(message)} not in target types {target_types}")
+                    raise CantHandleException(
+                        f"Message type {type(message)} not in target types {target_types}"
+                    )
                 else:
-                    logger.warning(f"Message type {type(message)} not in target types {target_types}")
+                    logger.warning(
+                        f"Message type {type(message)} not in target types {target_types}"
+                    )
 
             return_value = await func(self, message, ctx)
 
             if AnyType not in return_types and type(return_value) not in return_types:
                 if strict:
-                    raise ValueError(f"Return type {type(return_value)} not in return types {return_types}")
+                    raise ValueError(
+                        f"Return type {type(return_value)} not in return types {return_types}"
+                    )
                 else:
-                    logger.warning(f"Return type {type(return_value)} not in return types {return_types}")
+                    logger.warning(
+                        f"Return type {type(return_value)} not in return types {return_types}"
+                    )
 
             return return_value
 
@@ -400,7 +448,9 @@ def rpc(
         wrapper_handler.target_types = list(target_types)
         wrapper_handler.produces_types = list(return_types)
         wrapper_handler.is_message_handler = True
-        wrapper_handler.router = lambda _message, _ctx: (_ctx.is_rpc) and (match(_message, _ctx) if match else True)
+        wrapper_handler.router = lambda _message, _ctx: (_ctx.is_rpc) and (
+            match(_message, _ctx) if match else True
+        )
 
         return wrapper_handler
 

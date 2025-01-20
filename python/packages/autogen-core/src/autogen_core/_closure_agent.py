@@ -2,7 +2,18 @@ from __future__ import annotations
 
 import inspect
 import warnings
-from typing import Any, Awaitable, Callable, List, Literal, Mapping, Protocol, Sequence, TypeVar, get_type_hints
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    List,
+    Literal,
+    Mapping,
+    Protocol,
+    Sequence,
+    TypeVar,
+    get_type_hints,
+)
 
 from ._agent_id import AgentId
 from ._agent_instantiation import AgentInstantiationContext
@@ -148,7 +159,9 @@ class ClosureAgent(BaseAgent, ClosureContext):
         unknown_type_policy: Literal["error", "warn", "ignore"] = "warn",
         skip_direct_message_subscription: bool = False,
         description: str = "",
-        subscriptions: Callable[[], list[Subscription] | Awaitable[list[Subscription]]] | None = None,
+        subscriptions: (
+            Callable[[], list[Subscription] | Awaitable[list[Subscription]]] | None
+        ) = None,
     ) -> AgentType:
         """The closure agent allows you to define an agent using a closure, or function without needing to define a class. It allows values to be extracted out of the runtime.
 
@@ -207,9 +220,15 @@ class ClosureAgent(BaseAgent, ClosureContext):
         """
 
         def factory() -> ClosureAgent:
-            return ClosureAgent(description=description, closure=closure, unknown_type_policy=unknown_type_policy)
+            return ClosureAgent(
+                description=description,
+                closure=closure,
+                unknown_type_policy=unknown_type_policy,
+            )
 
-        assert len(cls._unbound_subscriptions()) == 0, "Closure agents are expected to have no class subscriptions"
+        assert (
+            len(cls._unbound_subscriptions()) == 0
+        ), "Closure agents are expected to have no class subscriptions"
         agent_type = await cls.register(
             runtime=runtime,
             type=type,

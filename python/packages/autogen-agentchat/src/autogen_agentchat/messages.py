@@ -104,12 +104,19 @@ class ToolCallSummaryMessage(BaseChatMessage):
 
 
 ChatMessage = Annotated[
-    TextMessage | MultiModalMessage | StopMessage | ToolCallSummaryMessage | HandoffMessage, Field(discriminator="type")
+    TextMessage
+    | MultiModalMessage
+    | StopMessage
+    | ToolCallSummaryMessage
+    | HandoffMessage,
+    Field(discriminator="type"),
 ]
 """Messages for agent-to-agent communication only."""
 
 
-AgentEvent = Annotated[ToolCallRequestEvent | ToolCallExecutionEvent, Field(discriminator="type")]
+AgentEvent = Annotated[
+    ToolCallRequestEvent | ToolCallExecutionEvent, Field(discriminator="type")
+]
 """Events emitted by agents and teams when they work, not used for agent-to-agent communication."""
 
 

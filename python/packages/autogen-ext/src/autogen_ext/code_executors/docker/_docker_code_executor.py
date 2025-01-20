@@ -36,7 +36,9 @@ else:
     from typing_extensions import Self
 
 
-async def _wait_for_ready(container: Any, timeout: int = 60, stop_time: float = 0.1) -> None:
+async def _wait_for_ready(
+    container: Any, timeout: int = 60, stop_time: float = 0.1
+) -> None:
     elapsed_time = 0.0
     while container.status != "running" and elapsed_time < timeout:
         await asyncio.sleep(stop_time)
@@ -194,7 +196,11 @@ $functions"""
         func_file.write_text(func_file_content)
 
         # Collect requirements
-        lists_of_packages = [x.python_packages for x in self._functions if isinstance(x, FunctionWithRequirements)]
+        lists_of_packages = [
+            x.python_packages
+            for x in self._functions
+            if isinstance(x, FunctionWithRequirements)
+        ]
         flattened_packages = [item for sublist in lists_of_packages for item in sublist]
         required_packages = list(set(flattened_packages))
         if len(required_packages) > 0:
@@ -203,7 +209,8 @@ $functions"""
             packages = shlex.join(required_packages)
 
             result = await self._execute_code_dont_check_setup(
-                [CodeBlock(code=f"python -m pip install {packages}", language="sh")], cancellation_token
+                [CodeBlock(code=f"python -m pip install {packages}", language="sh")],
+                cancellation_token,
             )
 
             if result.exit_code != 0:
@@ -225,7 +232,9 @@ $functions"""
         self, code_blocks: List[CodeBlock], cancellation_token: CancellationToken
     ) -> CommandLineCodeResult:
         if self._container is None or not self._running:
-            raise ValueError("Container is not running. Must first be started with either start or a context manager.")
+            raise ValueError(
+                "Container is not running. Must first be started with either start or a context manager."
+            )
 
         if len(code_blocks) == 0:
             raise ValueError("No code blocks to execute.")
@@ -267,7 +276,9 @@ $functions"""
                 break
 
         code_file = str(files[0]) if files else None
-        return CommandLineCodeResult(exit_code=last_exit_code, output="".join(outputs), code_file=code_file)
+        return CommandLineCodeResult(
+            exit_code=last_exit_code, output="".join(outputs), code_file=code_file
+        )
 
     async def execute_code_blocks(
         self, code_blocks: List[CodeBlock], cancellation_token: CancellationToken
@@ -281,18 +292,24 @@ $functions"""
             CommandlineCodeResult: The result of the code execution."""
 
         def raise_not_implemented() -> None:
-            raise NotImplementedError("Cancellation is not yet supported for DockerCommandLineCodeExecutor")
+            raise NotImplementedError(
+                "Cancellation is not yet supported for DockerCommandLineCodeExecutor"
+            )
 
         cancellation_token.add_callback(lambda: raise_not_implemented())
 
         if not self._setup_functions_complete:
             await self._setup_functions(cancellation_token)
 
-        return await self._execute_code_dont_check_setup(code_blocks, cancellation_token)
+        return await self._execute_code_dont_check_setup(
+            code_blocks, cancellation_token
+        )
 
     async def restart(self) -> None:
         if self._container is None or not self._running:
-            raise ValueError("Container is not running. Must first be started with either start or a context manager.")
+            raise ValueError(
+                "Container is not running. Must first be started with either start or a context manager."
+            )
 
         """(Experimental) Restart the code executor."""
         await asyncio.to_thread(self._container.restart)  # type: ignore
@@ -317,7 +334,9 @@ $functions"""
 
         client = docker.from_env()
         try:
-            container = await asyncio.to_thread(client.containers.get, self.container_name)
+            container = await asyncio.to_thread(
+                client.containers.get, self.container_name
+            )
             await asyncio.to_thread(container.stop)
         except NotFound:
             pass
@@ -340,10 +359,14 @@ $functions"""
             client = docker.from_env()
         except DockerException as e:
             if "FileNotFoundError" in str(e):
-                raise RuntimeError("Failed to connect to Docker. Please ensure Docker is installed and running.") from e
+                raise RuntimeError(
+                    "Failed to connect to Docker. Please ensure Docker is installed and running."
+                ) from e
             raise
         except Exception as e:
-            raise RuntimeError(f"Unexpected error while connecting to Docker: {str(e)}") from e
+            raise RuntimeError(
+                f"Unexpected error while connecting to Docker: {str(e)}"
+            ) from e
 
         # Check if the image exists
         try:
@@ -362,7 +385,9 @@ $functions"""
             tty=True,
             detach=True,
             auto_remove=self._auto_remove,
-            volumes={str(self._bind_dir.resolve()): {"bind": "/workspace", "mode": "rw"}},
+            volumes={
+                str(self._bind_dir.resolve()): {"bind": "/workspace", "mode": "rw"}
+            },
             working_dir="/workspace",
         )
         await asyncio.to_thread(self._container.start)
@@ -379,7 +404,9 @@ $functions"""
         # Check if the container is running
         if self._container.status != "running":
             logs_str = self._container.logs().decode("utf-8")
-            raise ValueError(f"Failed to start container from image {self._image}. Logs: {logs_str}")
+            raise ValueError(
+                f"Failed to start container from image {self._image}. Logs: {logs_str}"
+            )
 
         self._running = True
 
@@ -388,7 +415,10 @@ $functions"""
         return self
 
     async def __aexit__(
-        self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
     ) -> Optional[bool]:
         await self.stop()
         return None

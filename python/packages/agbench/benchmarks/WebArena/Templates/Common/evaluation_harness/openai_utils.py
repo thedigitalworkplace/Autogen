@@ -15,7 +15,9 @@ from openai import AsyncOpenAI, OpenAI
 client = None
 aclient = None
 if "OPENAI_API_KEY" not in os.environ and "OAI_CONFIG_LIST" not in os.environ:
-    raise ValueError("Neither OPENAI_API_KEY nor OAI_CONFIG_LIST is defined in the environment.")
+    raise ValueError(
+        "Neither OPENAI_API_KEY nor OAI_CONFIG_LIST is defined in the environment."
+    )
 
 if "OPENAI_API_KEY" in os.environ:
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -55,7 +57,9 @@ def retry_with_exponential_backoff(  # type: ignore
 
                 # Check if max retries has been reached
                 if num_retries > max_retries:
-                    raise Exception(f"Maximum number of retries ({max_retries}) exceeded.")
+                    raise Exception(
+                        f"Maximum number of retries ({max_retries}) exceeded."
+                    )
 
                 # Increment the delay
                 delay *= exponential_base * (1 + jitter * random.random())
@@ -89,7 +93,9 @@ async def _throttled_openai_completion_acreate(
                     top_p=top_p,
                 )
             except openai.RateLimitError:
-                logging.warning("OpenAI API rate limit exceeded. Sleeping for 10 seconds.")
+                logging.warning(
+                    "OpenAI API rate limit exceeded. Sleeping for 10 seconds."
+                )
                 await asyncio.sleep(10)
             except openai.APIError as e:
                 logging.warning(f"OpenAI API error: {e}")
@@ -120,7 +126,9 @@ async def agenerate_from_openai_completion(
         List of generated responses.
     """
     if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("OPENAI_API_KEY environment variable must be set when using OpenAI API.")
+        raise ValueError(
+            "OPENAI_API_KEY environment variable must be set when using OpenAI API."
+        )
 
     limiter = aiolimiter.AsyncLimiter(requests_per_minute)
     async_responses = [
@@ -149,7 +157,9 @@ def generate_from_openai_completion(
     stop_token: str | None = None,
 ) -> str:
     if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("OPENAI_API_KEY environment variable must be set when using OpenAI API.")
+        raise ValueError(
+            "OPENAI_API_KEY environment variable must be set when using OpenAI API."
+        )
 
     response = client.completions.create(
         prompt=prompt,
@@ -182,7 +192,9 @@ async def _throttled_openai_chat_completion_acreate(
                     top_p=top_p,
                 )
             except openai.RateLimitError:
-                logging.warning("OpenAI API rate limit exceeded. Sleeping for 10 seconds.")
+                logging.warning(
+                    "OpenAI API rate limit exceeded. Sleeping for 10 seconds."
+                )
                 await asyncio.sleep(10)
             except asyncio.exceptions.TimeoutError:
                 logging.warning("OpenAI API timeout. Sleeping for 10 seconds.")
@@ -216,7 +228,9 @@ async def agenerate_from_openai_chat_completion(
         List of generated responses.
     """
     if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("OPENAI_API_KEY environment variable must be set when using OpenAI API.")
+        raise ValueError(
+            "OPENAI_API_KEY environment variable must be set when using OpenAI API."
+        )
 
     limiter = aiolimiter.AsyncLimiter(requests_per_minute)
     async_responses = [
@@ -245,7 +259,9 @@ def generate_from_openai_chat_completion(
     stop_token: str | None = None,
 ) -> str:
     if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("OPENAI_API_KEY environment variable must be set when using OpenAI API.")
+        raise ValueError(
+            "OPENAI_API_KEY environment variable must be set when using OpenAI API."
+        )
     response = client.chat.completions.create(
         model=model,
         messages=messages,
@@ -269,7 +285,9 @@ def fake_generate_from_openai_chat_completion(
     stop_token: str | None = None,
 ) -> str:
     if "OPENAI_API_KEY" not in os.environ:
-        raise ValueError("OPENAI_API_KEY environment variable must be set when using OpenAI API.")
+        raise ValueError(
+            "OPENAI_API_KEY environment variable must be set when using OpenAI API."
+        )
 
     answer = "Let's think step-by-step. This page shows a list of links and buttons. There is a search box with the label 'Search query'. I will click on the search box to type the query. So the action I will perform is \"click [60]\"."
     return answer

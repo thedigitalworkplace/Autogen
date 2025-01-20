@@ -17,7 +17,9 @@ async def list_agents(user_id: str, db: DatabaseManager = Depends(get_db)) -> Di
 
 
 @router.get("/{agent_id}")
-async def get_agent(agent_id: int, user_id: str, db: DatabaseManager = Depends(get_db)) -> Dict:
+async def get_agent(
+    agent_id: int, user_id: str, db: DatabaseManager = Depends(get_db)
+) -> Dict:
     """Get a specific agent"""
     response = db.get(Agent, filters={"id": agent_id, "user_id": user_id})
     if not response.status or not response.data:
@@ -35,7 +37,9 @@ async def create_agent(agent: Agent, db: DatabaseManager = Depends(get_db)) -> D
 
 
 @router.delete("/{agent_id}")
-async def delete_agent(agent_id: int, user_id: str, db: DatabaseManager = Depends(get_db)) -> Dict:
+async def delete_agent(
+    agent_id: int, user_id: str, db: DatabaseManager = Depends(get_db)
+) -> Dict:
     """Delete an agent"""
     db.delete(filters={"id": agent_id, "user_id": user_id}, model_class=Agent)
     return {"status": True, "message": "Agent deleted successfully"}
@@ -45,7 +49,9 @@ async def delete_agent(agent_id: int, user_id: str, db: DatabaseManager = Depend
 
 
 @router.post("/{agent_id}/models/{model_id}")
-async def link_agent_model(agent_id: int, model_id: int, db: DatabaseManager = Depends(get_db)) -> Dict:
+async def link_agent_model(
+    agent_id: int, model_id: int, db: DatabaseManager = Depends(get_db)
+) -> Dict:
     """Link a model to an agent"""
     db.link(link_type="agent_model", primary_id=agent_id, secondary_id=model_id)
     return {"status": True, "message": "Model linked to agent successfully"}

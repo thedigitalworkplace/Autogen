@@ -22,15 +22,21 @@ async def test_intervention_count_messages() -> None:
             self.num_publish_messages = 0
             self.num_response_messages = 0
 
-        async def on_send(self, message: Any, *, message_context: MessageContext, recipient: AgentId) -> Any:
+        async def on_send(
+            self, message: Any, *, message_context: MessageContext, recipient: AgentId
+        ) -> Any:
             self.num_send_messages += 1
             return message
 
-        async def on_publish(self, message: Any, *, message_context: MessageContext) -> Any:
+        async def on_publish(
+            self, message: Any, *, message_context: MessageContext
+        ) -> Any:
             self.num_publish_messages += 1
             return message
 
-        async def on_response(self, message: Any, *, sender: AgentId, recipient: AgentId | None) -> Any:
+        async def on_response(
+            self, message: Any, *, sender: AgentId, recipient: AgentId | None
+        ) -> Any:
             self.num_response_messages += 1
             return message
 
@@ -46,7 +52,9 @@ async def test_intervention_count_messages() -> None:
 
     assert handler.num_send_messages == 1
     assert handler.num_response_messages == 1
-    loopback_agent = await runtime.try_get_underlying_agent_instance(loopback, type=LoopbackAgent)
+    loopback_agent = await runtime.try_get_underlying_agent_instance(
+        loopback, type=LoopbackAgent
+    )
     assert loopback_agent.num_calls == 1
 
     runtime.start()
@@ -63,7 +71,11 @@ async def test_intervention_count_messages() -> None:
 async def test_intervention_drop_send() -> None:
     class DropSendInterventionHandler(DefaultInterventionHandler):
         async def on_send(
-            self, message: MessageType, *, message_context: MessageContext, recipient: AgentId
+            self,
+            message: MessageType,
+            *,
+            message_context: MessageContext,
+            recipient: AgentId
         ) -> MessageType | type[DropMessage]:
             return DropMessage
 
@@ -79,7 +91,9 @@ async def test_intervention_drop_send() -> None:
 
     await runtime.stop()
 
-    loopback_agent = await runtime.try_get_underlying_agent_instance(loopback, type=LoopbackAgent)
+    loopback_agent = await runtime.try_get_underlying_agent_instance(
+        loopback, type=LoopbackAgent
+    )
     assert loopback_agent.num_calls == 0
 
 
@@ -111,7 +125,11 @@ async def test_intervention_raise_exception_on_send() -> None:
 
     class ExceptionInterventionHandler(DefaultInterventionHandler):  # type: ignore
         async def on_send(
-            self, message: MessageType, *, message_context: MessageContext, recipient: AgentId
+            self,
+            message: MessageType,
+            *,
+            message_context: MessageContext,
+            recipient: AgentId
         ) -> MessageType | type[DropMessage]:  # type: ignore
             raise InterventionException
 
@@ -127,7 +145,9 @@ async def test_intervention_raise_exception_on_send() -> None:
 
     await runtime.stop()
 
-    long_running_agent = await runtime.try_get_underlying_agent_instance(loopback, type=LoopbackAgent)
+    long_running_agent = await runtime.try_get_underlying_agent_instance(
+        loopback, type=LoopbackAgent
+    )
     assert long_running_agent.num_calls == 0
 
 
@@ -153,5 +173,7 @@ async def test_intervention_raise_exception_on_respond() -> None:
 
     await runtime.stop()
 
-    long_running_agent = await runtime.try_get_underlying_agent_instance(loopback, type=LoopbackAgent)
+    long_running_agent = await runtime.try_get_underlying_agent_instance(
+        loopback, type=LoopbackAgent
+    )
     assert long_running_agent.num_calls == 1

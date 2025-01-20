@@ -17,7 +17,7 @@ export class TeamAPI {
       `${this.getBaseUrl()}/teams/?user_id=${userId}`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status) throw new Error(data.message || "Failed to fetch teams");
@@ -29,7 +29,7 @@ export class TeamAPI {
       `${this.getBaseUrl()}/teams/${teamId}?user_id=${userId}`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status) throw new Error(data.message || "Failed to fetch team");
@@ -58,7 +58,7 @@ export class TeamAPI {
       {
         method: "DELETE",
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status) throw new Error(data.message || "Failed to delete team");
@@ -71,7 +71,7 @@ export class TeamAPI {
       {
         method: "POST",
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -81,19 +81,19 @@ export class TeamAPI {
   async linkAgentWithSequence(
     teamId: number,
     agentId: number,
-    sequenceId: number
+    sequenceId: number,
   ): Promise<void> {
     const response = await fetch(
       `${this.getBaseUrl()}/teams/${teamId}/agents/${agentId}/${sequenceId}`,
       {
         method: "POST",
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
       throw new Error(
-        data.message || "Failed to link agent to team with sequence"
+        data.message || "Failed to link agent to team with sequence",
       );
   }
 
@@ -103,7 +103,7 @@ export class TeamAPI {
       {
         method: "DELETE",
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)
@@ -115,7 +115,7 @@ export class TeamAPI {
       `${this.getBaseUrl()}/teams/${teamId}/agents`,
       {
         headers: this.getHeaders(),
-      }
+      },
     );
     const data = await response.json();
     if (!data.status)

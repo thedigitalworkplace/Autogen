@@ -8,7 +8,9 @@ import pytest
 
 
 class AtExitImpl(Protocol):
-    def register(self, func: t.Callable[..., t.Any], /, *args: t.Any, **kwargs: t.Any) -> t.Callable[..., t.Any]: ...
+    def register(
+        self, func: t.Callable[..., t.Any], /, *args: t.Any, **kwargs: t.Any
+    ) -> t.Callable[..., t.Any]: ...
     def unregister(self, func: t.Callable[..., t.Any], /) -> None: ...
 
 
@@ -22,7 +24,9 @@ class AtExitSimulator(AtExitImpl):
 
         self._funcs.clear()
 
-    def register(self, func: t.Callable[..., t.Any], /, *args: t.Any, **kwargs: t.Any) -> t.Callable[..., t.Any]:
+    def register(
+        self, func: t.Callable[..., t.Any], /, *args: t.Any, **kwargs: t.Any
+    ) -> t.Callable[..., t.Any]:
         self._funcs.append(func)
         return func
 
@@ -33,7 +37,9 @@ class AtExitSimulator(AtExitImpl):
 class AsyncioAtExitWrapper(AtExitImpl):
     """This only exists to make mypy happy"""
 
-    def register(self, func: t.Callable[..., t.Any], /, *args: t.Any, **kwargs: t.Any) -> t.Callable[..., t.Any]:
+    def register(
+        self, func: t.Callable[..., t.Any], /, *args: t.Any, **kwargs: t.Any
+    ) -> t.Callable[..., t.Any]:
         loop = None
         if "loop" in kwargs:
             loop = kwargs["loop"]
@@ -77,24 +83,34 @@ class CleanupComponent:
         loop.run_until_complete(self.stop())
 
 
-async def create_component(atexit_impl: AtExitImpl, /, use_async_cleanup: bool) -> CleanupComponent:
+async def create_component(
+    atexit_impl: AtExitImpl, /, use_async_cleanup: bool
+) -> CleanupComponent:
     await asyncio.sleep(0.001)
     return CleanupComponent(atexit_impl, use_async_cleanup)
 
 
 def run_test_impl(debug_printer: t.Callable[[str], t.Any] | None = None) -> None:
-    def validate(component: CleanupComponent, expect_exception: bool, expect_stop: bool) -> None:
+    def validate(
+        component: CleanupComponent, expect_exception: bool, expect_stop: bool
+    ) -> None:
         if debug_printer is not None:
             debug_printer(f"Cleanup ran: {component.cleanup_has_run} (expected True)")
-            debug_printer(f"Stop ran: {component.stop_has_run} (expected {expect_stop})")
+            debug_printer(
+                f"Stop ran: {component.stop_has_run} (expected {expect_stop})"
+            )
 
-        assert component.cleanup_has_run, "Cleanup should always run to be a faithful simulation."
+        assert (
+            component.cleanup_has_run
+        ), "Cleanup should always run to be a faithful simulation."
         assert component.stop_has_run == expect_stop
 
     # AtExitSimulator behaves like atexit.register, while causes cleanup relying on it to fail.
     atexit_simulator = AtExitSimulator()
     loop = asyncio.new_event_loop()
-    component = loop.run_until_complete(create_component(atexit_simulator, use_async_cleanup=False))
+    component = loop.run_until_complete(
+        create_component(atexit_simulator, use_async_cleanup=False)
+    )
     loop.close()
 
     with pytest.raises(RuntimeError):
@@ -103,7 +119,9 @@ def run_test_impl(debug_printer: t.Callable[[str], t.Any] | None = None) -> None
     validate(component, expect_exception=True, expect_stop=False)
 
     loop = asyncio.new_event_loop()
-    component = loop.run_until_complete(create_component(AsyncioAtExitWrapper(), use_async_cleanup=True))
+    component = loop.run_until_complete(
+        create_component(AsyncioAtExitWrapper(), use_async_cleanup=True)
+    )
     loop.close()
     validate(component, expect_exception=False, expect_stop=True)
 

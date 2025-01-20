@@ -20,7 +20,9 @@ from .messages import (
 
 # Convert UserContent to a string
 def message_content_to_str(
-    message_content: UserContent | AssistantContent | SystemContent | FunctionExecutionContent,
+    message_content: (
+        UserContent | AssistantContent | SystemContent | FunctionExecutionContent
+    ),
 ) -> str:
     if isinstance(message_content, str):
         return message_content
@@ -49,7 +51,9 @@ class LogHandler(logging.FileHandler):
             ts = datetime.fromtimestamp(record.created).isoformat()
             if isinstance(record.msg, OrchestrationEvent):
                 console_message = (
-                    f"\n{'-'*75} \n" f"\033[91m[{ts}], {record.msg.source}:\033[0m\n" f"\n{record.msg.message}"
+                    f"\n{'-'*75} \n"
+                    f"\033[91m[{ts}], {record.msg.source}:\033[0m\n"
+                    f"\n{record.msg.message}"
                 )
                 print(console_message, flush=True)
                 record.msg = json.dumps(
@@ -64,7 +68,9 @@ class LogHandler(logging.FileHandler):
                 super().emit(record)
             elif isinstance(record.msg, AgentEvent):
                 console_message = (
-                    f"\n{'-'*75} \n" f"\033[91m[{ts}], {record.msg.source}:\033[0m\n" f"\n{record.msg.message}"
+                    f"\n{'-'*75} \n"
+                    f"\033[91m[{ts}], {record.msg.source}:\033[0m\n"
+                    f"\n{record.msg.message}"
                 )
                 print(console_message, flush=True)
                 record.msg = json.dumps(
@@ -78,7 +84,9 @@ class LogHandler(logging.FileHandler):
                 self.logs_list.append(json.loads(record.msg))
                 super().emit(record)
             elif isinstance(record.msg, WebSurferEvent):
-                console_message = f"\033[96m[{ts}], {record.msg.source}: {record.msg.message}\033[0m"
+                console_message = (
+                    f"\033[96m[{ts}], {record.msg.source}: {record.msg.message}\033[0m"
+                )
                 print(console_message, flush=True)
                 payload: Dict[str, Any] = {
                     "timestamp": ts,

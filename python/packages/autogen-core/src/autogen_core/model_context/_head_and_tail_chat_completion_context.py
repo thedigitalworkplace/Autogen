@@ -1,7 +1,12 @@
 from typing import List
 
 from .._types import FunctionCall
-from ..models import AssistantMessage, FunctionExecutionResultMessage, LLMMessage, UserMessage
+from ..models import (
+    AssistantMessage,
+    FunctionExecutionResultMessage,
+    LLMMessage,
+    UserMessage,
+)
 from ._chat_completion_context import ChatCompletionContext
 
 
@@ -16,7 +21,12 @@ class HeadAndTailChatCompletionContext(ChatCompletionContext):
         initial_messages (List[LLMMessage] | None): The initial messages.
     """
 
-    def __init__(self, head_size: int, tail_size: int, initial_messages: List[LLMMessage] | None = None) -> None:
+    def __init__(
+        self,
+        head_size: int,
+        tail_size: int,
+        initial_messages: List[LLMMessage] | None = None,
+    ) -> None:
         super().__init__(initial_messages)
         if head_size <= 0:
             raise ValueError("head_size must be greater than 0.")
@@ -33,14 +43,18 @@ class HeadAndTailChatCompletionContext(ChatCompletionContext):
             head_messages
             and isinstance(head_messages[-1], AssistantMessage)
             and isinstance(head_messages[-1].content, list)
-            and all(isinstance(item, FunctionCall) for item in head_messages[-1].content)
+            and all(
+                isinstance(item, FunctionCall) for item in head_messages[-1].content
+            )
         ):
             # Remove the last message from the head.
             head_messages = head_messages[:-1]
 
         tail_messages = self._messages[-self._tail_size :]
         # Handle the first message is a function call result message.
-        if tail_messages and isinstance(tail_messages[0], FunctionExecutionResultMessage):
+        if tail_messages and isinstance(
+            tail_messages[0], FunctionExecutionResultMessage
+        ):
             # Remove the first message from the tail.
             tail_messages = tail_messages[1:]
 
@@ -50,5 +64,7 @@ class HeadAndTailChatCompletionContext(ChatCompletionContext):
             # return all messages.
             return self._messages
 
-        placeholder_messages = [UserMessage(content=f"Skipped {num_skipped} messages.", source="System")]
+        placeholder_messages = [
+            UserMessage(content=f"Skipped {num_skipped} messages.", source="System")
+        ]
         return head_messages + placeholder_messages + tail_messages

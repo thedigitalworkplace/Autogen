@@ -11,7 +11,18 @@ import sys
 import time
 import traceback
 from multiprocessing import Pool
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+    cast,
+)
 
 import docker
 from azure.core.exceptions import ClientAuthenticationError
@@ -171,7 +182,9 @@ def run_scenarios(
             file_handle.close()
 
 
-def expand_scenario(scenario_dir: str, scenario: ScenarioInstance, output_dir: str) -> None:
+def expand_scenario(
+    scenario_dir: str, scenario: ScenarioInstance, output_dir: str
+) -> None:
     """
     Expand a scenario into a folder.
     Despite some awkwardness created by backwards compatibility and notational conveniences, expansion is conceptually simple.
@@ -181,10 +194,14 @@ def expand_scenario(scenario_dir: str, scenario: ScenarioInstance, output_dir: s
     template = scenario["template"]
 
     # Either key works for finding the substiturions list. "values" may be deprecated in the future
-    substitutions = scenario["substitutions"] if "substitutions" in scenario else scenario["values"]
+    substitutions = (
+        scenario["substitutions"] if "substitutions" in scenario else scenario["values"]
+    )
 
     # Older versions are only one-level deep. Convert them,
-    if len(substitutions) > 0 and isinstance(substitutions[next(iter(substitutions))], str):
+    if len(substitutions) > 0 and isinstance(
+        substitutions[next(iter(substitutions))], str
+    ):
         substitutions = {"scenario.py": cast(Dict[str, str], substitutions)}
 
     copy_operations: List[Tuple[str, str]] = []
@@ -223,7 +240,9 @@ def expand_scenario(scenario_dir: str, scenario: ScenarioInstance, output_dir: s
         else:
             if os.path.isdir(dest_path):
                 # If the destination is a directory, use the same filename
-                shutil.copyfile(src_path, os.path.join(dest_path, os.path.basename(src_path)))
+                shutil.copyfile(
+                    src_path, os.path.join(dest_path, os.path.basename(src_path))
+                )
             else:
                 # Otherwuse use the filename provided
                 shutil.copyfile(src_path, dest_path)
@@ -289,7 +308,9 @@ def get_scenario_env(
     return env
 
 
-def run_scenario_natively(work_dir: str, env: Mapping[str, str], timeout: int = TASK_TIMEOUT) -> None:
+def run_scenario_natively(
+    work_dir: str, env: Mapping[str, str], timeout: int = TASK_TIMEOUT
+) -> None:
     """
     Run a scenario in the native environment.
 
@@ -306,7 +327,11 @@ def run_scenario_natively(work_dir: str, env: Mapping[str, str], timeout: int = 
 
     # Navigate to the scenario
     os.chdir(work_dir)
-    print("\n\n" + os.getcwd() + "\n===================================================================")
+    print(
+        "\n\n"
+        + os.getcwd()
+        + "\n==================================================================="
+    )
 
     # Prepare the run script
     with open(os.path.join("run.sh"), "wt") as f:
@@ -389,7 +414,10 @@ echo RUN.SH COMPLETE !#!#
 
 
 def run_scenario_in_docker(
-    work_dir: str, env: Mapping[str, str], timeout: int = TASK_TIMEOUT, docker_image: Optional[str] = None
+    work_dir: str,
+    env: Mapping[str, str],
+    timeout: int = TASK_TIMEOUT,
+    docker_image: Optional[str] = None,
 ) -> None:
     """
     Run a scenario in a Docker environment.
@@ -409,7 +437,9 @@ def run_scenario_in_docker(
         try:
             image = client.images.get(DEFAULT_DOCKER_IMAGE_TAG)
         except ImageNotFound:
-            print(f"Building default Docker image '{DEFAULT_DOCKER_IMAGE_TAG}'. This may take a few minutes...")
+            print(
+                f"Building default Docker image '{DEFAULT_DOCKER_IMAGE_TAG}'. This may take a few minutes..."
+            )
             try:
                 build_default_docker_image(client, DEFAULT_DOCKER_IMAGE_TAG)
                 image = client.images.get(DEFAULT_DOCKER_IMAGE_TAG)
@@ -483,14 +513,18 @@ echo RUN.SH COMPLETE !#!#
         )
 
     # Figure out what folders to mount
-    volumes = {str(pathlib.Path(work_dir).absolute()): {"bind": "/workspace", "mode": "rw"}}
+    volumes = {
+        str(pathlib.Path(work_dir).absolute()): {"bind": "/workspace", "mode": "rw"}
+    }
 
     # Add the autogen repo if we can find it
     autogen_repo_base = os.environ.get("AUTOGEN_REPO_BASE")
     if autogen_repo_base is None:
         autogen_repo_base = find_autogen_repo(os.getcwd())
     elif not os.path.isdir(autogen_repo_base):
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), autogen_repo_base)
+        raise FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), autogen_repo_base
+        )
 
     if autogen_repo_base is None:
         raise ValueError(
@@ -498,7 +532,10 @@ echo RUN.SH COMPLETE !#!#
         )
 
     autogen_repo_base = os.path.join(autogen_repo_base, "python")
-    volumes[str(pathlib.Path(autogen_repo_base).absolute())] = {"bind": "/autogen_python", "mode": "rw"}
+    volumes[str(pathlib.Path(autogen_repo_base).absolute())] = {
+        "bind": "/autogen_python",
+        "mode": "rw",
+    }
 
     print("Mounting:")
     for k in volumes:
@@ -524,7 +561,9 @@ echo RUN.SH COMPLETE !#!#
     )
 
     # Read the logs in a streaming fashion. Keep an eye on the time to make sure we don't need to stop.
-    docker_timeout: float = timeout + 60  # One full minute after the bash timeout command should have already triggered
+    docker_timeout: float = (
+        timeout + 60
+    )  # One full minute after the bash timeout command should have already triggered
     start_time = time.time()
     logs = container.logs(stream=True)
     log_file = open(os.path.join(work_dir, "console_log.txt"), "wt", encoding="utf-8")
@@ -533,7 +572,9 @@ echo RUN.SH COMPLETE !#!#
 
     while True:
         try:
-            chunk = next(logs)  # Manually step the iterator so it is captures with the try-catch
+            chunk = next(
+                logs
+            )  # Manually step the iterator so it is captures with the try-catch
 
             # Stream the data to the log file and the console
             chunk_str = chunk.decode("utf-8")
@@ -551,9 +592,13 @@ echo RUN.SH COMPLETE !#!#
                 # but remember how we got here.
                 stopping = True
         except KeyboardInterrupt:
-            log_file.write("\nKeyboard interrupt (Ctrl-C). Attempting to exit gracefully.\n")
+            log_file.write(
+                "\nKeyboard interrupt (Ctrl-C). Attempting to exit gracefully.\n"
+            )
             log_file.flush()
-            sys.stdout.write("\nKeyboard interrupt (Ctrl-C). Attempting to exit gracefully.\n")
+            sys.stdout.write(
+                "\nKeyboard interrupt (Ctrl-C). Attempting to exit gracefully.\n"
+            )
             sys.stdout.flush()
 
             # Start the exit process, and give it a minute, but keep iterating
@@ -569,7 +614,9 @@ echo RUN.SH COMPLETE !#!#
     except APIError:
         pass
 
-    if stopping:  # By this line we've exited the loop, and the container has actually stopped.
+    if (
+        stopping
+    ):  # By this line we've exited the loop, and the container has actually stopped.
         log_file.write("\nDocker timed out.\n")
         log_file.flush()
         sys.stdout.write("\nDocker timed out.\n")
@@ -579,7 +626,9 @@ echo RUN.SH COMPLETE !#!#
         sys.exit(1)
 
 
-def build_default_docker_image(docker_client: docker.DockerClient, image_tag: str) -> None:
+def build_default_docker_image(
+    docker_client: docker.DockerClient, image_tag: str
+) -> None:
     for segment in docker_client.api.build(
         path=RESOURCES_PATH,
         dockerfile="Dockerfile",
@@ -604,7 +653,9 @@ def find_autogen_repo(path: str) -> Optional[str]:
         path = os.path.dirname(path)
 
     while True:
-        test_path = os.path.join(path, "python", "packages", "autogen-core")  # We found autogen_core
+        test_path = os.path.join(
+            path, "python", "packages", "autogen-core"
+        )  # We found autogen_core
         if os.path.isdir(test_path):
             return path
 
@@ -730,7 +781,9 @@ def get_azure_token_provider() -> Optional[Callable[[], str]]:
     """
     Get the Azure bearer token generator if a token wasn't provided and there's any evidence of using Azure.
     """
-    if not os.environ.get("AZURE_OPENAI_AD_TOKEN") and os.path.isdir(pathlib.Path("~/.azure").expanduser()):
+    if not os.environ.get("AZURE_OPENAI_AD_TOKEN") and os.path.isdir(
+        pathlib.Path("~/.azure").expanduser()
+    ):
         logging.disable(logging.CRITICAL)
         try:
             azure_token_provider = get_bearer_token_provider(
@@ -804,16 +857,22 @@ def run_cli(args: Sequence[str]) -> None:
 
     # don't support parallel and subsample together
     if parsed_args.parallel > 1 and parsed_args.subsample is not None:
-        sys.exit("The options --parallel and --subsample can not be used together currently. Exiting.")
+        sys.exit(
+            "The options --parallel and --subsample can not be used together currently. Exiting."
+        )
 
     # Don't allow both --docker-image and --native on the same command
     if parsed_args.docker_image is not None and parsed_args.native:
-        sys.exit("The options --native and --docker-image can not be used together. Exiting.")
+        sys.exit(
+            "The options --native and --docker-image can not be used together. Exiting."
+        )
 
     # Warn if running natively
     if parsed_args.native:
         if IS_WIN32:
-            sys.exit("Running scenarios with --native is not supported in Windows. Exiting.")
+            sys.exit(
+                "Running scenarios with --native is not supported in Windows. Exiting."
+            )
 
         if parsed_args.requirements is not None:
             sys.exit("--requirements is not compatible with --native. Exiting.")
@@ -833,8 +892,12 @@ def run_cli(args: Sequence[str]) -> None:
         elif allow_native.strip().lower() != "yes":
             sys.exit(f"Exiting because AGBENCH_ALLOW_NATIVE is '{allow_native}'\n")
         else:
-            sys.stderr.write(f"Continuing because AGBENCH_ALLOW_NATIVE is '{allow_native}'\n")
-            time.sleep(0.75)  # Pause very briefly so the message isn't lost in the noise
+            sys.stderr.write(
+                f"Continuing because AGBENCH_ALLOW_NATIVE is '{allow_native}'\n"
+            )
+            time.sleep(
+                0.75
+            )  # Pause very briefly so the message isn't lost in the noise
 
     # Parse the subsample
     subsample = None

@@ -17,12 +17,13 @@ AutoGen.Net provides the following packages, you can choose to install one or mo
 - `AutoGen.SourceGenerator`: This package carries a source generator that adds support for type-safe function definition generation.
 - `AutoGen.DotnetInteractive`: This packages carries dotnet interactive support to execute code snippets. The current supported language is C#, F#, powershell and python.
 
->[!Note]
+> [!Note]
 > Help me choose
+>
 > - If you just want to install one package and enjoy the core features of AutoGen, choose `AutoGen`.
 > - If you want to leverage AutoGen's abstraction only and want to avoid introducing any other dependencies, like `Azure.AI.OpenAI` or `Semantic Kernel`, choose `AutoGen.Core`. You will need to implement your own agent, but you can still use AutoGen core features like group chat, built-in message type, workflow and middleware.
->- If you want to use AutoGen with openai, choose `AutoGen.OpenAI`, similarly, choose `AutoGen.LMStudio` or `AutoGen.SemanticKernel` if you want to use agents from LM Studio or semantic kernel.
->- If you just want the type-safe source generation for function call and don't want any other features, which even include the AutoGen's abstraction, choose `AutoGen.SourceGenerator`.
+> - If you want to use AutoGen with openai, choose `AutoGen.OpenAI`, similarly, choose `AutoGen.LMStudio` or `AutoGen.SemanticKernel` if you want to use agents from LM Studio or semantic kernel.
+> - If you just want the type-safe source generation for function call and don't want any other features, which even include the AutoGen's abstraction, choose `AutoGen.SourceGenerator`.
 
 Then, install the package using the following command:
 
@@ -31,10 +32,13 @@ dotnet add package AUTOGEN_PACKAGES
 ```
 
 ### Consume nightly build
+
 To consume nightly build, you can add one of the following feeds to your `NuGet.config` or global nuget config:
+
 > - [![Static Badge](https://img.shields.io/badge/azure_devops-grey?style=flat)](https://dev.azure.com/AGPublish/AGPublic/_artifacts/feed/AutoGen-Nightly) : <https://pkgs.dev.azure.com/AGPublish/AGPublic/_packaging/AutoGen-Nightly/nuget/v3/index.json>
 
 To add a local `NuGet.config`, create a file named `NuGet.config` in the root of your project and add the following content:
+
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -48,6 +52,7 @@ To add a local `NuGet.config`, create a file named `NuGet.config` in the root of
 ```
 
 To add the feed to your global nuget config. You can do this by running the following command in your terminal:
+
 ```bash
 dotnet nuget add source FEED_URL --name AutoGen
 
@@ -56,8 +61,7 @@ dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotn
 ```
 
 Once you have added the feed, you can install the nightly-build package using the following command:
+
 ```bash
 dotnet add package AUTOGEN_PACKAGES VERSION
 ```
-
-

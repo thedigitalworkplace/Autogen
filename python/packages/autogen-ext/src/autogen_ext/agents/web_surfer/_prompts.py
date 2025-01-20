@@ -25,8 +25,6 @@ You are a helpful assistant that can summarize long documents to answer question
 def WEB_SURFER_QA_PROMPT(title: str, question: str | None = None) -> str:
     base_prompt = f"We are visiting the webpage '{title}'. Its full-text content are pasted below, along with a screenshot of the page's current viewport."
     if question is not None:
-        return (
-            f"{base_prompt} Please summarize the webpage into one or two paragraphs with respect to '{question}':\n\n"
-        )
+        return f"{base_prompt} Please summarize the webpage into one or two paragraphs with respect to '{question}':\n\n"
     else:
         return f"{base_prompt} Please summarize the webpage into one or two paragraphs:\n\n"

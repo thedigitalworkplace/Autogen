@@ -12,13 +12,15 @@ class AgentInstantiationContext:
             "AgentInstantiationContext cannot be instantiated. It is a static class that provides context management for agent instantiation."
         )
 
-    _AGENT_INSTANTIATION_CONTEXT_VAR: ClassVar[ContextVar[tuple[AgentRuntime, AgentId]]] = ContextVar(
-        "_AGENT_INSTANTIATION_CONTEXT_VAR"
-    )
+    _AGENT_INSTANTIATION_CONTEXT_VAR: ClassVar[
+        ContextVar[tuple[AgentRuntime, AgentId]]
+    ] = ContextVar("_AGENT_INSTANTIATION_CONTEXT_VAR")
 
     @classmethod
     @contextmanager
-    def populate_context(cls, ctx: tuple[AgentRuntime, AgentId]) -> Generator[None, Any, None]:
+    def populate_context(
+        cls, ctx: tuple[AgentRuntime, AgentId]
+    ) -> Generator[None, Any, None]:
         """:meta private:"""
         token = AgentInstantiationContext._AGENT_INSTANTIATION_CONTEXT_VAR.set(ctx)
         try:
