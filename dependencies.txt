@@ -1,0 +1,10 @@
+.
+/autogen_python/packages/autogen-core
+/autogen_python/packages/autogen-magentic-one
+[
+        "fastapi
+autogen-agentchat==0.4.0
+azure-identity
+chainlit
+tiktoken
+uvicorn[standard

@@ -1,0 +1,6 @@
+fastapi
+autogen-agentchat==0.4.0
+azure-identity
+chainlit
+tiktoken
+uvicorn[standard]
