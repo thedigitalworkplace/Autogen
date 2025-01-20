@@ -1,7 +1,6 @@
 # Stage 1: Build dependencies
-FROM python:3.11-slim as builder
+FROM python:3.11-slim as Builder
 
-# Set working directory
 WORKDIR /app/python/packages/autogen-studio
 
 # Upgrade pip to the latest version and install build tools
@@ -24,21 +23,16 @@ RUN apt-get remove -y build-essential && \
 # Stage 2: Final image
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app/python/packages/autogen-studio
 
 # Add PYTHONPATH to ensure the application package is discoverable
 ENV PYTHONPATH="/app/python/packages/autogen-studio:${PYTHONPATH}"
 
-# Copy Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code to the container
 COPY . /app/
 
-# Expose the application port
 EXPOSE 8000
 
-# Run the application with the correct module path
 CMD ["uvicorn", "autogenstudio.web.app:app", "--host", "0.0.0.0", "--port", "8000"]
